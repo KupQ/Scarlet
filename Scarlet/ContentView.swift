@@ -41,16 +41,9 @@ struct ContentView: View {
         case home, sign, certs
         var icon: String {
             switch self {
-            case .home: return "house.fill"
-            case .sign: return "square.and.arrow.down.fill"
-            case .certs: return "person.badge.key.fill"
-            }
-        }
-        var label: String {
-            switch self {
-            case .home: return "Home"
-            case .sign: return "Library"
-            case .certs: return "Certs"
+            case .home: return "house"
+            case .sign: return "square.and.arrow.down"
+            case .certs: return "magnifyingglass"
             }
         }
     }
@@ -596,69 +589,47 @@ struct ContentView: View {
     // MARK: - Tab Bar
 
     private var glassTabBar: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 36) {
             ForEach(Tab.allCases, id: \.rawValue) { tab in
                 tabButton(tab)
             }
         }
-        .padding(.horizontal, 28)
-        .padding(.vertical, 12)
-        .padding(.bottom, 16)
+        .padding(.horizontal, 40)
+        .padding(.vertical, 14)
         .background(
-            ZStack {
-                // Deep frosted glass
-                RoundedRectangle(cornerRadius: 28)
-                    .fill(.ultraThinMaterial)
-                    .environment(\.colorScheme, .dark)
-
-                // Inner glow gradient
-                RoundedRectangle(cornerRadius: 28)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.12),
-                                Color.white.opacity(0.04),
-                                Color.scarletRed.opacity(0.03)
-                            ],
-                            startPoint: .top, endPoint: .bottom
+            Capsule()
+                .fill(Color(white: 0.11))
+                .overlay(
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.06), Color.clear],
+                                startPoint: .top, endPoint: .bottom
+                            )
                         )
-                    )
-
-                // Border
-                RoundedRectangle(cornerRadius: 28)
-                    .stroke(
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.15), Color.white.opacity(0.05)],
-                            startPoint: .top, endPoint: .bottom
-                        ),
-                        lineWidth: 0.5
-                    )
-            }
-            .shadow(color: .black.opacity(0.4), radius: 24, y: -6)
-            .padding(.horizontal, 32)
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                )
         )
+        .padding(.bottom, 24)
     }
 
     private func tabButton(_ tab: Tab) -> some View {
         Button {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { selectedTab = tab }
         } label: {
-            VStack(spacing: 4) {
-                ZStack {
-                    if selectedTab == tab {
-                        Circle().fill(Color.scarletRed.opacity(0.15)).frame(width: 44, height: 44)
-                    }
-                    Image(systemName: tab.icon)
-                        .font(.system(size: selectedTab == tab ? 22 : 20))
-                        .foregroundColor(selectedTab == tab ? .scarletRed : .gray)
-                        .scaleEffect(selectedTab == tab ? 1.1 : 1.0)
-                }
-                .frame(height: 44)
-                if selectedTab == tab {
-                    Circle().fill(Color.scarletRed).frame(width: 5, height: 5)
-                }
+            VStack(spacing: 6) {
+                Image(systemName: tab.icon)
+                    .font(.system(size: 22, weight: selectedTab == tab ? .semibold : .regular))
+                    .foregroundColor(selectedTab == tab ? .scarletRed : .gray.opacity(0.6))
+
+                // Dash indicator
+                Capsule()
+                    .fill(selectedTab == tab ? Color.scarletRed : .clear)
+                    .frame(width: 14, height: 2.5)
             }
-            .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
     }
