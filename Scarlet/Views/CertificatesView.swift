@@ -3,14 +3,17 @@
 //  Scarlet
 //
 //  Displays certificates fetched from the API for the current device.
-//  Users can select a certificate to use for signing.
+//  Users can select a certificate to use for signing, or import their own.
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct CertificatesView: View {
 
     @ObservedObject private var certService = CertificateService.shared
+    @State private var showImportP12 = false
+    @State private var showImportProfile = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,28 +24,32 @@ struct CertificatesView: View {
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.white)
                     if let udid = certService.deviceUDID {
-                        Text("\(udid) • \(certService.certificates.count) certs")
+                        Text(udid)
                             .font(.system(size: 11, weight: .medium, design: .monospaced))
                             .foregroundColor(.gray)
+                            .lineLimit(1)
                     }
                 }
                 Spacer()
-                Button {
-                    Task { await certService.fetchCertificates() }
-                } label: {
-                    if certService.isLoading {
-                        ProgressView()
-                            .tint(.white)
-                            .frame(width: 36, height: 36)
-                    } else {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 36, height: 36)
-                            .background(Circle().fill(Color.scarletRed))
+                // Import certificate button
+                Menu {
+                    Button {
+                        showImportP12 = true
+                    } label: {
+                        Label("Import P12 Certificate", systemImage: "key.fill")
                     }
+                    Button {
+                        showImportProfile = true
+                    } label: {
+                        Label("Import Provisioning Profile", systemImage: "doc.badge.plus")
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 36, height: 36)
+                        .background(Circle().fill(Color.scarletRed))
                 }
-                .disabled(certService.isLoading)
             }
             .padding(.horizontal, 20)
             .padding(.top, 20)
@@ -61,6 +68,17 @@ struct CertificatesView: View {
                 .padding(.bottom, 8)
             }
 
+            // Loading
+            if certService.isLoading {
+                HStack(spacing: 8) {
+                    ProgressView().tint(.gray)
+                    Text("Fetching certificates...")
+                        .font(.system(size: 13))
+                        .foregroundColor(.gray)
+                }
+                .padding(.bottom, 8)
+            }
+
             // Certificate List
             ScrollView {
                 if certService.certificates.isEmpty && !certService.isLoading {
@@ -71,7 +89,7 @@ struct CertificatesView: View {
                         Text("No Certificates")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.gray)
-                        Text("Tap the refresh button to fetch\ncertificates for this device.")
+                        Text("Import your own certificate\nusing the + button above.")
                             .font(.system(size: 13))
                             .foregroundColor(.gray.opacity(0.7))
                             .multilineTextAlignment(.center)
@@ -90,20 +108,20 @@ struct CertificatesView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
                 }
-
-                // Debug info
-                if !certService.debugInfo.isEmpty {
-                    Text(certService.debugInfo)
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundColor(.gray.opacity(0.6))
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 20)
-                }
             }
         }
         .task {
-            // Always re-fetch to pick up latest data
             await certService.fetchCertificates()
+        }
+        .sheet(isPresented: $showImportP12) {
+            DocumentPicker(contentTypes: [.p12]) { url in
+                try? SigningSettings.shared.importCertificate(from: url)
+            }
+        }
+        .sheet(isPresented: $showImportProfile) {
+            DocumentPicker(contentTypes: [.mobileprovision]) { url in
+                try? SigningSettings.shared.importProfile(from: url)
+            }
         }
     }
 }
@@ -116,27 +134,41 @@ struct CertificateCard: View {
     let onUse: () -> Void
     @State private var applied = false
 
-    private var isActive: Bool {
-        !cert.isExpired
+    private var isActive: Bool { !cert.isExpired }
+
+    private var certTypeLabel: String {
+        let ct = cert.cert_type?.uppercased() ?? ""
+        if ct.contains("DEVELOPMENT") { return "Development" }
+        if ct.contains("DISTRIBUTION") { return "Distribution" }
+        return "Distribution"
+    }
+
+    private var certTypeColor: Color {
+        certTypeLabel == "Development" ? .blue : .purple
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            // Top row: name + status badge
+            // Name + cert type
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(cert.name)
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
-                        .lineLimit(1)
-                    if let plan = cert.plan_selected, !plan.isEmpty {
-                        Text(plan)
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(.gray)
-                            .lineLimit(1)
-                    }
+                        .lineLimit(2)
+
+                    // Cert type badge
+                    Text(certTypeLabel)
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(certTypeColor)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2)
+                        .background(
+                            Capsule().fill(certTypeColor.opacity(0.15))
+                        )
                 }
                 Spacer()
+                // Active / Expired badge
                 Text(isActive ? "Active" : "Expired")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundColor(isActive ? .green : .red)
@@ -147,25 +179,14 @@ struct CertificateCard: View {
                     )
             }
 
-            // Details
-            HStack(spacing: 16) {
-                Label {
-                    Text(cert.id)
-                        .font(.system(size: 11, design: .monospaced))
-                } icon: {
-                    Image(systemName: "number")
-                        .font(.system(size: 10))
-                }
-                .foregroundColor(.gray)
-
-                Label {
-                    Text(formatExpiry(cert.expiresDate))
-                        .font(.system(size: 11))
-                } icon: {
-                    Image(systemName: "calendar")
-                        .font(.system(size: 10))
-                }
-                .foregroundColor(.gray)
+            // Expiry
+            HStack(spacing: 6) {
+                Image(systemName: "calendar")
+                    .font(.system(size: 10))
+                    .foregroundColor(.gray)
+                Text("Expires \(formatExpiry(cert.expiresDate))")
+                    .font(.system(size: 12))
+                    .foregroundColor(.gray)
             }
 
             // Use button
