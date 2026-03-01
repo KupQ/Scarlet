@@ -96,9 +96,9 @@ final class CertificateService: ObservableObject {
 
         log.log("Read embedded.mobileprovision (\(data.count) bytes)")
 
-        // mobileprovision is a CMS/PKCS7 envelope; the XML plist is embedded as ASCII
-        guard let text = String(data: data, encoding: .ascii) else {
-            log.log("Could not decode mobileprovision as ASCII")
+        // mobileprovision is CMS/PKCS7 binary; use isoLatin1 to handle all byte values
+        guard let text = String(data: data, encoding: .isoLatin1) else {
+            log.log("Could not decode mobileprovision")
             return nil
         }
 
