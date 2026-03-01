@@ -70,7 +70,6 @@ struct ContentView: View {
                     NavigationStack { CertificatesView() }
                 }
             }
-            .padding(.bottom, 70)
 
             // Tab bar
             glassTabBar
@@ -589,13 +588,13 @@ struct ContentView: View {
     // MARK: - Tab Bar
 
     private var glassTabBar: some View {
-        HStack(spacing: 36) {
+        HStack(spacing: 0) {
             ForEach(Tab.allCases, id: \.rawValue) { tab in
                 tabButton(tab)
             }
         }
-        .padding(.horizontal, 40)
-        .padding(.vertical, 14)
+        .padding(.horizontal, 36)
+        .padding(.vertical, 16)
         .background(
             Capsule()
                 .fill(Color(white: 0.11))
@@ -613,7 +612,8 @@ struct ContentView: View {
                         .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
                 )
         )
-        .padding(.bottom, 24)
+        .padding(.horizontal, 60)
+        .padding(.bottom, 20)
     }
 
     private func tabButton(_ tab: Tab) -> some View {
@@ -630,6 +630,7 @@ struct ContentView: View {
                     .fill(selectedTab == tab ? Color.scarletRed : .clear)
                     .frame(width: 14, height: 2.5)
             }
+            .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
     }
