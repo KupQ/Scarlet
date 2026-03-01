@@ -2,18 +2,15 @@
 //  SigningView.swift
 //  Scarlet
 //
-//  Library tab displaying imported IPA files with swipe-to-delete
-//  support and signed/unsigned sorting. The signing configuration
-//  sheet is managed by ContentView.
+//  Library tab — liquid glass design, preserving app icons/logos.
 //
 
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Library tab — displays imported apps with swipe-to-delete support.
 struct SigningView: View {
     @ObservedObject var signingState: SigningState
-    var onAppTapped: (ImportedApp) -> Void  // Opens config sheet
+    var onAppTapped: (ImportedApp) -> Void
 
     @StateObject private var appsManager = ImportedAppsManager.shared
     @State private var showIPAImportPicker = false
@@ -22,11 +19,12 @@ struct SigningView: View {
         ZStack {
             Color.bgPrimary.ignoresSafeArea()
 
+            // Ambient glow
             VStack {
                 Ellipse()
                     .fill(
                         RadialGradient(
-                            colors: [Color.scarletRed.opacity(0.12), Color.clear],
+                            colors: [Color.scarletRed.opacity(0.10), Color.clear],
                             center: .center, startRadius: 10, endRadius: 180
                         )
                     )
@@ -44,7 +42,7 @@ struct SigningView: View {
                     if appsManager.isImporting {
                         importingIndicator
                             .padding(.top, 16)
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 20)
                     }
 
                     if appsManager.apps.isEmpty && !appsManager.isImporting {
@@ -53,7 +51,7 @@ struct SigningView: View {
                         appsList.padding(.top, 20)
                     }
                 }
-                .padding(.bottom, 100)
+                .padding(.bottom, 80)
             }
         }
         .sheet(isPresented: $showIPAImportPicker) {
@@ -69,20 +67,20 @@ struct SigningView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Library")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.white)
                 Text("Imported Apps")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.gray)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white.opacity(0.3))
             }
             Spacer()
             Button { showIPAImportPicker = true } label: {
                 ZStack {
                     Circle()
                         .fill(Color.scarletRed)
-                        .frame(width: 42, height: 42)
+                        .frame(width: 40, height: 40)
                     Image(systemName: "plus")
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.system(size: 16, weight: .bold))
                         .foregroundColor(.white)
                 }
             }
@@ -97,16 +95,23 @@ struct SigningView: View {
             ProgressView().tint(.scarletRed)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Importing...")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.white)
                 Text("Extracting metadata and icon")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.gray)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.white.opacity(0.3))
             }
             Spacer()
         }
-        .padding(16)
-        .glassCardRed(cornerRadius: 18)
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.scarletRed.opacity(0.06))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.scarletRed.opacity(0.12), lineWidth: 0.5)
+                )
+        )
     }
 
     // MARK: - Empty State
@@ -115,32 +120,37 @@ struct SigningView: View {
         VStack(spacing: 20) {
             ZStack {
                 Circle()
-                    .fill(Color.glassFill)
+                    .fill(Color.white.opacity(0.03))
                     .frame(width: 80, height: 80)
                 Image(systemName: "arrow.down.doc")
-                    .font(.system(size: 32))
-                    .foregroundColor(.gray)
+                    .font(.system(size: 30))
+                    .foregroundColor(.white.opacity(0.2))
             }
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 Text("No Apps Imported")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.white.opacity(0.8))
                 Text("Tap + to import an IPA file")
-                    .font(.system(size: 15))
-                    .foregroundColor(.gray)
+                    .font(.system(size: 13))
+                    .foregroundColor(.white.opacity(0.3))
             }
             Button { showIPAImportPicker = true } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 18))
+                        .font(.system(size: 16))
                     Text("Import IPA")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.system(size: 15, weight: .bold))
                 }
                 .foregroundColor(.white)
-                .padding(.horizontal, 28)
-                .padding(.vertical, 14)
-                .background(Capsule().fill(LinearGradient.scarletButtonGradient))
-                .shadow(color: .scarletRed.opacity(0.3), radius: 12, y: 6)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+                .background(
+                    Capsule()
+                        .fill(
+                            LinearGradient(colors: [.scarletRed, .scarletDark],
+                                           startPoint: .leading, endPoint: .trailing)
+                        )
+                )
             }
             .buttonStyle(.plain)
         }
@@ -150,7 +160,7 @@ struct SigningView: View {
     // MARK: - Apps List
 
     private var appsList: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             ForEach(appsManager.sortedApps) { app in
                 SwipeableAppCard(app: app, onTap: { signApp(app) }, onDelete: {
                     withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
@@ -165,88 +175,103 @@ struct SigningView: View {
                 ))
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 20)
     }
+
+    // MARK: - App Card (preserves icon/logos)
 
     private func appCardContent(_ app: ImportedApp) -> some View {
         HStack(spacing: 14) {
+            // App icon — preserved as-is
             ZStack(alignment: .bottomTrailing) {
                 appIcon(app)
-                    .frame(width: 56, height: 56)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .frame(width: 52, height: 52)
+                    .clipShape(RoundedRectangle(cornerRadius: 13))
 
                 if app.isSigned {
                     ZStack {
                         Circle()
                             .fill(Color.black)
-                            .frame(width: 20, height: 20)
+                            .frame(width: 18, height: 18)
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 18))
+                            .font(.system(size: 16))
                             .foregroundColor(.green)
                     }
-                    .offset(x: 4, y: 4)
+                    .offset(x: 3, y: 3)
                 }
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            // Info
+            VStack(alignment: .leading, spacing: 3) {
                 Text(app.appName)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 15, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(1)
                 Text(app.bundleIdentifier)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.gray)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.white.opacity(0.25))
                     .lineLimit(1)
-                HStack(spacing: 8) {
+                HStack(spacing: 6) {
                     Label("v\(app.version)", systemImage: "number")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(.scarletPink)
-                    Text("·").foregroundColor(.gray)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.scarletPink.opacity(0.7))
+                    Text("·").foregroundColor(.white.opacity(0.15))
                     Text(app.formattedSize)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(.gray)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.white.opacity(0.25))
                     if app.isSigned {
-                        Text("·").foregroundColor(.gray)
+                        Text("·").foregroundColor(.white.opacity(0.15))
                         Label("Signed", systemImage: "checkmark.seal.fill")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.green)
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.green.opacity(0.8))
                     }
                 }
             }
             Spacer()
+
+            // Action badge — logos preserved
             if app.isSigned {
-                VStack(spacing: 4) {
+                VStack(spacing: 3) {
                     ZStack {
                         Circle()
-                            .fill(Color.green.opacity(0.2))
-                            .frame(width: 36, height: 36)
+                            .fill(Color.green.opacity(0.12))
+                            .frame(width: 34, height: 34)
                         Image(systemName: "checkmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.green)
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.green.opacity(0.8))
                     }
                     Text("Signed")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(.green)
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundColor(.green.opacity(0.6))
                 }
             } else {
-                VStack(spacing: 4) {
+                VStack(spacing: 3) {
                     ZStack {
                         Circle()
                             .fill(Color.scarletRed)
-                            .frame(width: 36, height: 36)
+                            .frame(width: 34, height: 34)
                         Image(systemName: "signature")
-                            .font(.system(size: 14, weight: .bold))
+                            .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.white)
                     }
                     Text("Sign")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(.scarletRed)
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundColor(.scarletRed.opacity(0.7))
                 }
             }
         }
-        .padding(14)
-        .glassCard(cornerRadius: 20)
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color.white.opacity(0.03))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                )
+        )
     }
+
+    // MARK: - Icon
 
     @ViewBuilder
     private func appIcon(_ app: ImportedApp) -> some View {
@@ -258,13 +283,13 @@ struct SigningView: View {
                 .aspectRatio(contentMode: .fill)
         } else {
             ZStack {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 13)
                     .fill(
                         LinearGradient(colors: [.scarletRed, .scarletDark],
                                        startPoint: .topLeading, endPoint: .bottomTrailing)
                     )
                 Text(String(app.appName.prefix(1)))
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.system(size: 22, weight: .bold))
                     .foregroundColor(.white)
             }
         }
