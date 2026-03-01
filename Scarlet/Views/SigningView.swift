@@ -176,6 +176,10 @@ struct SigningView: View {
         }
     }
 
+    private var allAppsSorted: [ImportedApp] {
+        appsManager.apps.sorted { $0.importDate > $1.importDate }
+    }
+
     private var appsList: some View {
         VStack(spacing: 16) {
             // ── Installed Apps ──
@@ -200,23 +204,21 @@ struct SigningView: View {
                 }
             }
 
-            // ── Unsigned Apps ──
-            if !unsignedApps.isEmpty {
-                sectionHeader(title: "Unsigned Apps", count: unsignedApps.count)
-                VStack(spacing: 10) {
-                    ForEach(unsignedApps) { app in
-                        SwipeableAppCard(app: app, onTap: { signApp(app) }, onDelete: {
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                appsManager.removeApp(app)
-                            }
-                        }) {
-                            unsignedCardContent(app)
+            // ── All Apps (sign / re-sign) ──
+            sectionHeader(title: "All Apps", count: allAppsSorted.count)
+            VStack(spacing: 10) {
+                ForEach(allAppsSorted) { app in
+                    SwipeableAppCard(app: app, onTap: { signApp(app) }, onDelete: {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            appsManager.removeApp(app)
                         }
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .top).combined(with: .opacity),
-                            removal: .move(edge: .trailing).combined(with: .opacity)
-                        ))
+                    }) {
+                        unsignedCardContent(app)
                     }
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .top).combined(with: .opacity),
+                        removal: .move(edge: .trailing).combined(with: .opacity)
+                    ))
                 }
             }
         }

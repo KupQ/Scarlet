@@ -742,7 +742,7 @@ struct ContentView: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                (sheetPhase == .success ? Color.green : Color.scarletRed).opacity(0.1),
+                                Color.scarletRed.opacity(0.1),
                                 Color.white.opacity(0.03)
                             ],
                             startPoint: .topLeading, endPoint: .bottomTrailing
@@ -751,7 +751,7 @@ struct ContentView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 28)
-                    .stroke((sheetPhase == .success ? Color.green : Color.scarletRed).opacity(0.2), lineWidth: 0.5)
+                    .stroke(Color.scarletRed.opacity(0.2), lineWidth: 0.5)
             )
             .shadow(color: .black.opacity(0.4), radius: 30, y: -10)
     }
