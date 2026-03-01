@@ -126,6 +126,23 @@ struct ContentView: View {
         .sheet(isPresented: $showShareSheet) {
             if let url = signingOutputURL { ShareSheet(items: [url]) }
         }
+        // Detect when user cancels iOS install dialog
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            guard sheetVisible, sheetPhase == .success else { return }
+            // If stuck on sendingManifest/sendingPayload, user likely cancelled the iOS dialog
+            switch signingState.installStatus {
+            case .sendingManifest, .sendingPayload:
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    // If STILL stuck after 1.5s, assume user cancelled
+                    switch signingState.installStatus {
+                    case .sendingManifest, .sendingPayload:
+                        signingState.resetStuckInstall()
+                    default: break
+                    }
+                }
+            default: break
+            }
+        }
     }
 
     // MARK: - Open Config Sheet

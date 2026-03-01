@@ -284,4 +284,10 @@ final class SigningState: ObservableObject {
         stopLocalServer()
         reset()
     }
+
+    /// Resets install status when stuck on sendingManifest (user cancelled iOS dialog).
+    func resetStuckInstall() {
+        installStatus = .serverReady
+        isUploading = false
+    }
 }
