@@ -16,14 +16,12 @@ struct CertificatesView: View {
     // Import flow
     @State private var importStep: ImportStep = .idle
     @State private var importedP12URL: URL?
+    @State private var importedP12Data: Data?
     @State private var importedP12Name: String = ""
     @State private var importPassword: String = ""
     @State private var passwordError: String?
     @State private var showFilePicker = false
     @State private var filePickerType: FilePickerType = .p12
-
-    // Selection animation
-    @State private var justSelectedId: String?
 
     enum ImportStep { case idle, pickProfile, enterPassword }
     enum FilePickerType { case p12, profile }
@@ -124,10 +122,7 @@ struct CertificatesView: View {
 
                     VStack(spacing: 10) {
                         ForEach(otherCerts) { cert in
-                            let isJustSelected = justSelectedId == cert.id
-                            CompactCard(cert: cert, isJustSelected: isJustSelected)
-                                .scaleEffect(isJustSelected ? 0.92 : 1.0)
-                                .brightness(isJustSelected ? 0.15 : 0)
+                            CompactCard(cert: cert)
                                 .onTapGesture { selectCert(cert) }
                         }
                     }
@@ -160,36 +155,13 @@ struct CertificatesView: View {
         }
     }
 
-    // MARK: - Selection Animation
+    // MARK: - Selection
 
     private func selectCert(_ cert: RemoteCertificate) {
         guard !cert.isExpired else { return }
-
-        // Heavy haptic on tap
-        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-
-        // Phase 1: squeeze down
-        withAnimation(.easeIn(duration: 0.15)) {
-            justSelectedId = cert.id
-        }
-
-        // Phase 2: bounce back (card still in Available section)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) {
-                // keep justSelectedId — glow + checkmark stay visible
-            }
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-        }
-
-        // Phase 3: AFTER animation completes, switch the cert
-        // This is the key — delay the data change so the animation plays fully
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-            withAnimation(.easeOut(duration: 0.3)) {
-                justSelectedId = nil
-            }
-            certService.useCertificate(cert)
-            settings.objectWillChange.send()
-        }
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        certService.useCertificate(cert)
+        settings.objectWillChange.send()
     }
 
     // MARK: - Empty / Loading
@@ -249,10 +221,9 @@ struct CertificatesView: View {
     private func handleP12Picked(_ url: URL) {
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-        let dest = FileManager.default.temporaryDirectory.appendingPathComponent(url.lastPathComponent)
-        try? FileManager.default.removeItem(at: dest)
-        try? FileManager.default.copyItem(at: url, to: dest)
-        importedP12URL = dest
+        // Read data into memory immediately while we have access
+        guard let data = try? Data(contentsOf: url) else { return }
+        importedP12Data = data
         importedP12Name = url.lastPathComponent
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { importStep = .pickProfile }
     }
@@ -261,52 +232,67 @@ struct CertificatesView: View {
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
         try? settings.importProfile(from: url)
+
+        // Auto-try common passwords
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            importPassword = ""; passwordError = nil; importStep = .enterPassword
+            tryCommonPasswords()
         }
     }
 
-    private func validateAndImport() {
-        guard let p12URL = importedP12URL else {
-            passwordError = "Could not read P12 file"; return
+    private static let commonPasswords = ["", "1", "password", "1234", "123", "123456789"]
+
+    private func tryCommonPasswords() {
+        guard let p12Data = importedP12Data else { return }
+
+        for pwd in Self.commonPasswords {
+            var items: CFArray?
+            let opts: NSDictionary = [kSecImportExportPassphrase: pwd]
+            if SecPKCS12Import(p12Data as CFData, opts, &items) == errSecSuccess {
+                // Found matching password — save
+                saveCert(password: pwd)
+                return
+            }
         }
-        guard let p12Data = try? Data(contentsOf: p12URL) else {
+
+        // None matched — ask user
+        importPassword = ""
+        passwordError = nil
+        importStep = .enterPassword
+    }
+
+    private func validateAndImport() {
+        guard let p12Data = importedP12Data else {
             passwordError = "Could not read P12 file"; return
         }
 
-        // Validate password using SecPKCS12Import
         var items: CFArray?
         let opts: NSDictionary = [kSecImportExportPassphrase: importPassword]
         let status = SecPKCS12Import(p12Data as CFData, opts, &items)
 
         if status == errSecSuccess {
-            // Password valid — save
-            let dest = settings.certsDirectory.appendingPathComponent(importedP12Name)
-            try? FileManager.default.removeItem(at: dest)
-            try? p12Data.write(to: dest)
-            settings.savedCertName = importedP12Name
-            settings.savedCertPassword = importPassword
-            importStep = .idle
-            importPassword = ""
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            saveCert(password: importPassword)
         } else if status == errSecAuthFailed {
-            // Wrong password
             passwordError = "Wrong password. Please try again."
             importPassword = ""
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { importStep = .idle }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { importStep = .enterPassword }
         } else {
-            // Other error (e.g. entitlement issue) — save anyway
-            // since we can't validate, zsign will catch it later
-            let dest = settings.certsDirectory.appendingPathComponent(importedP12Name)
-            try? FileManager.default.removeItem(at: dest)
-            try? p12Data.write(to: dest)
-            settings.savedCertName = importedP12Name
-            settings.savedCertPassword = importPassword
-            importStep = .idle
-            importPassword = ""
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            // Other error — save anyway, zsign will catch later
+            saveCert(password: importPassword)
         }
+    }
+
+    private func saveCert(password: String) {
+        guard let data = importedP12Data else { return }
+        let dest = settings.certsDirectory.appendingPathComponent(importedP12Name)
+        try? FileManager.default.removeItem(at: dest)
+        try? data.write(to: dest)
+        settings.savedCertName = importedP12Name
+        settings.savedCertPassword = password
+        importStep = .idle
+        importPassword = ""
+        importedP12Data = nil
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 }
 
@@ -426,7 +412,6 @@ struct HeroCard: View {
 
 struct CompactCard: View {
     let cert: RemoteCertificate
-    var isJustSelected: Bool = false
 
     private var isActive: Bool { !cert.isExpired }
     private var days: Int {
@@ -475,29 +460,17 @@ struct CompactCard: View {
                 }
             }
             Spacer()
-
-            // Checkmark flash on selection
-            if isJustSelected {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 20))
-                    .foregroundColor(.scarletRed)
-                    .transition(.scale.combined(with: .opacity))
-            }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
         .background(
             RoundedRectangle(cornerRadius: 13)
-                .fill(Color.white.opacity(isJustSelected ? 0.06 : 0.03))
+                .fill(Color.white.opacity(0.03))
                 .overlay(
                     RoundedRectangle(cornerRadius: 13)
-                        .stroke(
-                            isJustSelected ? Color.scarletRed.opacity(0.35) : Color.white.opacity(0.05),
-                            lineWidth: isJustSelected ? 1 : 0.5
-                        )
+                        .stroke(Color.white.opacity(0.05), lineWidth: 0.5)
                 )
         )
         .opacity(isActive ? 1 : 0.4)
-        .animation(.easeInOut(duration: 0.25), value: isJustSelected)
     }
 }
