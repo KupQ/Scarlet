@@ -19,6 +19,8 @@ struct RemoteCertificate: Identifiable, Codable {
     let p12_password: String
     let mobileprovision: String    // base64 mobileprovision
     let devp12: String?            // optional dev P12
+    let devmp: String?             // optional dev mobileprovision
+    let dev_name: String?          // optional dev cert name
     let expire_time: TimeInterval
     let plan_selected: String?
     let cert_type: String?
@@ -47,16 +49,18 @@ struct RemoteCertificate: Identifiable, Codable {
         devp12.flatMap { Data(base64Encoded: $0) }
     }
 
-    /// Creates a development variant using devp12 instead of p12.
+    /// Creates a development variant using devp12 and devmp.
     var devVariant: RemoteCertificate {
         RemoteCertificate(
             id: "DEV-\(id)",
-            name: "\(name) (Dev)",
+            name: dev_name ?? "\(name) (Dev)",
             pname: pname,
             p12: devp12 ?? p12,
             p12_password: p12_password,
-            mobileprovision: mobileprovision,
+            mobileprovision: devmp ?? mobileprovision,
             devp12: nil,
+            devmp: nil,
+            dev_name: nil,
             expire_time: expire_time,
             plan_selected: plan_selected,
             cert_type: "IOS_DEVELOPMENT",
