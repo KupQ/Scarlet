@@ -75,20 +75,38 @@ final class CertificateService: ObservableObject {
     /// Extracts the device UDID from the embedded.mobileprovision
     /// that's bundled inside the sideloaded app.
     static func extractUDID() -> String? {
-        guard let provisionURL = Bundle.main.url(
-            forResource: "embedded",
-            withExtension: "mobileprovision"
-        ) else {
-            FileLogger.shared.log("No embedded.mobileprovision found")
+        let log = FileLogger.shared
+
+        // Direct path — Bundle.main.url(forResource:) doesn't find root-level files reliably
+        let provisionPath = Bundle.main.bundlePath + "/embedded.mobileprovision"
+        let fm = FileManager.default
+
+        guard fm.fileExists(atPath: provisionPath) else {
+            log.log("No embedded.mobileprovision at: \(provisionPath)")
+            // List bundle root to debug
+            let contents = (try? fm.contentsOfDirectory(atPath: Bundle.main.bundlePath)) ?? []
+            log.log("Bundle contents: \(contents.joined(separator: ", "))")
             return nil
         }
 
-        guard let data = try? Data(contentsOf: provisionURL) else { return nil }
-        guard let text = String(data: data, encoding: .ascii) else { return nil }
+        guard let data = fm.contents(atPath: provisionPath) else {
+            log.log("Could not read embedded.mobileprovision")
+            return nil
+        }
 
-        // mobileprovision is a CMS/PKCS7 envelope; the XML plist is embedded
+        log.log("Read embedded.mobileprovision (\(data.count) bytes)")
+
+        // mobileprovision is a CMS/PKCS7 envelope; the XML plist is embedded as ASCII
+        guard let text = String(data: data, encoding: .ascii) else {
+            log.log("Could not decode mobileprovision as ASCII")
+            return nil
+        }
+
         guard let xmlStart = text.range(of: "<?xml"),
-              let xmlEnd = text.range(of: "</plist>") else { return nil }
+              let xmlEnd = text.range(of: "</plist>") else {
+            log.log("No XML plist found in mobileprovision")
+            return nil
+        }
 
         let xmlString = String(text[xmlStart.lowerBound...xmlEnd.upperBound])
         guard let xmlData = xmlString.data(using: .utf8),
@@ -96,15 +114,21 @@ final class CertificateService: ObservableObject {
                 from: xmlData,
                 options: [],
                 format: nil
-              ) as? [String: Any] else { return nil }
-
-        // ProvisionedDevices contains the UDIDs registered for this profile
-        if let devices = plist["ProvisionedDevices"] as? [String],
-           let first = devices.first {
-            FileLogger.shared.log("Extracted UDID: \(first)")
-            return first
+              ) as? [String: Any] else {
+            log.log("Could not parse plist from mobileprovision")
+            return nil
         }
 
+        // ProvisionedDevices contains the UDIDs registered on this profile
+        if let devices = plist["ProvisionedDevices"] as? [String] {
+            log.log("Found \(devices.count) provisioned devices")
+            if let first = devices.first {
+                log.log("Extracted UDID: \(first)")
+                return first
+            }
+        }
+
+        log.log("No ProvisionedDevices in mobileprovision")
         return nil
     }
 
