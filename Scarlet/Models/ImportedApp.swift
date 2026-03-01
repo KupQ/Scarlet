@@ -33,6 +33,12 @@ struct ImportedApp: Identifiable, Codable {
     /// Timestamp of when the app was signed (used for sorting).
     var signedDate: Date?
 
+    /// Whether this app was actually installed on the device.
+    var isInstalled: Bool
+
+    /// Timestamp of when the app was installed.
+    var installedDate: Date?
+
     // MARK: Backward-Compatible Decoder
 
     /// Custom decoder that provides default values for fields added after
@@ -50,6 +56,8 @@ struct ImportedApp: Identifiable, Codable {
         ipaFileName     = try container.decode(String.self,  forKey: .ipaFileName)
         isSigned        = try container.decodeIfPresent(Bool.self,   forKey: .isSigned) ?? false
         signedDate      = try container.decodeIfPresent(Date.self,   forKey: .signedDate)
+        isInstalled     = try container.decodeIfPresent(Bool.self,   forKey: .isInstalled) ?? false
+        installedDate   = try container.decodeIfPresent(Date.self,   forKey: .installedDate)
     }
 
     // MARK: Memberwise Initializer
@@ -65,7 +73,9 @@ struct ImportedApp: Identifiable, Codable {
         iconFileName: String?,
         ipaFileName: String,
         isSigned: Bool = false,
-        signedDate: Date? = nil
+        signedDate: Date? = nil,
+        isInstalled: Bool = false,
+        installedDate: Date? = nil
     ) {
         self.id              = id
         self.appName         = appName
@@ -78,6 +88,8 @@ struct ImportedApp: Identifiable, Codable {
         self.ipaFileName     = ipaFileName
         self.isSigned        = isSigned
         self.signedDate      = signedDate
+        self.isInstalled     = isInstalled
+        self.installedDate   = installedDate
     }
 
     // MARK: Computed Properties
@@ -222,6 +234,22 @@ final class ImportedAppsManager: ObservableObject {
         guard let idx = apps.firstIndex(where: { $0.id == app.id }) else { return }
         apps[idx].isSigned = true
         apps[idx].signedDate = Date()
+        saveApps()
+    }
+
+    /// Marks an app as installed on the device.
+    func markAsInstalled(_ app: ImportedApp) {
+        guard let idx = apps.firstIndex(where: { $0.id == app.id }) else { return }
+        apps[idx].isInstalled = true
+        apps[idx].installedDate = Date()
+        saveApps()
+    }
+
+    /// Removes only the installed flag (keeps the IPA for re-signing).
+    func unmarkInstalled(_ app: ImportedApp) {
+        guard let idx = apps.firstIndex(where: { $0.id == app.id }) else { return }
+        apps[idx].isInstalled = false
+        apps[idx].installedDate = nil
         saveApps()
     }
 

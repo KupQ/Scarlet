@@ -157,6 +157,16 @@ struct ContentView: View {
         }
     }
 
+    /// Removes all scarlet_* temp dirs created during signing to keep device clean.
+    private func cleanupSignedFiles() {
+        let tmp = FileManager.default.temporaryDirectory
+        if let items = try? FileManager.default.contentsOfDirectory(atPath: tmp.path) {
+            for item in items where item.hasPrefix("scarlet_") {
+                try? FileManager.default.removeItem(at: tmp.appendingPathComponent(item))
+            }
+        }
+    }
+
     /// Drag gesture for the entire bottom sheet — uses simple onChanged/onEnded
     /// with direct offset assignment, no @GestureState or animations during drag.
     private var sheetDragGesture: some Gesture {
@@ -624,6 +634,14 @@ struct ContentView: View {
                         signingState.resetStuckInstall()
                     }
                 }
+            }
+            if case .completed = newStatus {
+                // Mark the app as installed on device
+                if let app = selectedApp {
+                    ImportedAppsManager.shared.markAsInstalled(app)
+                }
+                // Clean up signed temp files
+                cleanupSignedFiles()
             }
         }
     }

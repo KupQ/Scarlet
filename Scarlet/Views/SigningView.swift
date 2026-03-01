@@ -165,8 +165,8 @@ struct SigningView: View {
     // MARK: - Apps List (split into installed + unsigned)
 
     private var installedApps: [ImportedApp] {
-        appsManager.apps.filter(\.isSigned).sorted {
-            ($0.signedDate ?? .distantPast) > ($1.signedDate ?? .distantPast)
+        appsManager.apps.filter(\.isInstalled).sorted {
+            ($0.installedDate ?? .distantPast) > ($1.installedDate ?? .distantPast)
         }
     }
 
@@ -191,7 +191,7 @@ struct SigningView: View {
                             InstallProgressPoller.openApp(bundleId: app.bundleIdentifier)
                         }, onDelete: {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                appsManager.removeApp(app)
+                                appsManager.unmarkInstalled(app)
                             }
                         }) {
                             installedCardContent(app)
