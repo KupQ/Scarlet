@@ -14,7 +14,6 @@ struct ContentView: View {
     @StateObject private var signingState = SigningState()
     @ObservedObject private var certService = CertificateService.shared
     @State private var selectedTab: Tab = .home
-    @State private var showCertPicker = false
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -26,7 +25,7 @@ struct ContentView: View {
     @State private var sheetPhase: SheetPhase = .configure
     @State private var sheetVisible = false
     @State private var sheetOffset: CGFloat = 500
-    @GestureState private var dragTranslation: CGFloat = 0
+    @State private var showCertPicker = false
     @State private var signingProgress: CGFloat = 0
     @State private var signingOutputURL: URL?
     @State private var showShareSheet = false
@@ -92,7 +91,7 @@ struct ContentView: View {
             // Bottom sheet — always on top
             if sheetVisible {
                 bottomSheet
-                    .offset(y: sheetOffset + dragTranslation)
+                    .offset(y: sheetOffset)
                     .transition(.move(edge: .bottom))
                     .zIndex(100)
             }
@@ -149,12 +148,13 @@ struct ContentView: View {
     }
 
     private func dismissSheet() {
-        withAnimation(.easeIn(duration: 0.35)) {
+        // Cancel immediately — don't wait for animation
+        signingState.cancelAll()
+        withAnimation(.easeIn(duration: 0.3)) {
             sheetOffset = 500
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             sheetVisible = false
-            signingState.cancelAll()
         }
     }
 
@@ -182,19 +182,6 @@ struct ContentView: View {
         .background(sheetBackground)
         .padding(.horizontal, 12)
         .padding(.bottom, 8)
-        .contentShape(Rectangle())
-        .gesture(
-            DragGesture()
-                .updating($dragTranslation) { value, state, _ in
-                    let dy = value.translation.height
-                    state = dy > 0 ? dy : dy * 0.15
-                }
-                .onEnded { value in
-                    if value.translation.height > 80 || value.predictedEndTranslation.height > 200 {
-                        dismissSheet()
-                    }
-                }
-        )
     }
 
     // MARK: - Phase 1: Configure
@@ -463,12 +450,6 @@ struct ContentView: View {
                     }
                     .frame(height: 4)
                 }
-                Spacer(minLength: 0)
-                Circle()
-                    .fill(Color.scarletRed)
-                    .frame(width: 8, height: 8)
-                    .scaleEffect(1.3)
-                    .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: signingProgress)
             }
 
             // App info during signing
