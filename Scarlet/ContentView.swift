@@ -805,6 +805,7 @@ struct ContentView: View {
 // MARK: - Slide to Action Component
 
 /// Apple power-off inspired slide control with animated hint arrows.
+/// Slide-to-action matching the app's glass card design language.
 struct SlideToActionView: View {
     let text: String
     let gradient: [Color]
@@ -812,121 +813,127 @@ struct SlideToActionView: View {
 
     @State private var offset: CGFloat = 0
     @State private var triggered = false
-    @State private var arrowBounce = false
+    @State private var shimmer: CGFloat = -1
 
-    private let pill: CGFloat = 46
-    private let thumb: CGFloat = 42
-    private let cr: CGFloat = 23
+    private let h: CGFloat = 50
+    private let thumbW: CGFloat = 46
+    private let cr: CGFloat = 16
 
     var body: some View {
         GeometryReader { geo in
-            let travel = geo.size.width - thumb - 4
+            let travel = geo.size.width - thumbW - 8
             let pct = travel > 0 ? min(offset / travel, 1) : 0
 
-            ZStack {
-                // ── Dark pill track ──
-                Capsule()
-                    .fill(Color(white: 0.08))
+            ZStack(alignment: .leading) {
+                // ── Glass card track (same as home quick actions) ──
+                RoundedRectangle(cornerRadius: cr)
+                    .fill(Color.white.opacity(0.03))
                     .overlay(
-                        Capsule()
-                            .stroke(Color.white.opacity(0.04), lineWidth: 0.5)
+                        RoundedRectangle(cornerRadius: cr)
+                            .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
                     )
 
-                // ── Colored reveal ──
-                HStack(spacing: 0) {
-                    Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: gradient.map { $0.opacity(0.6 * Double(pct)) },
-                                startPoint: .leading, endPoint: .trailing
-                            )
+                // ── Scarlet reveal ──
+                RoundedRectangle(cornerRadius: cr)
+                    .fill(
+                        LinearGradient(
+                            colors: [gradient[0].opacity(0.12 * Double(pct)),
+                                     gradient[1].opacity(0.06 * Double(pct))],
+                            startPoint: .leading, endPoint: .trailing
                         )
-                        .frame(width: thumb + offset + 2)
-                    Spacer(minLength: 0)
-                }
+                    )
+                    .frame(width: max(thumbW + 8, thumbW + offset + 4))
+                    .animation(.none, value: offset)
 
-                // ── Label ──
-                Text(text)
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .tracking(0.5)
-                    .foregroundColor(.white.opacity(0.35 * (1 - pct)))
-                    .frame(maxWidth: .infinity)
-                    .offset(x: offset * 0.12)
+                // ── Text with shimmer ──
+                ZStack {
+                    Text(text)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.white.opacity(0.3 * (1 - pct)))
 
-                // ── Thumb ──
-                HStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color(white: 0.18),
-                                    Color(white: 0.12)
-                                ],
-                                startPoint: .top, endPoint: .bottom
-                            )
-                        )
-                        .frame(width: thumb, height: thumb)
+                    // Shimmer sweep over text
+                    Text(text)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.clear)
                         .overlay(
-                            Circle()
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [.white.opacity(0.12), .white.opacity(0.03)],
-                                        startPoint: .topLeading, endPoint: .bottomTrailing
-                                    ), lineWidth: 0.5
+                            GeometryReader { textGeo in
+                                LinearGradient(
+                                    colors: [.clear, .white.opacity(0.4), .clear],
+                                    startPoint: .leading, endPoint: .trailing
                                 )
-                        )
-                        .overlay(
-                            // Triple arrow hint
-                            HStack(spacing: 1) {
-                                ForEach(0..<3, id: \.self) { i in
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: 10, weight: .bold))
-                                        .foregroundColor(.white.opacity(0.25 + Double(i) * 0.2))
-                                        .offset(x: arrowBounce ? 1.5 : -1.5)
-                                        .animation(
-                                            .easeInOut(duration: 0.8)
-                                                .repeatForever(autoreverses: true)
-                                                .delay(Double(i) * 0.12),
-                                            value: arrowBounce
-                                        )
-                                }
+                                .frame(width: 50)
+                                .offset(x: shimmer * textGeo.size.width)
+                                .mask(
+                                    Text(text)
+                                        .font(.system(size: 13, weight: .medium))
+                                        .frame(maxWidth: .infinity)
+                                )
                             }
                         )
-                        .offset(x: offset)
-                        .gesture(
-                            DragGesture(minimumDistance: 5)
-                                .onChanged { v in
-                                    guard !triggered else { return }
-                                    offset = max(0, min(v.translation.width, travel))
-                                }
-                                .onEnded { _ in
-                                    guard !triggered else { return }
-                                    if offset >= travel * 0.85 {
-                                        triggered = true
-                                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                        withAnimation(.easeOut(duration: 0.1)) { offset = travel }
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                                            action()
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                                                withAnimation(.spring(response: 0.4, dampingFraction: 0.65)) {
-                                                    offset = 0
-                                                    triggered = false
-                                                }
+                        .opacity(1 - Double(pct))
+                }
+                .frame(maxWidth: .infinity)
+                .offset(x: 16)
+
+                // ── Thumb — mini glass card ──
+                RoundedRectangle(cornerRadius: cr - 4)
+                    .fill(Color.white.opacity(0.06))
+                    .frame(width: thumbW, height: h - 8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: cr - 4)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [.white.opacity(0.12), .white.opacity(0.04)],
+                                    startPoint: .top, endPoint: .bottom
+                                ), lineWidth: 0.5
+                            )
+                    )
+                    .overlay(
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(gradient[0].opacity(0.12))
+                                .frame(width: 28, height: 28)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(gradient[0].opacity(0.8))
+                        }
+                    )
+                    .offset(x: 4 + offset)
+                    .gesture(
+                        DragGesture(minimumDistance: 5)
+                            .onChanged { v in
+                                guard !triggered else { return }
+                                offset = max(0, min(v.translation.width, travel))
+                            }
+                            .onEnded { _ in
+                                guard !triggered else { return }
+                                if offset >= travel * 0.85 {
+                                    triggered = true
+                                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                    withAnimation(.easeOut(duration: 0.1)) { offset = travel }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                        action()
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                                offset = 0
+                                                triggered = false
                                             }
                                         }
-                                    } else {
-                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                                            offset = 0
-                                        }
+                                    }
+                                } else {
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                                        offset = 0
                                     }
                                 }
-                        )
-                    Spacer(minLength: 0)
-                }
-                .padding(.leading, 2)
+                            }
+                    )
             }
         }
-        .frame(height: pill)
-        .onAppear { arrowBounce = true }
+        .frame(height: h)
+        .onAppear {
+            withAnimation(.linear(duration: 2.5).repeatForever(autoreverses: false)) {
+                shimmer = 1
+            }
+        }
     }
 }
