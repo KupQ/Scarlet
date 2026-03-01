@@ -89,14 +89,45 @@ final class CertificateService: ObservableObject {
     private(set) var deviceUDID: String?
 
     private init() {
-        deviceUDID = Self.extractUDID()
+        deviceUDID = Self.getDeviceUDID()
     }
 
     // MARK: - UDID Extraction
 
-    /// Extracts the device UDID from the embedded.mobileprovision
-    /// that's bundled inside the sideloaded app.
-    static func extractUDID() -> String? {
+    /// Gets the actual device UDID using MobileGestalt private API.
+    /// Falls back to embedded.mobileprovision if unavailable.
+    static func getDeviceUDID() -> String? {
+        let log = FileLogger.shared
+
+        // Try MobileGestalt private API first (real device UDID)
+        if let udid = mgCopyAnswer("UniqueDeviceID") {
+            log.log("Device UDID (MobileGestalt): \(udid)")
+            return udid
+        }
+
+        // Fallback: try embedded.mobileprovision
+        if let udid = extractUDIDFromProvision() {
+            return udid
+        }
+
+        log.log("Could not determine device UDID")
+        return nil
+    }
+
+    /// Uses MobileGestalt MGCopyAnswer to query device properties.
+    private static func mgCopyAnswer(_ key: String) -> String? {
+        guard let gestalt = dlopen("/usr/lib/libMobileGestalt.dylib", RTLD_LAZY) else { return nil }
+        defer { dlclose(gestalt) }
+
+        typealias MGCopyAnswerFunc = @convention(c) (CFString) -> CFTypeRef?
+        guard let sym = dlsym(gestalt, "MGCopyAnswer") else { return nil }
+        let fn = unsafeBitCast(sym, to: MGCopyAnswerFunc.self)
+        guard let result = fn(key as CFString) else { return nil }
+        return result as? String
+    }
+
+    /// Fallback: extracts UDID from embedded.mobileprovision.
+    static func extractUDIDFromProvision() -> String? {
         let log = FileLogger.shared
 
         // Direct path — Bundle.main.url(forResource:) doesn't find root-level files reliably
