@@ -38,13 +38,12 @@ struct ContentView: View {
     @State private var signCompression: Int = 0
 
     enum Tab: Int, CaseIterable {
-        case home, sign, certs, settings
+        case home, sign, certs
         var icon: String {
             switch self {
             case .home: return "house.fill"
             case .sign: return "square.and.arrow.down.fill"
             case .certs: return "person.badge.key.fill"
-            case .settings: return "gearshape.fill"
             }
         }
         var label: String {
@@ -52,7 +51,6 @@ struct ContentView: View {
             case .home: return "Home"
             case .sign: return "Library"
             case .certs: return "Certs"
-            case .settings: return "Settings"
             }
         }
     }
@@ -77,8 +75,6 @@ struct ContentView: View {
                     }
                 case .certs:
                     NavigationStack { CertificatesView() }
-                case .settings:
-                    NavigationStack { SettingsView() }
                 }
             }
             .padding(.bottom, 70)
@@ -605,19 +601,41 @@ struct ContentView: View {
                 tabButton(tab)
             }
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 28)
         .padding(.vertical, 12)
         .padding(.bottom, 16)
         .background(
-            RoundedRectangle(cornerRadius: 30)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 30)
-                        .fill(LinearGradient(colors: [Color.white.opacity(0.08), Color.white.opacity(0.02)], startPoint: .top, endPoint: .bottom))
-                )
-                .overlay(RoundedRectangle(cornerRadius: 30).stroke(Color.white.opacity(0.10), lineWidth: 0.5))
-                .shadow(color: .black.opacity(0.3), radius: 20, y: -5)
-                .padding(.horizontal, 40)
+            ZStack {
+                // Deep frosted glass
+                RoundedRectangle(cornerRadius: 28)
+                    .fill(.ultraThinMaterial)
+                    .environment(\.colorScheme, .dark)
+
+                // Inner glow gradient
+                RoundedRectangle(cornerRadius: 28)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.12),
+                                Color.white.opacity(0.04),
+                                Color.scarletRed.opacity(0.03)
+                            ],
+                            startPoint: .top, endPoint: .bottom
+                        )
+                    )
+
+                // Border
+                RoundedRectangle(cornerRadius: 28)
+                    .stroke(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.15), Color.white.opacity(0.05)],
+                            startPoint: .top, endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            }
+            .shadow(color: .black.opacity(0.4), radius: 24, y: -6)
+            .padding(.horizontal, 32)
         )
     }
 
