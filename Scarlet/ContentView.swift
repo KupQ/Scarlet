@@ -596,10 +596,10 @@ struct ContentView: View {
         .padding(.horizontal, 36)
         .padding(.vertical, 16)
         .background(
-            Capsule()
+            RoundedRectangle(cornerRadius: 20)
                 .fill(Color(white: 0.11))
                 .overlay(
-                    Capsule()
+                    RoundedRectangle(cornerRadius: 20)
                         .fill(
                             LinearGradient(
                                 colors: [Color.white.opacity(0.06), Color.clear],
@@ -608,7 +608,7 @@ struct ContentView: View {
                         )
                 )
                 .overlay(
-                    Capsule()
+                    RoundedRectangle(cornerRadius: 20)
                         .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
                 )
         )
@@ -625,9 +625,8 @@ struct ContentView: View {
                     .font(.system(size: 22, weight: selectedTab == tab ? .semibold : .regular))
                     .foregroundColor(selectedTab == tab ? .scarletRed : .gray.opacity(0.6))
 
-                // Dash indicator
                 Capsule()
-                    .fill(selectedTab == tab ? Color.scarletRed : .clear)
+                    .fill(selectedTab == tab ? Color.white : .clear)
                     .frame(width: 14, height: 2.5)
             }
             .frame(maxWidth: .infinity)
