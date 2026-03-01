@@ -294,236 +294,191 @@ import CommonCrypto
 /// Works on sideloaded apps where SecPKCS12Import fails.
 enum PKCS12Validator {
 
+    // SHA OIDs
+    private static let sha1OID:   [UInt8] = [0x2B, 0x0E, 0x03, 0x02, 0x1A]
+    private static let sha256OID: [UInt8] = [0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01]
+
     static func validate(data: Data, password: String) -> Bool {
-        // PKCS12 uses BMP (UTF-16BE) encoding for passwords, null-terminated
         let bmpPassword = bmpEncode(password)
         let bytes = [UInt8](data)
 
-        // Parse outer SEQUENCE
-        guard let outer = parseSequence(bytes, offset: 0) else { return false }
+        guard let parsed = parseP12(bytes) else { return false }
 
-        // Find macData — it's the last element in the outer sequence
-        // Structure: SEQUENCE { version, authSafe, macData }
-        var offset = outer.contentOffset
-        let end = outer.contentOffset + outer.contentLength
+        let useSHA256 = parsed.algoOID == sha256OID
+        let hashLen = useSHA256 ? 32 : 20
 
-        var lastSequenceOffset = -1
-        var lastSequenceLength = 0
-        var count = 0
-
-        while offset < end {
-            guard let tag = parseTag(bytes, offset: offset) else { break }
-            if count >= 2 {
-                // This should be macData
-                lastSequenceOffset = tag.contentOffset
-                lastSequenceLength = tag.contentLength
-            }
-            offset = tag.contentOffset + tag.contentLength
-            count += 1
-        }
-
-        guard lastSequenceOffset >= 0 else { return false }
-
-        // Parse macData: SEQUENCE { mac: DigestInfo, macSalt, iterations }
-        let macDataBytes = Array(bytes[lastSequenceOffset..<(lastSequenceOffset + lastSequenceLength)])
-        guard let macData = parseMacData(macDataBytes, fullData: bytes, outerSeq: outer) else { return false }
-
-        // PKCS12 key derivation for MAC key (ID=3)
-        let macKeyLen = 20 // SHA-1
         let derivedKey = pkcs12KDF(
-            password: bmpPassword,
-            salt: macData.salt,
-            iterations: macData.iterations,
-            keyLen: macKeyLen,
-            id: 3 // MAC key material
+            password: bmpPassword, salt: parsed.salt,
+            iterations: parsed.iterations, keyLen: hashLen,
+            id: 3, useSHA256: useSHA256
         )
 
-        // Compute HMAC-SHA1 over authSafe content
-        let authSafeData = macData.authSafeContent
-        var hmac = [UInt8](repeating: 0, count: Int(CC_SHA1_DIGEST_LENGTH))
-        CCHmac(CCHmacAlgorithm(kCCHmacAlgSHA1), derivedKey, derivedKey.count,
-               authSafeData, authSafeData.count, &hmac)
+        var hmacOut = [UInt8](repeating: 0, count: hashLen)
+        let algo = useSHA256 ? CCHmacAlgorithm(kCCHmacAlgSHA256) : CCHmacAlgorithm(kCCHmacAlgSHA1)
+        CCHmac(algo, derivedKey, derivedKey.count,
+               parsed.authSafeContent, parsed.authSafeContent.count, &hmacOut)
 
-        return hmac == macData.expectedDigest
+        return hmacOut == parsed.expectedDigest
     }
 
-    // MARK: - BMP Encoding
+    // MARK: - Internal types
 
-    private static func bmpEncode(_ str: String) -> [UInt8] {
-        var result = [UInt8]()
-        for scalar in str.unicodeScalars {
-            let val = UInt16(scalar.value)
-            result.append(UInt8(val >> 8))
-            result.append(UInt8(val & 0xFF))
-        }
-        // Null terminator
-        result.append(0)
-        result.append(0)
-        return result
-    }
-
-    // MARK: - PKCS12 KDF (RFC 7292 Appendix B)
-
-    private static func pkcs12KDF(password: [UInt8], salt: [UInt8], iterations: Int, keyLen: Int, id: UInt8) -> [UInt8] {
-        let hashLen = 20 // SHA-1
-        let blockLen = 64 // SHA-1 block
-
-        let D = [UInt8](repeating: id, count: blockLen)
-
-        // Fill S (salt) and P (password) to block boundaries
-        let S = fillToBlockSize(salt, blockLen: blockLen)
-        let P = fillToBlockSize(password, blockLen: blockLen)
-        var I = S + P
-
-        var result = [UInt8]()
-
-        while result.count < keyLen {
-            var A = D + I
-            // Hash iterations times
-            for _ in 0..<iterations {
-                var digest = [UInt8](repeating: 0, count: hashLen)
-                CC_SHA1(A, CC_LONG(A.count), &digest)
-                A = digest
-            }
-            result.append(contentsOf: A)
-
-            if result.count >= keyLen { break }
-
-            // Adjust I
-            let B = fillToBlockSize(A, blockLen: blockLen)
-            var newI = [UInt8]()
-            for j in stride(from: 0, to: I.count, by: blockLen) {
-                let chunk = Array(I[j..<min(j + blockLen, I.count)])
-                let adjusted = addWithCarry(chunk, B)
-                newI.append(contentsOf: adjusted)
-            }
-            I = newI
-        }
-
-        return Array(result.prefix(keyLen))
-    }
-
-    private static func fillToBlockSize(_ data: [UInt8], blockLen: Int) -> [UInt8] {
-        if data.isEmpty { return [] }
-        let count = ((data.count + blockLen - 1) / blockLen) * blockLen
-        var result = [UInt8](repeating: 0, count: count)
-        for i in 0..<count {
-            result[i] = data[i % data.count]
-        }
-        return result
-    }
-
-    private static func addWithCarry(_ a: [UInt8], _ b: [UInt8]) -> [UInt8] {
-        var result = [UInt8](repeating: 0, count: a.count)
-        var carry: UInt16 = 1
-        for i in stride(from: a.count - 1, through: 0, by: -1) {
-            let sum = UInt16(a[i]) + UInt16(b[i % b.count]) + carry
-            result[i] = UInt8(sum & 0xFF)
-            carry = sum >> 8
-        }
-        return result
-    }
-
-    // MARK: - ASN1 Parsing
-
-    struct TagInfo {
-        let contentOffset: Int
-        let contentLength: Int
-    }
-
-    struct MacInfo {
+    private struct P12Info {
         let expectedDigest: [UInt8]
+        let algoOID: [UInt8]
         let salt: [UInt8]
         let iterations: Int
         let authSafeContent: [UInt8]
     }
 
-    private static func parseTag(_ bytes: [UInt8], offset: Int) -> TagInfo? {
-        guard offset < bytes.count else { return nil }
-        var pos = offset + 1 // skip tag byte
-        guard pos < bytes.count else { return nil }
-
-        var length: Int
-        if bytes[pos] & 0x80 == 0 {
-            length = Int(bytes[pos])
-            pos += 1
-        } else {
-            let numBytes = Int(bytes[pos] & 0x7F)
-            pos += 1
-            length = 0
-            for _ in 0..<numBytes {
-                guard pos < bytes.count else { return nil }
-                length = (length << 8) | Int(bytes[pos])
-                pos += 1
-            }
-        }
-        return TagInfo(contentOffset: pos, contentLength: length)
+    private struct TLV {
+        let contentOffset: Int
+        let contentLength: Int
     }
 
-    private static func parseSequence(_ bytes: [UInt8], offset: Int) -> TagInfo? {
-        guard offset < bytes.count, bytes[offset] == 0x30 else { return nil }
-        return parseTag(bytes, offset: offset)
-    }
+    // MARK: - P12 Parser
 
-    private static func parseMacData(_ macDataBytes: [UInt8], fullData: [UInt8], outerSeq: TagInfo) -> MacInfo? {
-        // macData is SEQUENCE { mac, macSalt, iterations }
-        // mac is SEQUENCE { digestAlgorithm, digest }
+    private static func parseP12(_ bytes: [UInt8]) -> P12Info? {
+        guard bytes.first == 0x30, let outer = tlv(bytes, 0) else { return nil }
+        var pos = outer.contentOffset
 
-        var offset = 0
+        // 1. Version INTEGER
+        guard let ver = tlv(bytes, pos) else { return nil }
+        pos = ver.contentOffset + ver.contentLength
 
-        // Parse mac (DigestInfo)
-        guard macDataBytes[offset] == 0x30 else { return nil }
-        guard let digestInfo = parseTag(macDataBytes, offset: offset) else { return nil }
+        // 2. AuthSafe ContentInfo SEQUENCE
+        guard pos < bytes.count, bytes[pos] == 0x30, let ciTag = tlv(bytes, pos) else { return nil }
+        let ciEnd = ciTag.contentOffset + ciTag.contentLength
 
-        // Inside DigestInfo: SEQUENCE { algorithm OID, digest OCTET STRING }
-        let diBytes = Array(macDataBytes[digestInfo.contentOffset..<(digestInfo.contentOffset + digestInfo.contentLength)])
-        var diOffset = 0
+        // Inside ContentInfo: contentType OID + [0] EXPLICIT { OCTET STRING }
+        var ci = ciTag.contentOffset
+        guard let oid = tlv(bytes, ci) else { return nil }
+        ci = oid.contentOffset + oid.contentLength
 
-        // Skip algorithm SEQUENCE
-        guard diOffset < diBytes.count, diBytes[diOffset] == 0x30 else { return nil }
-        guard let algSeq = parseTag(diBytes, offset: diOffset) else { return nil }
-        diOffset = algSeq.contentOffset + algSeq.contentLength
+        // [0] EXPLICIT (tag 0xA0)
+        guard ci < bytes.count, bytes[ci] == 0xA0, let expl = tlv(bytes, ci) else { return nil }
 
+        // OCTET STRING inside [0] — THIS is what gets HMACed
+        guard expl.contentOffset < bytes.count, bytes[expl.contentOffset] == 0x04,
+              let oct = tlv(bytes, expl.contentOffset) else { return nil }
+        let authSafeContent = Array(bytes[oct.contentOffset..<(oct.contentOffset + oct.contentLength)])
+
+        pos = ciEnd
+
+        // 3. MacData SEQUENCE
+        guard pos < bytes.count, bytes[pos] == 0x30, let macSeq = tlv(bytes, pos) else { return nil }
+        var mp = macSeq.contentOffset
+
+        // DigestInfo SEQUENCE
+        guard mp < bytes.count, bytes[mp] == 0x30, let diSeq = tlv(bytes, mp) else { return nil }
+        let diEnd = diSeq.contentOffset + diSeq.contentLength
+        let diBytes = Array(bytes[diSeq.contentOffset..<diEnd])
+
+        // Parse DigestInfo internals
+        var dp = 0
+        // AlgorithmIdentifier SEQUENCE
+        guard dp < diBytes.count, diBytes[dp] == 0x30, let algSeq = tlv(diBytes, dp) else { return nil }
+        let algBytes = Array(diBytes[algSeq.contentOffset..<(algSeq.contentOffset + algSeq.contentLength)])
+        // OID inside AlgorithmIdentifier
+        guard !algBytes.isEmpty, algBytes[0] == 0x06, let oidT = tlv(algBytes, 0) else { return nil }
+        let algoOID = Array(algBytes[oidT.contentOffset..<(oidT.contentOffset + oidT.contentLength)])
+
+        dp = algSeq.contentOffset + algSeq.contentLength
         // Digest OCTET STRING
-        guard diOffset < diBytes.count, diBytes[diOffset] == 0x04 else { return nil }
-        guard let digestTag = parseTag(diBytes, offset: diOffset) else { return nil }
-        let expectedDigest = Array(diBytes[digestTag.contentOffset..<(digestTag.contentOffset + digestTag.contentLength)])
+        guard dp < diBytes.count, diBytes[dp] == 0x04, let digTag = tlv(diBytes, dp) else { return nil }
+        let expectedDigest = Array(diBytes[digTag.contentOffset..<(digTag.contentOffset + digTag.contentLength)])
 
-        offset = digestInfo.contentOffset + digestInfo.contentLength
+        mp = diEnd
 
         // macSalt OCTET STRING
-        guard offset < macDataBytes.count, macDataBytes[offset] == 0x04 else { return nil }
-        guard let saltTag = parseTag(macDataBytes, offset: offset) else { return nil }
-        let salt = Array(macDataBytes[saltTag.contentOffset..<(saltTag.contentOffset + saltTag.contentLength)])
-        offset = saltTag.contentOffset + saltTag.contentLength
+        guard mp < bytes.count, bytes[mp] == 0x04, let saltTag = tlv(bytes, mp) else { return nil }
+        let salt = Array(bytes[saltTag.contentOffset..<(saltTag.contentOffset + saltTag.contentLength)])
+        mp = saltTag.contentOffset + saltTag.contentLength
 
         // iterations INTEGER (optional, default 1)
         var iterations = 1
-        if offset < macDataBytes.count && macDataBytes[offset] == 0x02 {
-            guard let iterTag = parseTag(macDataBytes, offset: offset) else { return nil }
+        if mp < bytes.count && bytes[mp] == 0x02, let itTag = tlv(bytes, mp) {
             iterations = 0
-            for i in 0..<iterTag.contentLength {
-                iterations = (iterations << 8) | Int(macDataBytes[iterTag.contentOffset + i])
+            for i in 0..<itTag.contentLength {
+                iterations = (iterations << 8) | Int(bytes[itTag.contentOffset + i])
             }
         }
 
-        // Find authSafe content (2nd element in outer sequence — the ContentInfo)
-        var outerOffset = outerSeq.contentOffset
-        // Skip version INTEGER
-        guard let versionTag = parseTag(fullData, offset: outerOffset) else { return nil }
-        outerOffset = versionTag.contentOffset + versionTag.contentLength
+        return P12Info(expectedDigest: expectedDigest, algoOID: algoOID,
+                       salt: salt, iterations: iterations, authSafeContent: authSafeContent)
+    }
 
-        // authSafe is a SEQUENCE (ContentInfo)
-        guard outerOffset < fullData.count, fullData[outerOffset] == 0x30 else { return nil }
-        guard let authSafeTag = parseTag(fullData, offset: outerOffset) else { return nil }
-        let authSafeContent = Array(fullData[outerOffset..<(authSafeTag.contentOffset + authSafeTag.contentLength)])
+    // MARK: - BMP Encoding
 
-        return MacInfo(
-            expectedDigest: expectedDigest,
-            salt: salt,
-            iterations: iterations,
-            authSafeContent: authSafeContent
-        )
+    private static func bmpEncode(_ str: String) -> [UInt8] {
+        var r = [UInt8]()
+        for s in str.unicodeScalars {
+            r.append(UInt8(UInt16(s.value) >> 8))
+            r.append(UInt8(UInt16(s.value) & 0xFF))
+        }
+        r += [0, 0]
+        return r
+    }
+
+    // MARK: - PKCS12 KDF (RFC 7292 Appendix B)
+
+    private static func pkcs12KDF(password: [UInt8], salt: [UInt8], iterations: Int,
+                                   keyLen: Int, id: UInt8, useSHA256: Bool) -> [UInt8] {
+        let hashLen = useSHA256 ? 32 : 20
+        let v = 64
+        let D = [UInt8](repeating: id, count: v)
+        let S = pad(salt, v); let P = pad(password, v)
+        var I = S + P
+        var result = [UInt8]()
+
+        while result.count < keyLen {
+            var A = D + I
+            for _ in 0..<iterations {
+                var d = [UInt8](repeating: 0, count: hashLen)
+                if useSHA256 { CC_SHA256(A, CC_LONG(A.count), &d) }
+                else         { CC_SHA1(A, CC_LONG(A.count), &d) }
+                A = d
+            }
+            result += A
+            if result.count >= keyLen { break }
+            let B = pad(A, v)
+            var nI = [UInt8]()
+            for j in stride(from: 0, to: I.count, by: v) {
+                nI += add1(Array(I[j..<min(j+v, I.count)]), B)
+            }
+            I = nI
+        }
+        return Array(result.prefix(keyLen))
+    }
+
+    private static func pad(_ d: [UInt8], _ v: Int) -> [UInt8] {
+        guard !d.isEmpty else { return [] }
+        let n = ((d.count + v - 1) / v) * v
+        return (0..<n).map { d[$0 % d.count] }
+    }
+
+    private static func add1(_ a: [UInt8], _ b: [UInt8]) -> [UInt8] {
+        var r = [UInt8](repeating: 0, count: a.count)
+        var c: UInt16 = 1
+        for i in stride(from: a.count - 1, through: 0, by: -1) {
+            let s = UInt16(a[i]) + UInt16(b[i % b.count]) + c
+            r[i] = UInt8(s & 0xFF); c = s >> 8
+        }
+        return r
+    }
+
+    // MARK: - ASN1 TLV
+
+    private static func tlv(_ b: [UInt8], _ off: Int) -> TLV? {
+        guard off + 1 < b.count else { return nil }
+        var p = off + 1
+        if b[p] & 0x80 == 0 {
+            return TLV(contentOffset: p + 1, contentLength: Int(b[p]))
+        }
+        let n = Int(b[p] & 0x7F); p += 1
+        var len = 0
+        for _ in 0..<n { guard p < b.count else { return nil }; len = (len << 8) | Int(b[p]); p += 1 }
+        return TLV(contentOffset: p, contentLength: len)
     }
 }
 
