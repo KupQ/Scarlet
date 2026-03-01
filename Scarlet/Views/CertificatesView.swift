@@ -163,87 +163,92 @@ struct CertCard: View {
     }
 
     var body: some View {
-        HStack(spacing: 14) {
-            // Left: type icon
-            ZStack {
-                RoundedRectangle(cornerRadius: 11)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.scarletRed.opacity(0.25), Color.scarletDark.opacity(0.15)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 40, height: 40)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 11)
-                            .stroke(Color.scarletRed.opacity(0.2), lineWidth: 0.5)
-                    )
-                Image(systemName: isDev ? "wrench.and.screwdriver" : "checkmark.seal.fill")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.scarletRed)
-            }
-
-            // Center: name + type
-            VStack(alignment: .leading, spacing: 4) {
-                Text(cert.name)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-
-                HStack(spacing: 6) {
-                    Text(isDev ? "Dev" : "Distro")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.scarletRed.opacity(0.8))
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(
-                            Capsule().fill(Color.scarletRed.opacity(0.12))
-                        )
-
-                    Text(isActive ? "\(daysRemaining)d left" : "Expired")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(isActive ? .white.opacity(0.35) : .scarletRed.opacity(0.7))
+        VStack(alignment: .leading, spacing: 0) {
+            // Top: icon + info + status
+            HStack(spacing: 12) {
+                // Type icon
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.scarletRed.opacity(0.12))
+                        .frame(width: 38, height: 38)
+                    Image(systemName: isDev ? "wrench.and.screwdriver" : "checkmark.seal.fill")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.scarletRed)
                 }
-            }
 
-            Spacer()
+                // Name + type + days
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(cert.name)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
 
-            // Right: Use button
-            Button {
-                onUse()
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { applied = true }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    withAnimation(.easeOut) { applied = false }
+                    HStack(spacing: 8) {
+                        // Type badge
+                        Text(isDev ? "Dev" : "Distro")
+                            .font(.system(size: 9, weight: .bold))
+                            .textCase(.uppercase)
+                            .foregroundColor(.scarletRed.opacity(0.9))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(Color.scarletRed.opacity(0.1)))
+
+                        // Status dot + text
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(isActive ? Color.scarletRed : Color.white.opacity(0.2))
+                                .frame(width: 5, height: 5)
+                            Text(isActive ? "Active · \(daysRemaining)d" : "Expired")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(.white.opacity(0.35))
+                        }
+                    }
                 }
-            } label: {
-                Text(applied ? "Done" : "Use")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(applied ? .white : .scarletRed)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 7)
+
+                Spacer()
+
+                // Use button — tapping shows a brief checkmark overlay
+                Button {
+                    onUse()
+                    withAnimation(.easeInOut(duration: 0.2)) { applied = true }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        withAnimation(.easeOut(duration: 0.3)) { applied = false }
+                    }
+                } label: {
+                    ZStack {
+                        if applied {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(.scarletRed)
+                                .transition(.scale.combined(with: .opacity))
+                        } else {
+                            Text("Use")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.scarletRed)
+                                .transition(.opacity)
+                        }
+                    }
+                    .frame(width: 52, height: 30)
                     .background(
-                        Capsule()
-                            .fill(applied
-                                  ? Color.scarletRed
-                                  : Color.scarletRed.opacity(0.12))
+                        Capsule().fill(Color.scarletRed.opacity(0.1))
                     )
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.scarletRed.opacity(applied ? 0 : 0.25), lineWidth: 0.5)
-                    )
+                }
+                .disabled(!isActive)
+                .opacity(isActive ? 1.0 : 0.3)
             }
-            .disabled(!isActive)
-            .opacity(isActive ? 1.0 : 0.35)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color.white.opacity(0.04))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                        .stroke(
+                            applied ? Color.scarletRed.opacity(0.3) : Color.white.opacity(0.06),
+                            lineWidth: applied ? 1 : 0.5
+                        )
+                        .animation(.easeInOut(duration: 0.2), value: applied)
                 )
         )
     }
