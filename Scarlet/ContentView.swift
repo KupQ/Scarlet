@@ -163,30 +163,12 @@ struct ContentView: View {
     @ViewBuilder
     private var bottomSheet: some View {
         VStack(spacing: 0) {
-            // Handle — drag to dismiss
+            // Handle
             Capsule()
                 .fill(Color.white.opacity(0.25))
                 .frame(width: 36, height: 4)
                 .padding(.top, 10)
                 .padding(.bottom, 4)
-                .contentShape(Rectangle().size(width: 200, height: 40))
-                .gesture(
-                    DragGesture()
-                        .onChanged { value in
-                            if value.translation.height > 0 {
-                                sheetOffset = value.translation.height
-                            }
-                        }
-                        .onEnded { value in
-                            if value.translation.height > 100 {
-                                dismissSheet()
-                            } else {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                    sheetOffset = 0
-                                }
-                            }
-                        }
-                )
 
             switch sheetPhase {
             case .configure:
@@ -200,6 +182,28 @@ struct ContentView: View {
         .background(sheetBackground)
         .padding(.horizontal, 12)
         .padding(.bottom, 8)
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture()
+                .onChanged { value in
+                    let dy = value.translation.height
+                    // Smooth curtain: follow finger going down, rubber-band resistance going up
+                    if dy > 0 {
+                        sheetOffset = dy
+                    } else {
+                        sheetOffset = dy * 0.15 // rubber band up
+                    }
+                }
+                .onEnded { value in
+                    if value.translation.height > 80 || value.predictedEndTranslation.height > 200 {
+                        dismissSheet()
+                    } else {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                            sheetOffset = 0
+                        }
+                    }
+                }
+        )
     }
 
     // MARK: - Phase 1: Configure
@@ -427,56 +431,104 @@ struct ContentView: View {
     // MARK: - Phase 2: Signing Progress
 
     private var signingContent: some View {
-        HStack(spacing: 16) {
-            ZStack {
+        VStack(spacing: 14) {
+            HStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .stroke(Color.glassFill, lineWidth: 4)
+                        .frame(width: 54, height: 54)
+                    Circle()
+                        .trim(from: 0, to: signingProgress)
+                        .stroke(
+                            AngularGradient(
+                                colors: [.scarletDark, .scarletRed, .scarletPink, .scarletRed],
+                                center: .center
+                            ),
+                            style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                        )
+                        .frame(width: 54, height: 54)
+                        .rotationEffect(.degrees(-90))
+                    Text("\(Int(signingProgress * 100))%")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                }
+
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(selectedApp?.appName ?? "Signing...")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                    Text(progressStatusText)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white.opacity(0.4))
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(Color.glassFill).frame(height: 4)
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(LinearGradient(colors: [.scarletRed, .scarletPink], startPoint: .leading, endPoint: .trailing))
+                                .frame(width: geo.size.width * signingProgress, height: 4)
+                        }
+                    }
+                    .frame(height: 4)
+                }
+                Spacer(minLength: 0)
                 Circle()
-                    .stroke(Color.glassFill, lineWidth: 4)
-                    .frame(width: 58, height: 58)
-                Circle()
-                    .trim(from: 0, to: signingProgress)
-                    .stroke(
-                        AngularGradient(
-                            colors: [.scarletDark, .scarletRed, .scarletPink, .scarletRed],
-                            center: .center
-                        ),
-                        style: StrokeStyle(lineWidth: 4, lineCap: .round)
-                    )
-                    .frame(width: 58, height: 58)
-                    .rotationEffect(.degrees(-90))
-                Text("\(Int(signingProgress * 100))%")
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .fill(Color.scarletRed)
+                    .frame(width: 8, height: 8)
+                    .scaleEffect(1.3)
+                    .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: signingProgress)
             }
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text(selectedApp?.appName ?? "Signing...")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                Text(progressStatusText)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.gray)
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(Color.glassFill).frame(height: 5)
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(LinearGradient(colors: [.scarletRed, .scarletPink], startPoint: .leading, endPoint: .trailing))
-                            .frame(width: geo.size.width * signingProgress, height: 5)
-                    }
-                }
-                .frame(height: 5)
+            // App info during signing
+            HStack(spacing: 16) {
+                infoChip(label: "Bundle", value: signBundleId.isEmpty ? "—" : signBundleId)
+                infoChip(label: "Version", value: signVersion.isEmpty ? "—" : signVersion)
             }
-            Spacer(minLength: 0)
-            Circle()
-                .fill(Color.scarletRed)
-                .frame(width: 10, height: 10)
-                .scaleEffect(1.3)
-                .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: signingProgress)
+
+            if let certName = currentCertDisplayName {
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 10))
+                        .foregroundColor(.green.opacity(0.6))
+                    Text(certName)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.white.opacity(0.3))
+                        .lineLimit(1)
+                    Spacer()
+                }
+            }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 14)
-        .padding(.bottom, 20)
+        .padding(.horizontal, 18)
+        .padding(.top, 12)
+        .padding(.bottom, 18)
+    }
+
+    private func infoChip(label: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label.uppercased())
+                .font(.system(size: 8, weight: .heavy))
+                .tracking(0.8)
+                .foregroundColor(.white.opacity(0.2))
+            Text(value)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(.white.opacity(0.6))
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(8)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.white.opacity(0.03))
+        )
+    }
+
+    private var currentCertDisplayName: String? {
+        guard let savedName = SigningSettings.shared.savedCertName else { return nil }
+        if let cert = certService.certificates.first(where: { "\($0.id).p12" == savedName }) {
+            return "\(cert.name) · \(certTypeLabel(cert.cert_type))"
+        }
+        return savedName
     }
 
     // MARK: - Phase 3: Success
