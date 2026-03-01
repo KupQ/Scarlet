@@ -357,7 +357,7 @@ struct ContentView: View {
             // Slide to Sign
             if SigningSettings.shared.hasCertificate {
                 SlideToActionView(text: "Slide to Sign",
-                                  gradient: [.scarletRed, .scarletDark]) {
+                                  gradient: [.scarletDark, Color(red: 0.35, green: 0.04, blue: 0.06)]) {
                     startSigning()
                 }
             } else {
@@ -566,6 +566,25 @@ struct ContentView: View {
                 Spacer(minLength: 0)
             }
 
+            // App info
+            HStack(spacing: 12) {
+                infoChip(label: "Bundle", value: signBundleId.isEmpty ? "—" : signBundleId)
+                infoChip(label: "Version", value: signVersion.isEmpty ? "—" : signVersion)
+            }
+
+            if let certName = currentCertDisplayName {
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 10))
+                        .foregroundColor(.green.opacity(0.6))
+                    Text(certName)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.white.opacity(0.3))
+                        .lineLimit(1)
+                    Spacer()
+                }
+            }
+
             // Action buttons
             HStack(spacing: 10) {
                 // Install / Open / Loading
@@ -600,7 +619,7 @@ struct ContentView: View {
                 } else if let url = signingState.installURL,
                           signingState.installStatus != .completed {
                     SlideToActionView(text: "Slide to Install",
-                                      gradient: [.scarletRed, .scarletDark]) {
+                                      gradient: [.scarletDark, Color(red: 0.35, green: 0.04, blue: 0.06)]) {
                         UIApplication.shared.open(url)
                     }
                 }
