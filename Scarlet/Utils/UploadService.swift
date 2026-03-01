@@ -127,6 +127,7 @@ final class LocalIPAServer: ObservableObject {
         ipaURL = nil
         manifestData = nil
         port = 0
+        status = .idle
         FileLogger.shared.log("Server stopped")
     }
 

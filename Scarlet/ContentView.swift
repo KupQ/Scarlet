@@ -25,7 +25,8 @@ struct ContentView: View {
 
     @State private var sheetPhase: SheetPhase = .configure
     @State private var sheetVisible = false
-    @State private var sheetOffset: CGFloat = 600
+    @State private var sheetOffset: CGFloat = 500
+    @GestureState private var dragTranslation: CGFloat = 0
     @State private var signingProgress: CGFloat = 0
     @State private var signingOutputURL: URL?
     @State private var showShareSheet = false
@@ -91,7 +92,7 @@ struct ContentView: View {
             // Bottom sheet — always on top
             if sheetVisible {
                 bottomSheet
-                    .offset(y: sheetOffset)
+                    .offset(y: sheetOffset + dragTranslation)
                     .transition(.move(edge: .bottom))
                     .zIndex(100)
             }
@@ -142,16 +143,16 @@ struct ContentView: View {
 
         sheetVisible = true
         sheetOffset = 500
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.82)) {
+        withAnimation(.easeOut(duration: 0.45)) {
             sheetOffset = 0
         }
     }
 
     private func dismissSheet() {
-        withAnimation(.spring(response: 0.55, dampingFraction: 0.85)) {
+        withAnimation(.easeIn(duration: 0.35)) {
             sheetOffset = 500
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
             sheetVisible = false
             signingState.cancelAll()
         }
@@ -184,22 +185,13 @@ struct ContentView: View {
         .contentShape(Rectangle())
         .gesture(
             DragGesture()
-                .onChanged { value in
+                .updating($dragTranslation) { value, state, _ in
                     let dy = value.translation.height
-                    // Smooth curtain: follow finger going down, rubber-band resistance going up
-                    if dy > 0 {
-                        sheetOffset = dy
-                    } else {
-                        sheetOffset = dy * 0.15 // rubber band up
-                    }
+                    state = dy > 0 ? dy : dy * 0.15
                 }
                 .onEnded { value in
                     if value.translation.height > 80 || value.predictedEndTranslation.height > 200 {
                         dismissSheet()
-                    } else {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                            sheetOffset = 0
-                        }
                     }
                 }
         )
