@@ -25,6 +25,7 @@ struct ContentView: View {
     @State private var sheetPhase: SheetPhase = .configure
     @State private var sheetVisible = false
     @State private var sheetOffset: CGFloat = 500
+    @GestureState private var dragTranslation: CGFloat = 0
     @State private var showCertPicker = false
     @State private var signingProgress: CGFloat = 0
     @State private var signingOutputURL: URL?
@@ -91,7 +92,7 @@ struct ContentView: View {
             // Bottom sheet — always on top
             if sheetVisible {
                 bottomSheet
-                    .offset(y: sheetOffset)
+                    .offset(y: sheetOffset + dragTranslation)
                     .transition(.move(edge: .bottom))
                     .zIndex(100)
             }
@@ -182,6 +183,20 @@ struct ContentView: View {
         .background(sheetBackground)
         .padding(.horizontal, 12)
         .padding(.bottom, 8)
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture()
+                .updating($dragTranslation) { value, state, transaction in
+                    transaction.animation = nil  // No animation during drag = no jitter
+                    let dy = value.translation.height
+                    state = dy > 0 ? dy : dy * 0.15
+                }
+                .onEnded { value in
+                    if value.translation.height > 80 || value.predictedEndTranslation.height > 200 {
+                        dismissSheet()
+                    }
+                }
+        )
     }
 
     // MARK: - Phase 1: Configure
