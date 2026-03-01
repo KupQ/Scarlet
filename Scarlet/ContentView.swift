@@ -812,6 +812,7 @@ struct ContentView: View {
 // MARK: - Slide to Action Component
 
 /// iOS-style "slide to unlock" interaction. Drag the thumb fully right to trigger the action.
+/// Slide-to-action control with liquid-glass aesthetic.
 struct SlideToActionView: View {
     let text: String
     let gradient: [Color]
@@ -820,71 +821,74 @@ struct SlideToActionView: View {
     @State private var dragOffset: CGFloat = 0
     @State private var triggered = false
 
-    private let thumbSize: CGFloat = 42
-    private let trackHeight: CGFloat = 48
-    private let padding: CGFloat = 3
+    private let thumbWidth: CGFloat = 52
+    private let trackHeight: CGFloat = 44
+    private let cornerRadius: CGFloat = 14
+    private let pad: CGFloat = 3
 
     var body: some View {
         GeometryReader { geo in
-            let maxOffset = geo.size.width - thumbSize - padding * 2
+            let maxOffset = geo.size.width - thumbWidth - pad * 2
             let progress = min(dragOffset / maxOffset, 1.0)
 
             ZStack(alignment: .leading) {
-                // Track background
-                Capsule()
+                // Track
+                RoundedRectangle(cornerRadius: cornerRadius)
                     .fill(Color.white.opacity(0.04))
                     .overlay(
-                        Capsule().stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
                     )
 
-                // Gradient fill behind thumb
-                Capsule()
+                // Gradient trail
+                RoundedRectangle(cornerRadius: cornerRadius)
                     .fill(
-                        LinearGradient(colors: gradient.map { $0.opacity(0.3) },
+                        LinearGradient(colors: gradient.map { $0.opacity(0.25) },
                                        startPoint: .leading, endPoint: .trailing)
                     )
-                    .frame(width: thumbSize + dragOffset + padding)
+                    .frame(width: thumbWidth + dragOffset + pad)
                     .animation(.none, value: dragOffset)
 
-                // Label text (fades as you drag)
+                // Label
                 Text(text)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.3 * (1 - progress)))
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white.opacity(max(0, 0.3 - progress * 0.3)))
                     .frame(maxWidth: .infinity)
+                    .offset(x: dragOffset * 0.15)
 
-                // Draggable thumb
-                Circle()
+                // Thumb
+                RoundedRectangle(cornerRadius: cornerRadius - 2)
                     .fill(
                         LinearGradient(colors: gradient,
-                                       startPoint: .topLeading, endPoint: .bottomTrailing)
+                                       startPoint: .top, endPoint: .bottom)
                     )
-                    .frame(width: thumbSize, height: thumbSize)
                     .overlay(
-                        Image(systemName: "chevron.right.2")
-                            .font(.system(size: 14, weight: .bold))
+                        RoundedRectangle(cornerRadius: cornerRadius - 2)
+                            .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
+                    )
+                    .frame(width: thumbWidth, height: trackHeight - pad * 2)
+                    .overlay(
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(.white)
                     )
-                    .offset(x: padding + dragOffset)
+                    .offset(x: pad + dragOffset)
                     .gesture(
                         DragGesture(minimumDistance: 5)
                             .onChanged { value in
                                 guard !triggered else { return }
-                                let dx = max(0, min(value.translation.width, maxOffset))
-                                dragOffset = dx
+                                dragOffset = max(0, min(value.translation.width, maxOffset))
                             }
-                            .onEnded { value in
+                            .onEnded { _ in
                                 guard !triggered else { return }
                                 if dragOffset >= maxOffset * 0.85 {
-                                    // Completed!
                                     triggered = true
-                                    let impact = UIImpactFeedbackGenerator(style: .heavy)
-                                    impact.impactOccurred()
-                                    withAnimation(.easeOut(duration: 0.15)) {
+                                    UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+                                    withAnimation(.easeOut(duration: 0.12)) {
                                         dragOffset = maxOffset
                                     }
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                                         action()
-                                        // Reset after action
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                             withAnimation(.interactiveSpring(response: 0.4, dampingFraction: 0.7)) {
                                                 dragOffset = 0
@@ -893,7 +897,6 @@ struct SlideToActionView: View {
                                         }
                                     }
                                 } else {
-                                    // Snap back
                                     withAnimation(.interactiveSpring(response: 0.35, dampingFraction: 0.75)) {
                                         dragOffset = 0
                                     }
