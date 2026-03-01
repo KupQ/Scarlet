@@ -186,19 +186,33 @@ final class CertificateService: ObservableObject {
                 throw CertError.httpError(httpResponse.statusCode)
             }
 
-            let raw = try JSONDecoder().decode([RemoteCertificate].self, from: data)
+            // Decode each entry individually to skip failures
+            guard let jsonArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+                throw CertError.invalidResponse
+            }
 
-            // Each entry can have a distribution p12 AND a dev p12 — split them
+            log.log("API returned \(jsonArray.count) entries")
+
             var all: [RemoteCertificate] = []
-            for cert in raw {
-                all.append(cert)
-                if cert.devp12 != nil {
-                    all.append(cert.devVariant)
+            for (index, _) in jsonArray.enumerated() {
+                do {
+                    let itemData = try JSONSerialization.data(withJSONObject: jsonArray[index])
+                    let cert = try JSONDecoder().decode(RemoteCertificate.self, from: itemData)
+                    all.append(cert)
+                    log.log("  [\(index)] \(cert.name) (\(cert.id)) ✓")
+
+                    // Split dev variant if devp12 exists
+                    if cert.devp12 != nil {
+                        all.append(cert.devVariant)
+                        log.log("  [\(index)] + dev variant ✓")
+                    }
+                } catch {
+                    log.log("  [\(index)] decode failed: \(error)")
                 }
             }
 
             certificates = all
-            log.log("Fetched \(raw.count) entries → \(all.count) certificates")
+            log.log("Total certificates: \(all.count)")
 
         } catch {
             log.log("ERROR: \(error.localizedDescription)")
