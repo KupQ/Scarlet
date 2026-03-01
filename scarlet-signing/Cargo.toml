@@ -1,0 +1,11 @@
+[package]
+name = "scarlet-signing"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+zsign-rs = { path = "../zsign-rs-local/crates/zsign", package = "zsign-rs" }
+openssl = { version = "0.10", features = ["vendored"] }

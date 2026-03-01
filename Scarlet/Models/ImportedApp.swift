@@ -1,0 +1,257 @@
+//
+//  ImportedApp.swift
+//  Scarlet
+//
+//  Data model for imported IPA files and singleton manager
+//  that handles storage, import, deletion, and signing state.
+//
+
+import Foundation
+import SwiftUI
+
+// MARK: - ImportedApp Model
+
+/// Represents an imported IPA file with its parsed metadata and signing state.
+struct ImportedApp: Identifiable, Codable {
+    let id: UUID
+    let appName: String
+    let bundleIdentifier: String
+    let version: String
+    let fileName: String
+    let fileSize: Int64
+    let importDate: Date
+
+    /// Relative path to the icon PNG inside `Documents/ImportedApps/`.
+    let iconFileName: String?
+
+    /// Relative path to the IPA file inside `Documents/ImportedApps/`.
+    let ipaFileName: String
+
+    /// Whether this app has been successfully signed.
+    var isSigned: Bool
+
+    /// Timestamp of when the app was signed (used for sorting).
+    var signedDate: Date?
+
+    // MARK: Backward-Compatible Decoder
+
+    /// Custom decoder that provides default values for fields added after
+    /// the initial release, ensuring existing stored JSON remains valid.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id              = try container.decode(UUID.self,    forKey: .id)
+        appName         = try container.decode(String.self,  forKey: .appName)
+        bundleIdentifier = try container.decode(String.self, forKey: .bundleIdentifier)
+        version         = try container.decode(String.self,  forKey: .version)
+        fileName        = try container.decode(String.self,  forKey: .fileName)
+        fileSize        = try container.decode(Int64.self,   forKey: .fileSize)
+        importDate      = try container.decode(Date.self,    forKey: .importDate)
+        iconFileName    = try container.decodeIfPresent(String.self, forKey: .iconFileName)
+        ipaFileName     = try container.decode(String.self,  forKey: .ipaFileName)
+        isSigned        = try container.decodeIfPresent(Bool.self,   forKey: .isSigned) ?? false
+        signedDate      = try container.decodeIfPresent(Date.self,   forKey: .signedDate)
+    }
+
+    // MARK: Memberwise Initializer
+
+    init(
+        id: UUID,
+        appName: String,
+        bundleIdentifier: String,
+        version: String,
+        fileName: String,
+        fileSize: Int64,
+        importDate: Date,
+        iconFileName: String?,
+        ipaFileName: String,
+        isSigned: Bool = false,
+        signedDate: Date? = nil
+    ) {
+        self.id              = id
+        self.appName         = appName
+        self.bundleIdentifier = bundleIdentifier
+        self.version         = version
+        self.fileName        = fileName
+        self.fileSize        = fileSize
+        self.importDate      = importDate
+        self.iconFileName    = iconFileName
+        self.ipaFileName     = ipaFileName
+        self.isSigned        = isSigned
+        self.signedDate      = signedDate
+    }
+
+    // MARK: Computed Properties
+
+    /// Human-readable file size string (e.g., "12.4 MB").
+    var formattedSize: String {
+        ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file)
+    }
+
+    /// Absolute URL for the app icon, or `nil` if no icon was extracted.
+    var iconURL: URL? {
+        guard let name = iconFileName else { return nil }
+        return ImportedAppsManager.appsDirectory.appendingPathComponent(name)
+    }
+
+    /// Absolute URL for the IPA file in local storage.
+    var ipaURL: URL {
+        ImportedAppsManager.appsDirectory.appendingPathComponent(ipaFileName)
+    }
+}
+
+// MARK: - ImportedAppsManager
+
+/// Singleton that manages the library of imported IPA files.
+///
+/// Handles importing, deleting, persisting, and sorting apps.
+/// Data is stored as JSON in `Documents/ImportedApps/metadata.json`.
+@MainActor
+final class ImportedAppsManager: ObservableObject {
+    static let shared = ImportedAppsManager()
+
+    // MARK: Published State
+
+    /// All imported apps in the library.
+    @Published var apps: [ImportedApp] = []
+
+    /// Whether an import operation is currently in progress.
+    @Published var isImporting = false
+
+    // MARK: Storage
+
+    /// Root directory for all imported IPA files and icons.
+    static let appsDirectory: URL = {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let dir = docs.appendingPathComponent("ImportedApps")
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }()
+
+    private let metadataFile: URL
+
+    private init() {
+        metadataFile = Self.appsDirectory.appendingPathComponent("metadata.json")
+        loadApps()
+    }
+
+    // MARK: - Import
+
+    /// Imports an IPA file: copies it, parses metadata, extracts its icon,
+    /// and adds it to the library.
+    /// - Parameter url: The source URL of the IPA file to import.
+    func importIPA(from url: URL) {
+        isImporting = true
+
+        Task.detached { [weak self] in
+            guard let self else { return }
+
+            let log = FileLogger.shared
+            log.log("Importing IPA: \(url.lastPathComponent)")
+
+            // Parse metadata from the IPA
+            guard let metadata = IPAParser.parse(ipaURL: url) else {
+                log.log("ERROR: Failed to parse IPA metadata")
+                await MainActor.run { self.isImporting = false }
+                return
+            }
+
+            let appId = UUID()
+            let ipaName = "\(appId.uuidString).ipa"
+            let iconName = metadata.iconData != nil ? "\(appId.uuidString).png" : nil
+
+            // Copy IPA to app storage
+            let accessing = url.startAccessingSecurityScopedResource()
+            defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+
+            let destIPA = Self.appsDirectory.appendingPathComponent(ipaName)
+            do {
+                try FileManager.default.copyItem(at: url, to: destIPA)
+                log.log("Copied IPA to storage")
+            } catch {
+                log.log("ERROR: Failed to copy IPA: \(error)")
+                await MainActor.run { self.isImporting = false }
+                return
+            }
+
+            // Save extracted icon
+            if let iconData = metadata.iconData, let iconName {
+                let destIcon = Self.appsDirectory.appendingPathComponent(iconName)
+                try? iconData.write(to: destIcon)
+                log.log("Saved icon")
+            }
+
+            let app = ImportedApp(
+                id: appId,
+                appName: metadata.appName,
+                bundleIdentifier: metadata.bundleIdentifier,
+                version: metadata.version,
+                fileName: metadata.fileName,
+                fileSize: metadata.fileSize,
+                importDate: Date(),
+                iconFileName: iconName,
+                ipaFileName: ipaName
+            )
+
+            await MainActor.run {
+                self.apps.insert(app, at: 0)
+                self.saveApps()
+                self.isImporting = false
+                log.log("Import complete: \(metadata.appName)")
+            }
+        }
+    }
+
+    // MARK: - Delete
+
+    /// Removes an imported app and deletes its files from storage.
+    /// - Parameter app: The app to remove.
+    func removeApp(_ app: ImportedApp) {
+        try? FileManager.default.removeItem(at: app.ipaURL)
+        if let iconURL = app.iconURL {
+            try? FileManager.default.removeItem(at: iconURL)
+        }
+        apps.removeAll { $0.id == app.id }
+        saveApps()
+    }
+
+    // MARK: - Signing
+
+    /// Marks an app as signed and records the signing date.
+    /// - Parameter app: The app that was signed.
+    func markAsSigned(_ app: ImportedApp) {
+        guard let idx = apps.firstIndex(where: { $0.id == app.id }) else { return }
+        apps[idx].isSigned = true
+        apps[idx].signedDate = Date()
+        saveApps()
+    }
+
+    // MARK: - Sorting
+
+    /// Apps sorted with signed apps first (newest signed on top),
+    /// then unsigned apps (newest import on top).
+    var sortedApps: [ImportedApp] {
+        let signed = apps.filter(\.isSigned).sorted {
+            ($0.signedDate ?? .distantPast) > ($1.signedDate ?? .distantPast)
+        }
+        let unsigned = apps.filter { !$0.isSigned }.sorted {
+            $0.importDate > $1.importDate
+        }
+        return signed + unsigned
+    }
+
+    // MARK: - Persistence
+
+    private func loadApps() {
+        guard let data = try? Data(contentsOf: metadataFile),
+              let decoded = try? JSONDecoder().decode([ImportedApp].self, from: data) else {
+            return
+        }
+        // Filter out apps whose IPA files were deleted externally
+        apps = decoded.filter { FileManager.default.fileExists(atPath: $0.ipaURL.path) }
+    }
+
+    private func saveApps() {
+        guard let data = try? JSONEncoder().encode(apps) else { return }
+        try? data.write(to: metadataFile)
+    }
+}
