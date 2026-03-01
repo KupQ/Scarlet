@@ -527,7 +527,7 @@ struct ContentView: View {
                     } else {
                         Image(systemName: "checkmark")
                             .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.green)
+                            .foregroundColor(.scarletRed)
                     }
                 }
 
@@ -543,7 +543,7 @@ struct ContentView: View {
                                 .fill(Color.white.opacity(0.06))
                                 .frame(height: 3)
                             RoundedRectangle(cornerRadius: 2)
-                                .fill(LinearGradient(colors: [.green, .green.opacity(0.6)],
+                                .fill(LinearGradient(colors: [.scarletRed, .scarletDark],
                                                      startPoint: .leading, endPoint: .trailing))
                                 .frame(width: geo.size.width * installProgressValue, height: 3)
                         }
@@ -573,7 +573,7 @@ struct ContentView: View {
                             .padding(.vertical, 11)
                             .background(
                                 Capsule()
-                                    .fill(LinearGradient(colors: [.green, .green.opacity(0.7)],
+                                    .fill(LinearGradient(colors: [.scarletRed, .scarletDark],
                                                          startPoint: .leading, endPoint: .trailing))
                             )
                     }
@@ -637,19 +637,19 @@ struct ContentView: View {
         case .sendingManifest:
             Text("Sending Manifest...")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.orange)
+                .foregroundColor(.white.opacity(0.5))
         case .sendingPayload:
             Text("Sending Payload...")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.orange)
+                .foregroundColor(.white.opacity(0.5))
         case .installing(let progress):
             Text("Installing... \(Int(progress * 100))%")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.blue)
+                .foregroundColor(.scarletRed)
         case .completed:
             Text("Installed ✓")
                 .font(.system(size: 13, weight: .bold))
-                .foregroundColor(.green)
+                .foregroundColor(.scarletRed)
         case .failed(let msg):
             Text("Error: \(msg)")
                 .font(.system(size: 13, weight: .medium))
@@ -657,7 +657,7 @@ struct ContentView: View {
         default:
             Text("Signed Successfully!")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.green)
+                .foregroundColor(.white.opacity(0.5))
         }
     }
 
@@ -877,25 +877,25 @@ struct SlideToActionView: View {
 
                 // ── Thumb — mini glass card ──
                 RoundedRectangle(cornerRadius: cr - 4)
-                    .fill(Color.white.opacity(0.06))
+                    .fill(Color.white.opacity(0.10))
                     .frame(width: thumbW, height: h - 8)
                     .overlay(
                         RoundedRectangle(cornerRadius: cr - 4)
                             .stroke(
                                 LinearGradient(
-                                    colors: [.white.opacity(0.12), .white.opacity(0.04)],
+                                    colors: [.white.opacity(0.20), .white.opacity(0.06)],
                                     startPoint: .top, endPoint: .bottom
                                 ), lineWidth: 0.5
                             )
                     )
                     .overlay(
                         ZStack {
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(gradient[0].opacity(0.12))
-                                .frame(width: 28, height: 28)
+                            RoundedRectangle(cornerRadius: 7)
+                                .fill(gradient[0].opacity(0.25))
+                                .frame(width: 30, height: 30)
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(gradient[0].opacity(0.8))
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(gradient[0].opacity(0.9))
                         }
                     )
                     .offset(x: 4 + offset)
