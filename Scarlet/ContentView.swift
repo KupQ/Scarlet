@@ -96,7 +96,7 @@ struct ContentView: View {
                     .zIndex(100)
             }
         }
-        .ignoresSafeArea(.keyboard)
+        // Let keyboard push content up naturally
         .tint(Color.scarletRed)
         .onChange(of: signingState.phase) { newPhase in
             switch newPhase {
@@ -243,7 +243,7 @@ struct ContentView: View {
                             Text("Certificate")
                                 .font(.system(size: 10, weight: .medium))
                                 .foregroundColor(.white.opacity(0.3))
-                            Text(SigningSettings.shared.savedCertName ?? "Tap to select")
+                            certDisplayText
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(.white)
                                 .lineLimit(1)
@@ -292,32 +292,29 @@ struct ContentView: View {
                                         showCertPicker = false
                                     }
                                 } label: {
-                                    let isActive = SigningSettings.shared.savedCertName == cert.name
+                                    let isActive = SigningSettings.shared.savedCertName == "\(cert.id).p12"
                                     HStack(spacing: 10) {
                                         Circle()
-                                            .fill(isActive ? Color.green : Color.white.opacity(0.08))
+                                            .fill(isActive ? Color.scarletRed : Color.white.opacity(0.08))
                                             .frame(width: 6, height: 6)
                                         VStack(alignment: .leading, spacing: 1) {
                                             Text(cert.name)
                                                 .font(.system(size: 12, weight: .semibold))
                                                 .foregroundColor(.white)
                                                 .lineLimit(1)
-                                            Text(cert.cert_type ?? "Certificate")
-                                                .font(.system(size: 9, weight: .medium))
-                                                .foregroundColor(.white.opacity(0.25))
+                                            HStack(spacing: 4) {
+                                                Text(certTypeLabel(cert.cert_type))
+                                                    .font(.system(size: 9, weight: .bold))
+                                                    .foregroundColor(certTypeLabel(cert.cert_type) == "Development" ? .blue.opacity(0.6) : .orange.opacity(0.6))
+                                            }
                                         }
                                         Spacer()
-                                        if isActive {
-                                            Image(systemName: "checkmark")
-                                                .font(.system(size: 10, weight: .bold))
-                                                .foregroundColor(.green)
-                                        }
                                     }
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 8)
                                     .background(
                                         RoundedRectangle(cornerRadius: 10)
-                                            .fill(isActive ? Color.green.opacity(0.06) : Color.white.opacity(0.02))
+                                            .fill(isActive ? Color.scarletRed.opacity(0.06) : Color.white.opacity(0.02))
                                     )
                                 }
                                 .buttonStyle(.plain)
@@ -378,6 +375,27 @@ struct ContentView: View {
         .padding(.horizontal, 18)
         .padding(.top, 10)
         .padding(.bottom, 18)
+    }
+
+    // Certificate display text showing actual cert name + type
+    private var certDisplayText: Text {
+        guard SigningSettings.shared.hasCertificate else {
+            return Text("Tap to select")
+        }
+        // Try to find matching cert by savedCertName (which is "id.p12")
+        if let savedName = SigningSettings.shared.savedCertName,
+           let matchingCert = certService.certificates.first(where: { "\($0.id).p12" == savedName }) {
+            let typeStr = certTypeLabel(matchingCert.cert_type)
+            return Text(matchingCert.name) + Text(" · \(typeStr)").foregroundColor(typeStr == "Development" ? .blue.opacity(0.6) : .orange.opacity(0.6))
+        }
+        return Text(SigningSettings.shared.savedCertName ?? "Tap to select")
+    }
+
+    private func certTypeLabel(_ type: String?) -> String {
+        guard let t = type?.uppercased() else { return "Certificate" }
+        if t.contains("DEVELOPMENT") || t.contains("DEV") { return "Development" }
+        if t.contains("DISTRIBUTION") || t.contains("DISTRO") || t.contains("DIST") { return "Distribution" }
+        return type ?? "Certificate"
     }
 
     private func configField(icon: String, label: String, text: Binding<String>) -> some View {
