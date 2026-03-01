@@ -572,19 +572,6 @@ struct ContentView: View {
                 infoChip(label: "Version", value: signVersion.isEmpty ? "—" : signVersion)
             }
 
-            if let certName = currentCertDisplayName {
-                HStack(spacing: 6) {
-                    Image(systemName: "checkmark.seal.fill")
-                        .font(.system(size: 10))
-                        .foregroundColor(.green.opacity(0.6))
-                    Text(certName)
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(.white.opacity(0.3))
-                        .lineLimit(1)
-                    Spacer()
-                }
-            }
-
             // Action buttons
             HStack(spacing: 10) {
                 // Install / Open / Loading
@@ -832,6 +819,7 @@ struct ContentView: View {
 
 /// iOS-style "slide to unlock" interaction. Drag the thumb fully right to trigger the action.
 /// Slide-to-action control with liquid-glass aesthetic.
+/// Premium slide-to-action with shimmer animation and glass aesthetic.
 struct SlideToActionView: View {
     let text: String
     let gradient: [Color]
@@ -839,91 +827,167 @@ struct SlideToActionView: View {
 
     @State private var dragOffset: CGFloat = 0
     @State private var triggered = false
+    @State private var shimmerPhase: CGFloat = -1
 
-    private let thumbWidth: CGFloat = 52
-    private let trackHeight: CGFloat = 44
-    private let cornerRadius: CGFloat = 14
+    private let thumbW: CGFloat = 50
+    private let height: CGFloat = 48
+    private let cr: CGFloat = 14
     private let pad: CGFloat = 3
 
     var body: some View {
         GeometryReader { geo in
-            let maxOffset = geo.size.width - thumbWidth - pad * 2
-            let progress = min(dragOffset / maxOffset, 1.0)
+            let maxOff = geo.size.width - thumbW - pad * 2
+            let progress = maxOff > 0 ? min(dragOffset / maxOff, 1.0) : 0
 
             ZStack(alignment: .leading) {
-                // Track
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(Color.white.opacity(0.04))
+                // ── Track ──
+                RoundedRectangle(cornerRadius: cr)
+                    .fill(.ultraThinMaterial)
+                    .environment(\.colorScheme, .dark)
                     .overlay(
-                        RoundedRectangle(cornerRadius: cornerRadius)
-                            .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
-                    )
-
-                // Gradient trail
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(
-                        LinearGradient(colors: gradient.map { $0.opacity(0.25) },
-                                       startPoint: .leading, endPoint: .trailing)
-                    )
-                    .frame(width: thumbWidth + dragOffset + pad)
-                    .animation(.none, value: dragOffset)
-
-                // Label
-                Text(text)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white.opacity(max(0, 0.3 - progress * 0.3)))
-                    .frame(maxWidth: .infinity)
-                    .offset(x: dragOffset * 0.15)
-
-                // Thumb
-                RoundedRectangle(cornerRadius: cornerRadius - 2)
-                    .fill(
-                        LinearGradient(colors: gradient,
-                                       startPoint: .top, endPoint: .bottom)
+                        RoundedRectangle(cornerRadius: cr)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [.white.opacity(0.08), .white.opacity(0.02)],
+                                    startPoint: .top, endPoint: .bottom
+                                ), lineWidth: 0.5
+                            )
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: cornerRadius - 2)
-                            .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
+                        // Inner shadow
+                        RoundedRectangle(cornerRadius: cr)
+                            .fill(
+                                LinearGradient(
+                                    colors: [.black.opacity(0.15), .clear, .black.opacity(0.05)],
+                                    startPoint: .top, endPoint: .bottom
+                                )
+                            )
                     )
-                    .frame(width: thumbWidth, height: trackHeight - pad * 2)
-                    .overlay(
-                        Image(systemName: "arrow.right")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
-                    )
-                    .offset(x: pad + dragOffset)
-                    .gesture(
-                        DragGesture(minimumDistance: 5)
-                            .onChanged { value in
-                                guard !triggered else { return }
-                                dragOffset = max(0, min(value.translation.width, maxOffset))
-                            }
-                            .onEnded { _ in
-                                guard !triggered else { return }
-                                if dragOffset >= maxOffset * 0.85 {
-                                    triggered = true
-                                    UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-                                    withAnimation(.easeOut(duration: 0.12)) {
-                                        dragOffset = maxOffset
-                                    }
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                        action()
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                            withAnimation(.interactiveSpring(response: 0.4, dampingFraction: 0.7)) {
-                                                dragOffset = 0
-                                                triggered = false
-                                            }
+
+                // ── Glow trail ──
+                if dragOffset > 0 {
+                    RoundedRectangle(cornerRadius: cr)
+                        .fill(
+                            LinearGradient(
+                                stops: [
+                                    .init(color: gradient[0].opacity(0.0), location: 0),
+                                    .init(color: gradient[0].opacity(0.15), location: 0.5),
+                                    .init(color: gradient[0].opacity(0.4), location: 1.0)
+                                ],
+                                startPoint: .leading, endPoint: .trailing
+                            )
+                        )
+                        .frame(width: thumbW + dragOffset + pad)
+                        .animation(.none, value: dragOffset)
+                }
+
+                // ── Shimmer + Label ──
+                ZStack {
+                    Text(text)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.25 * (1 - progress)))
+
+                    // Animated shimmer sweep
+                    Text(text)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundColor(.clear)
+                        .overlay(
+                            LinearGradient(
+                                colors: [.clear, .white.opacity(0.5), .clear],
+                                startPoint: .leading, endPoint: .trailing
+                            )
+                            .frame(width: 60)
+                            .offset(x: shimmerPhase * geo.size.width)
+                            .mask(
+                                Text(text)
+                                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            )
+                        )
+                        .opacity(Double(1 - progress))
+                }
+                .frame(maxWidth: .infinity)
+                .offset(x: 20) // offset to account for thumb
+
+                // ── Thumb ──
+                ZStack {
+                    // Outer glow
+                    RoundedRectangle(cornerRadius: cr - 1)
+                        .fill(
+                            RadialGradient(
+                                colors: [gradient[0].opacity(0.3), .clear],
+                                center: .center,
+                                startRadius: 5, endRadius: 35
+                            )
+                        )
+                        .frame(width: thumbW + 8, height: height + 4)
+
+                    // Glass thumb
+                    RoundedRectangle(cornerRadius: cr - 1)
+                        .fill(.ultraThinMaterial)
+                        .environment(\.colorScheme, .dark)
+                        .frame(width: thumbW, height: height - pad * 2)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: cr - 1)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [gradient[0].opacity(0.4), gradient[1].opacity(0.2)],
+                                        startPoint: .topLeading, endPoint: .bottomTrailing
+                                    )
+                                )
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: cr - 1)
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [.white.opacity(0.2), .white.opacity(0.05)],
+                                        startPoint: .top, endPoint: .bottom
+                                    ), lineWidth: 0.5
+                                )
+                        )
+                        .overlay(
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundColor(.white.opacity(0.9))
+                        )
+                }
+                .offset(x: pad + dragOffset - 4)
+                .gesture(
+                    DragGesture(minimumDistance: 5)
+                        .onChanged { value in
+                            guard !triggered else { return }
+                            dragOffset = max(0, min(value.translation.width, maxOff))
+                        }
+                        .onEnded { _ in
+                            guard !triggered else { return }
+                            if dragOffset >= maxOff * 0.85 {
+                                triggered = true
+                                UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+                                withAnimation(.easeOut(duration: 0.12)) {
+                                    dragOffset = maxOff
+                                }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    action()
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                        withAnimation(.interactiveSpring(response: 0.4, dampingFraction: 0.7)) {
+                                            dragOffset = 0
+                                            triggered = false
                                         }
                                     }
-                                } else {
-                                    withAnimation(.interactiveSpring(response: 0.35, dampingFraction: 0.75)) {
-                                        dragOffset = 0
-                                    }
+                                }
+                            } else {
+                                withAnimation(.interactiveSpring(response: 0.35, dampingFraction: 0.75)) {
+                                    dragOffset = 0
                                 }
                             }
-                    )
+                        }
+                )
             }
         }
-        .frame(height: trackHeight)
+        .frame(height: height)
+        .onAppear {
+            withAnimation(.linear(duration: 2.5).repeatForever(autoreverses: false)) {
+                shimmerPhase = 1
+            }
+        }
     }
 }
