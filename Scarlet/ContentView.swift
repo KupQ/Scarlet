@@ -25,7 +25,6 @@ struct ContentView: View {
     @State private var sheetPhase: SheetPhase = .configure
     @State private var sheetVisible = false
     @State private var sheetOffset: CGFloat = 500
-    @GestureState private var dragTranslation: CGFloat = 0
     @State private var showCertPicker = false
     @State private var signingProgress: CGFloat = 0
     @State private var signingOutputURL: URL?
@@ -92,7 +91,7 @@ struct ContentView: View {
             // Bottom sheet — always on top
             if sheetVisible {
                 bottomSheet
-                    .offset(y: sheetOffset + dragTranslation)
+                    .offset(y: sheetOffset)
                     .transition(.move(edge: .bottom))
                     .zIndex(100)
             }
@@ -149,7 +148,6 @@ struct ContentView: View {
     }
 
     private func dismissSheet() {
-        // Cancel immediately — don't wait for animation
         signingState.cancelAll()
         withAnimation(.easeIn(duration: 0.3)) {
             sheetOffset = 500
@@ -157,6 +155,27 @@ struct ContentView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             sheetVisible = false
         }
+    }
+
+    /// Drag gesture for the entire bottom sheet — uses simple onChanged/onEnded
+    /// with direct offset assignment, no @GestureState or animations during drag.
+    private var sheetDragGesture: some Gesture {
+        DragGesture(minimumDistance: 10, coordinateSpace: .global)
+            .onChanged { value in
+                let dy = value.translation.height
+                // Only allow dragging downward; rubber-band resist upward
+                sheetOffset = dy > 0 ? dy : dy * 0.1
+            }
+            .onEnded { value in
+                let velocity = value.predictedEndTranslation.height
+                if value.translation.height > 100 || velocity > 300 {
+                    dismissSheet()
+                } else {
+                    withAnimation(.interactiveSpring(response: 0.35, dampingFraction: 0.86, blendDuration: 0.25)) {
+                        sheetOffset = 0
+                    }
+                }
+            }
     }
 
     // MARK: - Bottom Sheet
@@ -183,20 +202,7 @@ struct ContentView: View {
         .background(sheetBackground)
         .padding(.horizontal, 12)
         .padding(.bottom, 8)
-        .contentShape(Rectangle())
-        .gesture(
-            DragGesture()
-                .updating($dragTranslation) { value, state, transaction in
-                    transaction.animation = nil  // No animation during drag = no jitter
-                    let dy = value.translation.height
-                    state = dy > 0 ? dy : dy * 0.15
-                }
-                .onEnded { value in
-                    if value.translation.height > 80 || value.predictedEndTranslation.height > 200 {
-                        dismissSheet()
-                    }
-                }
-        )
+        .gesture(sheetDragGesture)
     }
 
     // MARK: - Phase 1: Configure
