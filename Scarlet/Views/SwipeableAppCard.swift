@@ -54,19 +54,18 @@ struct SwipeableAppCard<Content: View>: View {
             } label: {
                 VStack(spacing: 6) {
                     Image(systemName: "trash.fill")
-                        .font(.system(size: 20, weight: .bold))
+                        .font(.system(size: 18, weight: .semibold))
                     Text("Delete")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 10, weight: .semibold))
                 }
-                .foregroundColor(.white)
+                .foregroundColor(.scarletRed.opacity(0.8))
                 .frame(width: deleteWidth, height: 84)
                 .background(
                     RoundedRectangle(cornerRadius: 18)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.red, Color.red.opacity(0.8)],
-                                startPoint: .top, endPoint: .bottom
-                            )
+                        .fill(Color.white.opacity(0.03))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18)
+                                .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
                         )
                 )
             }

@@ -76,12 +76,16 @@ struct SigningView: View {
             Spacer()
             Button { showIPAImportPicker = true } label: {
                 ZStack {
-                    Circle()
-                        .fill(Color.scarletRed)
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white.opacity(0.03))
                         .frame(width: 40, height: 40)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                        )
                     Image(systemName: "plus")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(.scarletRed.opacity(0.8))
                 }
             }
         }
@@ -136,19 +140,20 @@ struct SigningView: View {
             }
             Button { showIPAImportPicker = true } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 16))
+                    Image(systemName: "plus")
+                        .font(.system(size: 14, weight: .bold))
                     Text("Import IPA")
-                        .font(.system(size: 15, weight: .bold))
+                        .font(.system(size: 14, weight: .semibold))
                 }
-                .foregroundColor(.white)
+                .foregroundColor(.white.opacity(0.6))
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
                 .background(
-                    Capsule()
-                        .fill(
-                            LinearGradient(colors: [.scarletRed, .scarletDark],
-                                           startPoint: .leading, endPoint: .trailing)
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.white.opacity(0.03))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
                         )
                 )
             }
