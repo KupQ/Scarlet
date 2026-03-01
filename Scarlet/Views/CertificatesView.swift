@@ -165,33 +165,30 @@ struct CertificatesView: View {
     private func selectCert(_ cert: RemoteCertificate) {
         guard !cert.isExpired else { return }
 
-        // Strong haptic
-        let impact = UIImpactFeedbackGenerator(style: .heavy)
-        impact.impactOccurred()
+        // Heavy haptic on tap
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
 
-        // Phase 1: quick squeeze
-        withAnimation(.easeInOut(duration: 0.12)) {
+        // Phase 1: squeeze down
+        withAnimation(.easeIn(duration: 0.15)) {
             justSelectedId = cert.id
         }
 
-        // Phase 2: bounce back + apply cert
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.5, blendDuration: 0.1)) {
-                justSelectedId = cert.id  // keep glow while animating
+        // Phase 2: bounce back (card still in Available section)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) {
+                // keep justSelectedId — glow + checkmark stay visible
+            }
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        }
+
+        // Phase 3: AFTER animation completes, switch the cert
+        // This is the key — delay the data change so the animation plays fully
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            withAnimation(.easeOut(duration: 0.3)) {
+                justSelectedId = nil
             }
             certService.useCertificate(cert)
             settings.objectWillChange.send()
-
-            // Success haptic
-            let notif = UINotificationFeedbackGenerator()
-            notif.notificationOccurred(.success)
-        }
-
-        // Phase 3: fade out glow
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            withAnimation(.easeOut(duration: 0.4)) {
-                justSelectedId = nil
-            }
         }
     }
 
@@ -273,19 +270,43 @@ struct CertificatesView: View {
         guard let p12URL = importedP12URL else {
             passwordError = "Could not read P12 file"; return
         }
+        guard let p12Data = try? Data(contentsOf: p12URL) else {
+            passwordError = "Could not read P12 file"; return
+        }
 
-        // Save the cert (trust user's password — SecPKCS12Import
-        // is unreliable on sideloaded apps without full entitlements)
-        let dest = settings.certsDirectory.appendingPathComponent(importedP12Name)
-        try? FileManager.default.removeItem(at: dest)
-        try? FileManager.default.copyItem(at: p12URL, to: dest)
-        settings.savedCertName = importedP12Name
-        settings.savedCertPassword = importPassword
-        importStep = .idle
-        importPassword = ""
+        // Validate password using SecPKCS12Import
+        var items: CFArray?
+        let opts: NSDictionary = [kSecImportExportPassphrase: importPassword]
+        let status = SecPKCS12Import(p12Data as CFData, opts, &items)
 
-        let notif = UINotificationFeedbackGenerator()
-        notif.notificationOccurred(.success)
+        if status == errSecSuccess {
+            // Password valid — save
+            let dest = settings.certsDirectory.appendingPathComponent(importedP12Name)
+            try? FileManager.default.removeItem(at: dest)
+            try? p12Data.write(to: dest)
+            settings.savedCertName = importedP12Name
+            settings.savedCertPassword = importPassword
+            importStep = .idle
+            importPassword = ""
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        } else if status == errSecAuthFailed {
+            // Wrong password
+            passwordError = "Wrong password. Please try again."
+            importPassword = ""
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { importStep = .idle }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { importStep = .enterPassword }
+        } else {
+            // Other error (e.g. entitlement issue) — save anyway
+            // since we can't validate, zsign will catch it later
+            let dest = settings.certsDirectory.appendingPathComponent(importedP12Name)
+            try? FileManager.default.removeItem(at: dest)
+            try? p12Data.write(to: dest)
+            settings.savedCertName = importedP12Name
+            settings.savedCertPassword = importPassword
+            importStep = .idle
+            importPassword = ""
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        }
     }
 }
 
