@@ -163,82 +163,88 @@ struct CertCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Top: icon + info + status
-            HStack(spacing: 12) {
-                // Type icon
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.scarletRed.opacity(0.12))
-                        .frame(width: 38, height: 38)
-                    Image(systemName: isDev ? "wrench.and.screwdriver" : "checkmark.seal.fill")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.scarletRed)
-                }
-
-                // Name + type + days
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(cert.name)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-
-                    HStack(spacing: 8) {
-                        // Type badge
-                        Text(isDev ? "Dev" : "Distro")
-                            .font(.system(size: 9, weight: .bold))
-                            .textCase(.uppercase)
-                            .foregroundColor(.scarletRed.opacity(0.9))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Capsule().fill(Color.scarletRed.opacity(0.1)))
-
-                        // Status dot + text
-                        HStack(spacing: 4) {
-                            Circle()
-                                .fill(isActive ? Color.scarletRed : Color.white.opacity(0.2))
-                                .frame(width: 5, height: 5)
-                            Text(isActive ? "Active · \(daysRemaining)d" : "Expired")
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(.white.opacity(0.35))
-                        }
-                    }
-                }
-
-                Spacer()
-
-                // Use button — tapping shows a brief checkmark overlay
-                Button {
-                    onUse()
-                    withAnimation(.easeInOut(duration: 0.2)) { applied = true }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        withAnimation(.easeOut(duration: 0.3)) { applied = false }
-                    }
-                } label: {
-                    ZStack {
-                        if applied {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 13, weight: .bold))
-                                .foregroundColor(.scarletRed)
-                                .transition(.scale.combined(with: .opacity))
-                        } else {
-                            Text("Use")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(.scarletRed)
-                                .transition(.opacity)
-                        }
-                    }
-                    .frame(width: 52, height: 30)
-                    .background(
-                        Capsule().fill(Color.scarletRed.opacity(0.1))
-                    )
-                }
-                .disabled(!isActive)
-                .opacity(isActive ? 1.0 : 0.3)
+        HStack(spacing: 12) {
+            // Left: type icon
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.scarletRed.opacity(0.12))
+                    .frame(width: 38, height: 38)
+                Image(systemName: isDev ? "wrench.and.screwdriver" : "checkmark.seal.fill")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.scarletRed)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+
+            // Center: name + badges
+            VStack(alignment: .leading, spacing: 5) {
+                Text(cert.name)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+
+                HStack(spacing: 6) {
+                    // Type badge
+                    Text(isDev ? "Development" : "Distribution")
+                        .font(.system(size: 9, weight: .bold))
+                        .textCase(.uppercase)
+                        .foregroundColor(.scarletRed.opacity(0.9))
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(Capsule().fill(Color.scarletRed.opacity(0.1)))
+
+                    // PPQ badge
+                    Text(cert.isPPQEnabled ? "PPQ" : "PPQless")
+                        .font(.system(size: 9, weight: .bold))
+                        .textCase(.uppercase)
+                        .foregroundColor(.white.opacity(0.45))
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(Capsule().fill(Color.white.opacity(0.06)))
+
+                    Spacer()
+                }
+
+                // Status line
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(isActive
+                              ? Color(red: 0.2, green: 0.7, blue: 0.3).opacity(0.7)
+                              : Color.scarletRed.opacity(0.5))
+                        .frame(width: 5, height: 5)
+                    Text(isActive ? "Active · \(daysRemaining) days" : "Expired")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.white.opacity(0.3))
+                }
+            }
+
+            // Right: Use button
+            Button {
+                onUse()
+                withAnimation(.easeInOut(duration: 0.2)) { applied = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    withAnimation(.easeOut(duration: 0.3)) { applied = false }
+                }
+            } label: {
+                ZStack {
+                    if applied {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.scarletRed)
+                            .transition(.scale.combined(with: .opacity))
+                    } else {
+                        Text("Use")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.scarletRed)
+                            .transition(.opacity)
+                    }
+                }
+                .frame(width: 48, height: 30)
+                .background(Capsule().fill(Color.scarletRed.opacity(0.1)))
+            }
+            .disabled(!isActive)
+            .opacity(isActive ? 1.0 : 0.3)
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color.white.opacity(0.04))

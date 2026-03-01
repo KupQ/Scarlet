@@ -49,6 +49,19 @@ struct RemoteCertificate: Identifiable, Codable {
         devp12.flatMap { Data(base64Encoded: $0) }
     }
 
+    /// Checks if the mobileprovision has PPQCheck enabled.
+    /// If `<key>PPQCheck</key><true/>` is in the plist → PPQ enabled.
+    /// If the key is absent → PPQless.
+    var isPPQEnabled: Bool {
+        guard let data = Data(base64Encoded: mobileprovision),
+              let content = String(data: data, encoding: .isoLatin1) else { return false }
+        // Extract embedded plist XML from CMS/PKCS7 envelope
+        guard let start = content.range(of: "<?xml"),
+              let end = content.range(of: "</plist>") else { return false }
+        let xml = String(content[start.lowerBound...end.upperBound])
+        return xml.contains("PPQCheck") && xml.contains("<true/>")
+    }
+
     /// Creates a development variant using devp12 and devmp.
     var devVariant: RemoteCertificate {
         RemoteCertificate(
