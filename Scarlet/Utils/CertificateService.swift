@@ -46,6 +46,23 @@ struct RemoteCertificate: Identifiable, Codable {
     var devP12Data: Data? {
         devp12.flatMap { Data(base64Encoded: $0) }
     }
+
+    /// Creates a development variant using devp12 instead of p12.
+    var devVariant: RemoteCertificate {
+        RemoteCertificate(
+            id: "DEV-\(id)",
+            name: "\(name) (Dev)",
+            pname: pname,
+            p12: devp12 ?? p12,
+            p12_password: p12_password,
+            mobileprovision: mobileprovision,
+            devp12: nil,
+            expire_time: expire_time,
+            plan_selected: plan_selected,
+            cert_type: "IOS_DEVELOPMENT",
+            udid: udid
+        )
+    }
 }
 
 // MARK: - Certificate Service
@@ -165,9 +182,19 @@ final class CertificateService: ObservableObject {
                 throw CertError.httpError(httpResponse.statusCode)
             }
 
-            let certs = try JSONDecoder().decode([RemoteCertificate].self, from: data)
-            certificates = certs
-            log.log("Fetched \(certs.count) certificates")
+            let raw = try JSONDecoder().decode([RemoteCertificate].self, from: data)
+
+            // Each entry can have a distribution p12 AND a dev p12 — split them
+            var all: [RemoteCertificate] = []
+            for cert in raw {
+                all.append(cert)
+                if cert.devp12 != nil {
+                    all.append(cert.devVariant)
+                }
+            }
+
+            certificates = all
+            log.log("Fetched \(raw.count) entries → \(all.count) certificates")
 
         } catch {
             log.log("ERROR: \(error.localizedDescription)")
