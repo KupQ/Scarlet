@@ -278,4 +278,10 @@ final class SigningState: ObservableObject {
         localServer?.stop()
         localServer = nil
     }
+
+    /// Full cancel — stops server, resets all state.
+    func cancelAll() {
+        stopLocalServer()
+        reset()
+    }
 }

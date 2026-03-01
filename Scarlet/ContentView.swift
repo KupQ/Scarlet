@@ -141,20 +141,19 @@ struct ContentView: View {
         sheetPhase = .configure
 
         sheetVisible = true
-        sheetOffset = 600
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.78)) {
+        sheetOffset = 500
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.82)) {
             sheetOffset = 0
         }
     }
 
     private func dismissSheet() {
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-            sheetOffset = 600
+        withAnimation(.spring(response: 0.55, dampingFraction: 0.85)) {
+            sheetOffset = 500
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             sheetVisible = false
-            signingState.stopLocalServer()
-            signingState.reset()
+            signingState.cancelAll()
         }
     }
 
