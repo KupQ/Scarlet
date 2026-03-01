@@ -83,6 +83,7 @@ final class CertificateService: ObservableObject {
     @Published var certificates: [RemoteCertificate] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var debugInfo: String = ""
 
     /// The device UDID extracted from embedded.mobileprovision
     private(set) var deviceUDID: String?
@@ -192,27 +193,38 @@ final class CertificateService: ObservableObject {
             }
 
             log.log("API returned \(jsonArray.count) entries")
+            var debugLines: [String] = ["API: \(jsonArray.count) entries"]
 
             var all: [RemoteCertificate] = []
+            var failCount = 0
             for (index, _) in jsonArray.enumerated() {
                 do {
                     let itemData = try JSONSerialization.data(withJSONObject: jsonArray[index])
                     let cert = try JSONDecoder().decode(RemoteCertificate.self, from: itemData)
                     all.append(cert)
                     log.log("  [\(index)] \(cert.name) (\(cert.id)) ✓")
+                    debugLines.append("[\(index)] \(cert.name) ✓")
 
                     // Split dev variant if devp12 exists
                     if cert.devp12 != nil {
                         all.append(cert.devVariant)
-                        log.log("  [\(index)] + dev variant ✓")
+                        debugLines.append("[\(index)] +dev ✓")
                     }
                 } catch {
-                    log.log("  [\(index)] decode failed: \(error)")
+                    failCount += 1
+                    let errMsg = "\(error)"
+                    log.log("  [\(index)] decode failed: \(errMsg)")
+                    debugLines.append("[\(index)] FAIL: \(errMsg.prefix(80))")
                 }
             }
 
             certificates = all
             log.log("Total certificates: \(all.count)")
+
+            if failCount > 0 {
+                errorMessage = "\(failCount) entry(ies) failed to decode. Got \(all.count)/\(jsonArray.count + all.count - jsonArray.count)"
+            }
+            debugInfo = debugLines.joined(separator: "\n")
 
         } catch {
             log.log("ERROR: \(error.localizedDescription)")

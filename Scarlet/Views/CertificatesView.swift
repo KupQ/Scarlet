@@ -10,7 +10,7 @@ import SwiftUI
 
 struct CertificatesView: View {
 
-    @StateObject private var certService = CertificateService.shared
+    @ObservedObject private var certService = CertificateService.shared
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,7 +21,7 @@ struct CertificatesView: View {
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.white)
                     if let udid = certService.deviceUDID {
-                        Text(udid)
+                        Text("\(udid) • \(certService.certificates.count) certs")
                             .font(.system(size: 11, weight: .medium, design: .monospaced))
                             .foregroundColor(.gray)
                     }
@@ -90,12 +90,20 @@ struct CertificatesView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
                 }
+
+                // Debug info
+                if !certService.debugInfo.isEmpty {
+                    Text(certService.debugInfo)
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundColor(.gray.opacity(0.6))
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 20)
+                }
             }
         }
         .task {
-            if certService.certificates.isEmpty && certService.deviceUDID != nil {
-                await certService.fetchCertificates()
-            }
+            // Always re-fetch to pick up latest data
+            await certService.fetchCertificates()
         }
     }
 }
