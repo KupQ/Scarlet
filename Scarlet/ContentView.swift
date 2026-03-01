@@ -354,26 +354,22 @@ struct ContentView: View {
                 .frame(width: 150)
             }
 
-            // Sign button — sleek capsule
-            Button { startSigning() } label: {
-                Text("Sign")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(.white)
+            // Slide to Sign
+            if SigningSettings.shared.hasCertificate {
+                SlideToActionView(text: "Slide to Sign",
+                                  gradient: [.scarletRed, .scarletDark]) {
+                    startSigning()
+                }
+            } else {
+                Text("Add certificate to sign")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white.opacity(0.25))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 13)
                     .background(
-                        Capsule()
-                            .fill(
-                                SigningSettings.shared.hasCertificate
-                                    ? LinearGradient(colors: [.scarletRed, .scarletDark],
-                                                     startPoint: .leading, endPoint: .trailing)
-                                    : LinearGradient(colors: [Color.white.opacity(0.08)],
-                                                     startPoint: .leading, endPoint: .trailing)
-                            )
+                        Capsule().fill(Color.white.opacity(0.04))
                     )
             }
-            .buttonStyle(.plain)
-            .disabled(!SigningSettings.shared.hasCertificate)
         }
         .padding(.horizontal, 18)
         .padding(.top, 10)
@@ -603,21 +599,10 @@ struct ContentView: View {
                     )
                 } else if let url = signingState.installURL,
                           signingState.installStatus != .completed {
-                    Button {
+                    SlideToActionView(text: "Slide to Install",
+                                      gradient: [.scarletRed, .scarletDark]) {
                         UIApplication.shared.open(url)
-                    } label: {
-                        Text("Install")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 11)
-                            .background(
-                                Capsule()
-                                    .fill(LinearGradient(colors: [.scarletRed, .scarletDark],
-                                                         startPoint: .leading, endPoint: .trailing))
-                            )
                     }
-                    .buttonStyle(.plain)
                 }
 
                 // Close button
@@ -821,5 +806,102 @@ struct ContentView: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Slide to Action Component
+
+/// iOS-style "slide to unlock" interaction. Drag the thumb fully right to trigger the action.
+struct SlideToActionView: View {
+    let text: String
+    let gradient: [Color]
+    let action: () -> Void
+
+    @State private var dragOffset: CGFloat = 0
+    @State private var triggered = false
+
+    private let thumbSize: CGFloat = 42
+    private let trackHeight: CGFloat = 48
+    private let padding: CGFloat = 3
+
+    var body: some View {
+        GeometryReader { geo in
+            let maxOffset = geo.size.width - thumbSize - padding * 2
+            let progress = min(dragOffset / maxOffset, 1.0)
+
+            ZStack(alignment: .leading) {
+                // Track background
+                Capsule()
+                    .fill(Color.white.opacity(0.04))
+                    .overlay(
+                        Capsule().stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                    )
+
+                // Gradient fill behind thumb
+                Capsule()
+                    .fill(
+                        LinearGradient(colors: gradient.map { $0.opacity(0.3) },
+                                       startPoint: .leading, endPoint: .trailing)
+                    )
+                    .frame(width: thumbSize + dragOffset + padding)
+                    .animation(.none, value: dragOffset)
+
+                // Label text (fades as you drag)
+                Text(text)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.3 * (1 - progress)))
+                    .frame(maxWidth: .infinity)
+
+                // Draggable thumb
+                Circle()
+                    .fill(
+                        LinearGradient(colors: gradient,
+                                       startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                    .frame(width: thumbSize, height: thumbSize)
+                    .overlay(
+                        Image(systemName: "chevron.right.2")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                    )
+                    .offset(x: padding + dragOffset)
+                    .gesture(
+                        DragGesture(minimumDistance: 5)
+                            .onChanged { value in
+                                guard !triggered else { return }
+                                let dx = max(0, min(value.translation.width, maxOffset))
+                                dragOffset = dx
+                            }
+                            .onEnded { value in
+                                guard !triggered else { return }
+                                if dragOffset >= maxOffset * 0.85 {
+                                    // Completed!
+                                    triggered = true
+                                    let impact = UIImpactFeedbackGenerator(style: .heavy)
+                                    impact.impactOccurred()
+                                    withAnimation(.easeOut(duration: 0.15)) {
+                                        dragOffset = maxOffset
+                                    }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                        action()
+                                        // Reset after action
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                            withAnimation(.interactiveSpring(response: 0.4, dampingFraction: 0.7)) {
+                                                dragOffset = 0
+                                                triggered = false
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    // Snap back
+                                    withAnimation(.interactiveSpring(response: 0.35, dampingFraction: 0.75)) {
+                                        dragOffset = 0
+                                    }
+                                }
+                            }
+                    )
+            }
+        }
+        .frame(height: trackHeight)
     }
 }
