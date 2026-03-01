@@ -597,19 +597,15 @@ struct ContentView: View {
         .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color(white: 0.11))
+                .fill(.ultraThinMaterial)
+                .environment(\.colorScheme, .dark)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.white.opacity(0.06), Color.clear],
-                                startPoint: .top, endPoint: .bottom
-                            )
-                        )
+                        .fill(Color.white.opacity(0.04))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
                 )
         )
         .padding(.horizontal, 60)
