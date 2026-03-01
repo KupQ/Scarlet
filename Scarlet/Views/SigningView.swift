@@ -162,51 +162,93 @@ struct SigningView: View {
         .padding(.horizontal, 40)
     }
 
-    // MARK: - Apps List
+    // MARK: - Apps List (split into installed + unsigned)
+
+    private var installedApps: [ImportedApp] {
+        appsManager.apps.filter(\.isSigned).sorted {
+            ($0.signedDate ?? .distantPast) > ($1.signedDate ?? .distantPast)
+        }
+    }
+
+    private var unsignedApps: [ImportedApp] {
+        appsManager.apps.filter { !$0.isSigned }.sorted {
+            $0.importDate > $1.importDate
+        }
+    }
 
     private var appsList: some View {
-        VStack(spacing: 10) {
-            ForEach(appsManager.sortedApps) { app in
-                SwipeableAppCard(app: app, onTap: { signApp(app) }, onDelete: {
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                        appsManager.removeApp(app)
+        VStack(spacing: 16) {
+            // ── Installed Apps ──
+            if !installedApps.isEmpty {
+                sectionHeader(title: "Installed Apps", count: installedApps.count)
+                VStack(spacing: 10) {
+                    ForEach(installedApps) { app in
+                        SwipeableAppCard(app: app, onTap: {
+                            InstallProgressPoller.openApp(bundleId: app.bundleIdentifier)
+                        }, onDelete: {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                appsManager.removeApp(app)
+                            }
+                        }) {
+                            installedCardContent(app)
+                        }
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .top).combined(with: .opacity),
+                            removal: .move(edge: .trailing).combined(with: .opacity)
+                        ))
                     }
-                }) {
-                    appCardContent(app)
                 }
-                .transition(.asymmetric(
-                    insertion: .move(edge: .top).combined(with: .opacity),
-                    removal: .move(edge: .trailing).combined(with: .opacity)
-                ))
+            }
+
+            // ── Unsigned Apps ──
+            if !unsignedApps.isEmpty {
+                sectionHeader(title: "Unsigned Apps", count: unsignedApps.count)
+                VStack(spacing: 10) {
+                    ForEach(unsignedApps) { app in
+                        SwipeableAppCard(app: app, onTap: { signApp(app) }, onDelete: {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                appsManager.removeApp(app)
+                            }
+                        }) {
+                            unsignedCardContent(app)
+                        }
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .top).combined(with: .opacity),
+                            removal: .move(edge: .trailing).combined(with: .opacity)
+                        ))
+                    }
+                }
             }
         }
         .padding(.horizontal, 20)
     }
 
-    // MARK: - App Card (preserves icon/logos)
+    // MARK: - Section Header
 
-    private func appCardContent(_ app: ImportedApp) -> some View {
+    private func sectionHeader(title: String, count: Int) -> some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.white.opacity(0.3))
+            Spacer()
+            Text("\(count)")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundColor(.white.opacity(0.2))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(Capsule().fill(Color.white.opacity(0.04)))
+        }
+        .padding(.horizontal, 4)
+    }
+
+    // MARK: - Installed Card
+
+    private func installedCardContent(_ app: ImportedApp) -> some View {
         HStack(spacing: 14) {
-            // App icon — preserved as-is
-            ZStack(alignment: .bottomTrailing) {
-                appIcon(app)
-                    .frame(width: 52, height: 52)
-                    .clipShape(RoundedRectangle(cornerRadius: 13))
+            appIcon(app)
+                .frame(width: 52, height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: 13))
 
-                if app.isSigned {
-                    ZStack {
-                        Circle()
-                            .fill(Color.black)
-                            .frame(width: 18, height: 18)
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(.green)
-                    }
-                    .offset(x: 3, y: 3)
-                }
-            }
-
-            // Info
             VStack(alignment: .leading, spacing: 3) {
                 Text(app.appName)
                     .font(.system(size: 15, weight: .bold))
@@ -224,45 +266,30 @@ struct SigningView: View {
                     Text(app.formattedSize)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.white.opacity(0.25))
-                    if app.isSigned {
-                        Text("·").foregroundColor(.white.opacity(0.15))
-                        Label("Signed", systemImage: "checkmark.seal.fill")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundColor(.green.opacity(0.8))
-                    }
+                    Text("·").foregroundColor(.white.opacity(0.15))
+                    Label(validityText, systemImage: "clock")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.scarletRed.opacity(0.7))
                 }
             }
             Spacer()
 
-            // Action badge — logos preserved
-            if app.isSigned {
-                VStack(spacing: 3) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.green.opacity(0.12))
-                            .frame(width: 34, height: 34)
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.green.opacity(0.8))
-                    }
-                    Text("Signed")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundColor(.green.opacity(0.6))
+            VStack(spacing: 3) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.white.opacity(0.03))
+                        .frame(width: 34, height: 34)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                        )
+                    Image(systemName: "arrow.up.forward.app")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.scarletRed.opacity(0.8))
                 }
-            } else {
-                VStack(spacing: 3) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.scarletRed)
-                            .frame(width: 34, height: 34)
-                        Image(systemName: "signature")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                    Text("Sign")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundColor(.scarletRed.opacity(0.7))
-                }
+                Text("Open")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.3))
             }
         }
         .padding(12)
@@ -274,6 +301,77 @@ struct SigningView: View {
                         .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
                 )
         )
+    }
+
+    // MARK: - Unsigned Card
+
+    private func unsignedCardContent(_ app: ImportedApp) -> some View {
+        HStack(spacing: 14) {
+            appIcon(app)
+                .frame(width: 52, height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: 13))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(app.appName)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                Text(app.bundleIdentifier)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.white.opacity(0.25))
+                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Label("v\(app.version)", systemImage: "number")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.scarletPink.opacity(0.7))
+                    Text("·").foregroundColor(.white.opacity(0.15))
+                    Text(app.formattedSize)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.white.opacity(0.25))
+                }
+            }
+            Spacer()
+
+            VStack(spacing: 3) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.scarletRed.opacity(0.10))
+                        .frame(width: 34, height: 34)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
+                        )
+                    Image(systemName: "signature")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.scarletRed.opacity(0.8))
+                }
+                Text("Sign")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundColor(.scarletRed.opacity(0.5))
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color.white.opacity(0.03))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                )
+        )
+    }
+
+    // MARK: - Validity
+
+    private var validityText: String {
+        let certService = CertificateService.shared
+        let settings = SigningSettings.shared
+        if let name = settings.savedCertName,
+           let cert = certService.certificates.first(where: { "\($0.id).p12" == name }) {
+            let days = max(0, Calendar.current.dateComponents([.day], from: Date(), to: cert.expiresDate).day ?? 0)
+            return "\(days)d left"
+        }
+        return "—"
     }
 
     // MARK: - Icon
