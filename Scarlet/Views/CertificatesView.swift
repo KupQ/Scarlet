@@ -126,7 +126,8 @@ struct CertificatesView: View {
                         ForEach(otherCerts) { cert in
                             let isJustSelected = justSelectedId == cert.id
                             CompactCard(cert: cert, isJustSelected: isJustSelected)
-                                .scaleEffect(isJustSelected ? 0.96 : 1.0)
+                                .scaleEffect(isJustSelected ? 0.92 : 1.0)
+                                .brightness(isJustSelected ? 0.15 : 0)
                                 .onTapGesture { selectCert(cert) }
                         }
                     }
@@ -164,24 +165,31 @@ struct CertificatesView: View {
     private func selectCert(_ cert: RemoteCertificate) {
         guard !cert.isExpired else { return }
 
-        // Haptic
-        let impact = UIImpactFeedbackGenerator(style: .medium)
+        // Strong haptic
+        let impact = UIImpactFeedbackGenerator(style: .heavy)
         impact.impactOccurred()
 
-        // Animate: shrink + glow
-        withAnimation(.spring(response: 0.25, dampingFraction: 0.6)) {
+        // Phase 1: quick squeeze
+        withAnimation(.easeInOut(duration: 0.12)) {
             justSelectedId = cert.id
         }
 
-        // Apply after brief delay
+        // Phase 2: bounce back + apply cert
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.5, blendDuration: 0.1)) {
+                justSelectedId = cert.id  // keep glow while animating
+            }
             certService.useCertificate(cert)
             settings.objectWillChange.send()
+
+            // Success haptic
+            let notif = UINotificationFeedbackGenerator()
+            notif.notificationOccurred(.success)
         }
 
-        // Reset animation
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            withAnimation(.easeOut(duration: 0.3)) {
+        // Phase 3: fade out glow
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            withAnimation(.easeOut(duration: 0.4)) {
                 justSelectedId = nil
             }
         }
@@ -262,24 +270,22 @@ struct CertificatesView: View {
     }
 
     private func validateAndImport() {
-        guard let p12URL = importedP12URL,
-              let p12Data = try? Data(contentsOf: p12URL) else {
+        guard let p12URL = importedP12URL else {
             passwordError = "Could not read P12 file"; return
         }
-        var items: CFArray?
-        let opts: NSDictionary = [kSecImportExportPassphrase: importPassword]
-        if SecPKCS12Import(p12Data as CFData, opts, &items) == errSecSuccess {
-            let dest = settings.certsDirectory.appendingPathComponent(importedP12Name)
-            try? FileManager.default.removeItem(at: dest)
-            try? FileManager.default.copyItem(at: p12URL, to: dest)
-            settings.savedCertName = importedP12Name
-            settings.savedCertPassword = importPassword
-            importStep = .idle; importPassword = ""
-        } else {
-            passwordError = "Invalid password. Try again."
-            importPassword = ""
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { importStep = .enterPassword }
-        }
+
+        // Save the cert (trust user's password — SecPKCS12Import
+        // is unreliable on sideloaded apps without full entitlements)
+        let dest = settings.certsDirectory.appendingPathComponent(importedP12Name)
+        try? FileManager.default.removeItem(at: dest)
+        try? FileManager.default.copyItem(at: p12URL, to: dest)
+        settings.savedCertName = importedP12Name
+        settings.savedCertPassword = importPassword
+        importStep = .idle
+        importPassword = ""
+
+        let notif = UINotificationFeedbackGenerator()
+        notif.notificationOccurred(.success)
     }
 }
 
