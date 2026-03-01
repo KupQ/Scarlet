@@ -126,23 +126,6 @@ struct ContentView: View {
         .sheet(isPresented: $showShareSheet) {
             if let url = signingOutputURL { ShareSheet(items: [url]) }
         }
-        // Detect when user cancels iOS install dialog
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-            guard sheetVisible, sheetPhase == .success else { return }
-            // If stuck on sendingManifest/sendingPayload, user likely cancelled the iOS dialog
-            switch signingState.installStatus {
-            case .sendingManifest, .sendingPayload:
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    // If STILL stuck after 1.5s, assume user cancelled
-                    switch signingState.installStatus {
-                    case .sendingManifest, .sendingPayload:
-                        signingState.resetStuckInstall()
-                    default: break
-                    }
-                }
-            default: break
-            }
-        }
     }
 
     // MARK: - Open Config Sheet
@@ -544,98 +527,127 @@ struct ContentView: View {
     // MARK: - Phase 3: Success
 
     private var successContent: some View {
-        HStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .stroke(Color.glassFill, lineWidth: 4)
-                    .frame(width: 58, height: 58)
-                Circle()
-                    .trim(from: 0, to: 1)
-                    .stroke(
-                        AngularGradient(colors: [.green.opacity(0.5), .green, .green.opacity(0.8)], center: .center),
-                        style: StrokeStyle(lineWidth: 4, lineCap: .round)
-                    )
-                    .frame(width: 58, height: 58)
-                    .rotationEffect(.degrees(-90))
-                if let iconURL = selectedApp?.iconURL,
-                   let iconData = try? Data(contentsOf: iconURL),
-                   let uiImage = UIImage(data: iconData) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .frame(width: 44, height: 44)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                } else {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.green)
+        VStack(spacing: 14) {
+            // App icon + status
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle()
+                        .stroke(Color.white.opacity(0.06), lineWidth: 3)
+                        .frame(width: 52, height: 52)
+                    if let iconURL = selectedApp?.iconURL,
+                       let iconData = try? Data(contentsOf: iconURL),
+                       let uiImage = UIImage(data: iconData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .frame(width: 40, height: 40)
+                            .clipShape(RoundedRectangle(cornerRadius: 9))
+                    } else {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.green)
+                    }
                 }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(selectedApp?.appName ?? "Done")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                    installStatusText
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(Color.white.opacity(0.06))
+                                .frame(height: 3)
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(LinearGradient(colors: [.green, .green.opacity(0.6)],
+                                                     startPoint: .leading, endPoint: .trailing))
+                                .frame(width: geo.size.width * installProgressValue, height: 3)
+                        }
+                    }
+                    .frame(height: 3)
+                }
+                Spacer(minLength: 0)
             }
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text(selectedApp?.appName ?? "Done")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                installStatusText
-                GeometryReader { geo in
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(LinearGradient(colors: [.green, .green.opacity(0.7)], startPoint: .leading, endPoint: .trailing))
-                        .frame(width: geo.size.width * installProgressValue, height: 5)
-                        .animation(.easeInOut(duration: 0.3), value: installProgressValue)
-                }
-                .frame(height: 5)
-            }
-            Spacer(minLength: 0)
-            VStack(spacing: 8) {
-                // Open button (after install completes)
+            // Action buttons
+            HStack(spacing: 10) {
+                // Install / Open / Loading
                 if signingState.installStatus == .completed {
                     Button {
                         InstallProgressPoller.openApp(bundleId: signingState.installingBundleId)
                     } label: {
-                        Image(systemName: "arrow.up.forward.app.fill")
-                            .font(.system(size: 15, weight: .bold))
+                        Text("Open")
+                            .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.white)
-                            .frame(width: 38, height: 38)
-                            .background(Circle().fill(Color.blue))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 11)
+                            .background(
+                                Capsule()
+                                    .fill(LinearGradient(colors: [.green, .green.opacity(0.7)],
+                                                         startPoint: .leading, endPoint: .trailing))
+                            )
                     }
-                }
-                // Install button (auto-triggers, but can re-trigger)
-                if signingState.isUploading {
-                    ProgressView()
-                        .tint(.white)
-                        .frame(width: 38, height: 38)
-                        .background(Circle().fill(Color.green.opacity(0.8)))
+                    .buttonStyle(.plain)
+                } else if signingState.isUploading {
+                    HStack(spacing: 8) {
+                        ProgressView().tint(.white).scaleEffect(0.8)
+                        Text("Installing...")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.5))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 11)
+                    .background(
+                        Capsule().fill(Color.white.opacity(0.05))
+                    )
                 } else if let url = signingState.installURL,
                           signingState.installStatus != .completed {
                     Button {
                         UIApplication.shared.open(url)
                     } label: {
-                        Image(systemName: "arrow.down.app.fill")
-                            .font(.system(size: 15, weight: .bold))
+                        Text("Install")
+                            .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.white)
-                            .frame(width: 38, height: 38)
-                            .background(Circle().fill(Color.green))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 11)
+                            .background(
+                                Capsule()
+                                    .fill(LinearGradient(colors: [.scarletRed, .scarletDark],
+                                                         startPoint: .leading, endPoint: .trailing))
+                            )
                     }
+                    .buttonStyle(.plain)
                 }
-                Button { showShareSheet = true } label: {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 38, height: 38)
-                        .background(Circle().fill(Color.scarletRed))
-                }
+
+                // Close button
                 Button { dismissSheet() } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(.gray)
-                        .frame(width: 26, height: 26)
-                        .background(Circle().fill(Color.glassFill))
+                        .foregroundColor(.white.opacity(0.4))
+                        .frame(width: 36, height: 36)
+                        .background(
+                            Circle()
+                                .fill(Color.white.opacity(0.05))
+                                .overlay(Circle().stroke(Color.white.opacity(0.06), lineWidth: 0.5))
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 18)
+        .padding(.top, 12)
+        .padding(.bottom, 16)
+        // Auto-reset stuck sendingManifest after timeout
+        .onChange(of: signingState.installStatus) { newStatus in
+            if case .sendingManifest = newStatus {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                    if case .sendingManifest = signingState.installStatus {
+                        signingState.resetStuckInstall()
+                    }
                 }
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 14)
-        .padding(.bottom, 20)
     }
 
     // MARK: - Install Status Helpers
