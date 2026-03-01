@@ -16,12 +16,7 @@ struct CertificatesView: View {
 
     var body: some View {
         ZStack {
-            // Background gradient
-            LinearGradient(
-                colors: [Color.scarletRed.opacity(0.08), Color.clear, Color.scarletDark.opacity(0.05)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            ).ignoresSafeArea()
+            Color.black.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Header
@@ -33,12 +28,11 @@ struct CertificatesView: View {
                         if let udid = certService.deviceUDID {
                             Text(udid)
                                 .font(.system(size: 10, weight: .medium, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.35))
+                                .foregroundColor(.white.opacity(0.25))
                                 .lineLimit(1)
                         }
                     }
                     Spacer()
-                    // Import button
                     Menu {
                         Button {
                             showImportP12 = true
@@ -53,12 +47,12 @@ struct CertificatesView: View {
                     } label: {
                         Image(systemName: "plus")
                             .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.white.opacity(0.7))
                             .frame(width: 34, height: 34)
                             .background(
                                 Circle()
-                                    .fill(.ultraThinMaterial)
-                                    .overlay(Circle().stroke(Color.white.opacity(0.12), lineWidth: 0.5))
+                                    .fill(Color.white.opacity(0.08))
+                                    .overlay(Circle().stroke(Color.white.opacity(0.08), lineWidth: 0.5))
                             )
                     }
                 }
@@ -74,12 +68,12 @@ struct CertificatesView: View {
                         Text(error)
                             .font(.system(size: 12))
                     }
-                    .foregroundColor(.orange)
+                    .foregroundColor(.scarletRed)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.orange.opacity(0.1))
+                            .fill(Color.scarletRed.opacity(0.1))
                     )
                     .padding(.horizontal, 20)
                     .padding(.bottom, 8)
@@ -92,38 +86,34 @@ struct CertificatesView: View {
                             ProgressView()
                                 .tint(.scarletRed)
                                 .scaleEffect(1.1)
-                            Text("Loading certificates...")
+                            Text("Loading...")
                                 .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(.white.opacity(0.3))
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.top, 80)
                     } else if certService.certificates.isEmpty {
-                        // Empty state
                         VStack(spacing: 16) {
                             ZStack {
                                 Circle()
-                                    .fill(.ultraThinMaterial)
+                                    .fill(Color.scarletRed.opacity(0.1))
                                     .frame(width: 70, height: 70)
-                                Image(systemName: "shield.lefthalf.filled")
+                                Image(systemName: "lock.shield")
                                     .font(.system(size: 28))
-                                    .foregroundStyle(
-                                        LinearGradient(colors: [.scarletRed, .scarletPink],
-                                                       startPoint: .topLeading, endPoint: .bottomTrailing)
-                                    )
+                                    .foregroundColor(.scarletRed.opacity(0.6))
                             }
                             Text("No Certificates")
                                 .font(.system(size: 17, weight: .semibold))
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(.white.opacity(0.5))
                             Text("Import your own using the\n+ button above.")
                                 .font(.system(size: 13))
-                                .foregroundColor(.white.opacity(0.35))
+                                .foregroundColor(.white.opacity(0.25))
                                 .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.top, 60)
                     } else {
-                        LazyVStack(spacing: 14) {
+                        LazyVStack(spacing: 12) {
                             ForEach(certService.certificates) { cert in
                                 CertCard(
                                     cert: cert,
@@ -169,83 +159,57 @@ struct CertCard: View {
     }
 
     private var isDev: Bool {
-        let ct = cert.cert_type?.uppercased() ?? ""
-        return ct.contains("DEVELOPMENT")
-    }
-
-    private var typeLabel: String { isDev ? "Development" : "Distribution" }
-    private var typeIcon: String { isDev ? "hammer.fill" : "paperplane.fill" }
-    private var typeGradient: [Color] {
-        isDev ? [.blue, .cyan] : [.purple, .pink]
+        (cert.cert_type?.uppercased() ?? "").contains("DEVELOPMENT")
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Top section: icon + info
-            HStack(spacing: 14) {
-                // Type icon
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(
-                            LinearGradient(colors: typeGradient,
-                                           startPoint: .topLeading, endPoint: .bottomTrailing)
+        HStack(spacing: 14) {
+            // Left: type icon
+            ZStack {
+                RoundedRectangle(cornerRadius: 11)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.scarletRed.opacity(0.25), Color.scarletDark.opacity(0.15)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         )
-                        .frame(width: 42, height: 42)
-                    Image(systemName: typeIcon)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
-                }
-
-                // Name + type
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(cert.name)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-
-                    Text(typeLabel)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(.white.opacity(0.4))
-                }
-
-                Spacer()
-
-                // Status badge
-                VStack(spacing: 2) {
-                    Text(isActive ? "\(daysRemaining)" : "0")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundColor(isActive ? .white : .red)
-                    Text("days")
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(.white.opacity(0.35))
-                }
-                .frame(width: 48)
-                .padding(.vertical, 6)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(.ultraThinMaterial)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(
-                                    isActive
-                                        ? Color.green.opacity(0.2)
-                                        : Color.red.opacity(0.2),
-                                    lineWidth: 0.5
-                                )
-                        )
-                )
+                    )
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 11)
+                            .stroke(Color.scarletRed.opacity(0.2), lineWidth: 0.5)
+                    )
+                Image(systemName: isDev ? "wrench.and.screwdriver" : "checkmark.seal.fill")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.scarletRed)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 14)
-            .padding(.bottom, 12)
 
-            // Divider
-            Rectangle()
-                .fill(Color.white.opacity(0.06))
-                .frame(height: 0.5)
-                .padding(.horizontal, 16)
+            // Center: name + type
+            VStack(alignment: .leading, spacing: 4) {
+                Text(cert.name)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
 
-            // Bottom: Use button
+                HStack(spacing: 6) {
+                    Text(isDev ? "Dev" : "Distro")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.scarletRed.opacity(0.8))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(
+                            Capsule().fill(Color.scarletRed.opacity(0.12))
+                        )
+
+                    Text(isActive ? "\(daysRemaining)d left" : "Expired")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(isActive ? .white.opacity(0.35) : .scarletRed.opacity(0.7))
+                }
+            }
+
+            Spacer()
+
+            // Right: Use button
             Button {
                 onUse()
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { applied = true }
@@ -253,34 +217,34 @@ struct CertCard: View {
                     withAnimation(.easeOut) { applied = false }
                 }
             } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: applied ? "checkmark" : "arrow.down.to.line")
-                        .font(.system(size: 11, weight: .bold))
-                    Text(applied ? "Applied" : "Use")
-                        .font(.system(size: 12, weight: .semibold))
-                }
-                .foregroundColor(applied ? .green : .white.opacity(0.7))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
+                Text(applied ? "Done" : "Use")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(applied ? .white : .scarletRed)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 7)
+                    .background(
+                        Capsule()
+                            .fill(applied
+                                  ? Color.scarletRed
+                                  : Color.scarletRed.opacity(0.12))
+                    )
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.scarletRed.opacity(applied ? 0 : 0.25), lineWidth: 0.5)
+                    )
             }
             .disabled(!isActive)
-            .opacity(isActive ? 1.0 : 0.4)
+            .opacity(isActive ? 1.0 : 0.35)
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(.ultraThinMaterial)
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.04))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(
-                            LinearGradient(
-                                colors: [Color.white.opacity(0.12), Color.white.opacity(0.04)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 0.5
-                        )
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
                 )
-                .shadow(color: .black.opacity(0.2), radius: 10, y: 4)
         )
     }
 }
