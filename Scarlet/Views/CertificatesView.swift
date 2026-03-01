@@ -2,18 +2,18 @@
 //  CertificatesView.swift
 //  Scarlet
 //
-//  Displays certificates fetched from the API for the current device.
-//  Users can select a certificate to use for signing, or import their own.
+//  Premium certificate management with Apple Wallet-inspired design.
 //
 
 import SwiftUI
+import Security
 
 struct CertificatesView: View {
 
     @ObservedObject private var certService = CertificateService.shared
     @ObservedObject private var settings = SigningSettings.shared
 
-    // Import flow state
+    // Import flow
     @State private var importStep: ImportStep = .idle
     @State private var importedP12URL: URL?
     @State private var importedP12Name: String = ""
@@ -25,153 +25,186 @@ struct CertificatesView: View {
     enum ImportStep { case idle, pickProfile, enterPassword }
     enum FilePickerType { case p12, profile }
 
+    // Active cert
+    private var activeCert: RemoteCertificate? {
+        certService.certificates.first { settings.savedCertName == "\($0.id).p12" }
+    }
+    private var otherCerts: [RemoteCertificate] {
+        certService.certificates.filter { settings.savedCertName != "\($0.id).p12" }
+    }
+
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            // Deep dark background
+            Color(red: 0.04, green: 0.04, blue: 0.05).ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                // Header
-                HStack(alignment: .center) {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("Certificates")
-                            .font(.system(size: 26, weight: .bold))
-                            .foregroundColor(.white)
-                        if let udid = certService.deviceUDID {
-                            Text(udid)
-                                .font(.system(size: 10, weight: .medium, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.25))
-                                .lineLimit(1)
-                        }
-                    }
-                    Spacer()
-                    // Import button
-                    Button {
-                        filePickerType = .p12
-                        showFilePicker = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.white.opacity(0.7))
-                            .frame(width: 34, height: 34)
-                            .background(
-                                Circle()
-                                    .fill(Color.white.opacity(0.08))
-                                    .overlay(Circle().stroke(Color.white.opacity(0.08), lineWidth: 0.5))
-                            )
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-
-                // Error
-                if let error = certService.errorMessage {
-                    HStack(spacing: 6) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 11))
-                        Text(error)
-                            .font(.system(size: 12))
-                    }
-                    .foregroundColor(.scarletRed)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.scarletRed.opacity(0.1))
-                    )
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 8)
-                }
-
-                // Content
-                ScrollView(showsIndicators: false) {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    headerSection
                     if certService.isLoading && certService.certificates.isEmpty {
-                        VStack(spacing: 14) {
-                            ProgressView()
-                                .tint(.scarletRed)
-                                .scaleEffect(1.1)
-                            Text("Loading...")
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(.white.opacity(0.3))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 80)
+                        loadingSection
                     } else if certService.certificates.isEmpty {
-                        VStack(spacing: 16) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.scarletRed.opacity(0.1))
-                                    .frame(width: 70, height: 70)
-                                Image(systemName: "lock.shield")
-                                    .font(.system(size: 28))
-                                    .foregroundColor(.scarletRed.opacity(0.6))
-                            }
-                            Text("No Certificates")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundColor(.white.opacity(0.5))
-                            Text("Import your own using the\n+ button above.")
-                                .font(.system(size: 13))
-                                .foregroundColor(.white.opacity(0.25))
-                                .multilineTextAlignment(.center)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 60)
+                        emptySection
                     } else {
-                        LazyVStack(spacing: 12) {
-                            ForEach(certService.certificates) { cert in
-                                let inUse = settings.savedCertName == "\(cert.id).p12"
-                                CertCard(
-                                    cert: cert,
-                                    isInUse: inUse,
-                                    onUse: {
-                                        certService.useCertificate(cert)
-                                        settings.objectWillChange.send()
-                                    }
-                                )
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 4)
-                        .padding(.bottom, 24)
+                        certContent
                     }
                 }
             }
         }
-        .task {
-            await certService.fetchCertificates()
-        }
+        .task { await certService.fetchCertificates() }
         .sheet(isPresented: $showFilePicker) {
             if filePickerType == .p12 {
-                DocumentPicker(contentTypes: [.p12]) { url in
-                    handleP12Picked(url)
-                }
+                DocumentPicker(contentTypes: [.p12]) { handleP12Picked($0) }
             } else {
-                DocumentPicker(contentTypes: [.mobileprovision]) { url in
-                    handleProfilePicked(url)
-                }
+                DocumentPicker(contentTypes: [.mobileprovision]) { handleProfilePicked($0) }
             }
         }
-        .alert("Enter Certificate Password", isPresented: Binding(
+        .alert("Certificate Password", isPresented: Binding(
             get: { importStep == .enterPassword },
             set: { if !$0 { importStep = .idle } }
         )) {
             SecureField("Password", text: $importPassword)
-            Button("Cancel", role: .cancel) {
-                importStep = .idle
-                importPassword = ""
-            }
-            Button("Add") {
-                validateAndImport()
-            }
+            Button("Cancel", role: .cancel) { importStep = .idle; importPassword = "" }
+            Button("Import") { validateAndImport() }
         } message: {
             Text(passwordError ?? "Enter the password for \(importedP12Name)")
         }
         .onChange(of: importStep) { step in
             if step == .pickProfile {
                 filePickerType = .profile
-                showFilePicker = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { showFilePicker = true }
             }
         }
+    }
+
+    // MARK: - Header
+
+    private var headerSection: some View {
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Certificates")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.white)
+                if let udid = certService.deviceUDID {
+                    Text(udid)
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .foregroundColor(.white.opacity(0.2))
+                }
+            }
+            Spacer()
+            Button {
+                filePickerType = .p12
+                showFilePicker = true
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(.scarletRed)
+                    .frame(width: 32, height: 32)
+                    .background(Circle().fill(Color.scarletRed.opacity(0.12)))
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 20)
+    }
+
+    // MARK: - Active Certificate (Hero Card)
+
+    private var certContent: some View {
+        VStack(spacing: 24) {
+            if let cert = activeCert {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("ACTIVE CERTIFICATE")
+                        .font(.system(size: 10, weight: .heavy))
+                        .tracking(1.5)
+                        .foregroundColor(.scarletRed.opacity(0.6))
+                        .padding(.horizontal, 20)
+
+                    HeroCard(cert: cert)
+                        .padding(.horizontal, 20)
+                }
+            }
+
+            if !otherCerts.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("AVAILABLE")
+                        .font(.system(size: 10, weight: .heavy))
+                        .tracking(1.5)
+                        .foregroundColor(.white.opacity(0.25))
+                        .padding(.horizontal, 20)
+
+                    VStack(spacing: 10) {
+                        ForEach(otherCerts) { cert in
+                            CompactCard(cert: cert) {
+                                certService.useCertificate(cert)
+                                settings.objectWillChange.send()
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                }
+            }
+
+            // Import card
+            Button {
+                filePickerType = .p12
+                showFilePicker = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "plus.circle")
+                        .font(.system(size: 16))
+                    Text("Import Certificate")
+                        .font(.system(size: 13, weight: .semibold))
+                }
+                .foregroundColor(.white.opacity(0.25))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 18)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(style: StrokeStyle(lineWidth: 1, dash: [6, 4]))
+                        .foregroundColor(.white.opacity(0.08))
+                )
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 40)
+        }
+    }
+
+    // MARK: - Empty / Loading
+
+    private var loadingSection: some View {
+        VStack(spacing: 16) {
+            ProgressView().tint(.scarletRed).scaleEffect(1.2)
+            Text("Loading certificates...")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.white.opacity(0.25))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 100)
+    }
+
+    private var emptySection: some View {
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [Color.scarletRed.opacity(0.15), .clear],
+                                       center: .center, startRadius: 0, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                Image(systemName: "lock.shield")
+                    .font(.system(size: 34))
+                    .foregroundColor(.scarletRed.opacity(0.5))
+            }
+            Text("No Certificates")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white.opacity(0.4))
+            Text("Tap + to import your own")
+                .font(.system(size: 13))
+                .foregroundColor(.white.opacity(0.2))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 80)
     }
 
     // MARK: - Import Flow
@@ -179,203 +212,277 @@ struct CertificatesView: View {
     private func handleP12Picked(_ url: URL) {
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-
-        // Copy to temp
         let dest = FileManager.default.temporaryDirectory.appendingPathComponent(url.lastPathComponent)
         try? FileManager.default.removeItem(at: dest)
         try? FileManager.default.copyItem(at: url, to: dest)
-
         importedP12URL = dest
         importedP12Name = url.lastPathComponent
-
-        // Next: pick mobileprovision
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            importStep = .pickProfile
-        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { importStep = .pickProfile }
     }
 
     private func handleProfilePicked(_ url: URL) {
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-
-        // Import profile
         try? settings.importProfile(from: url)
-
-        // Next: ask for password
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            importPassword = ""
-            passwordError = nil
-            importStep = .enterPassword
+            importPassword = ""; passwordError = nil; importStep = .enterPassword
         }
     }
 
     private func validateAndImport() {
-        guard let p12URL = importedP12URL else {
-            importStep = .idle
-            return
+        guard let p12URL = importedP12URL,
+              let p12Data = try? Data(contentsOf: p12URL) else {
+            passwordError = "Could not read P12 file"; return
         }
-
-        // Validate the password by trying to read the PKCS12
-        guard let p12Data = try? Data(contentsOf: p12URL) else {
-            passwordError = "Could not read P12 file"
-            importStep = .enterPassword
-            return
-        }
-
         var items: CFArray?
-        let options: NSDictionary = [kSecImportExportPassphrase: importPassword]
-        let status = SecPKCS12Import(p12Data as CFData, options, &items)
-
-        if status == errSecSuccess {
-            // Password valid — save the cert
+        let opts: NSDictionary = [kSecImportExportPassphrase: importPassword]
+        if SecPKCS12Import(p12Data as CFData, opts, &items) == errSecSuccess {
             let dest = settings.certsDirectory.appendingPathComponent(importedP12Name)
             try? FileManager.default.removeItem(at: dest)
             try? FileManager.default.copyItem(at: p12URL, to: dest)
             settings.savedCertName = importedP12Name
             settings.savedCertPassword = importPassword
-
-            importStep = .idle
-            importPassword = ""
-            passwordError = nil
+            importStep = .idle; importPassword = ""
         } else {
-            // Wrong password — re-prompt
-            passwordError = "Invalid password. Please try again."
+            passwordError = "Invalid password. Try again."
             importPassword = ""
-            // Keep in .enterPassword so alert re-shows
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                importStep = .enterPassword
-            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { importStep = .enterPassword }
         }
     }
 }
 
-// MARK: - Certificate Card
+// MARK: - Hero Card (Active Certificate)
 
-struct CertCard: View {
-
+struct HeroCard: View {
     let cert: RemoteCertificate
-    let isInUse: Bool
+
+    private var days: Int {
+        max(0, Calendar.current.dateComponents([.day], from: Date(), to: cert.expiresDate).day ?? 0)
+    }
+    private var isDev: Bool {
+        (cert.cert_type?.uppercased() ?? "").contains("DEVELOPMENT")
+    }
+    private var progress: Double {
+        min(1, Double(days) / 365.0)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Top section
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 6) {
+                    // Scarlet logo placeholder
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.scarletRed)
+                            .frame(width: 8, height: 8)
+                        Text("SCARLET")
+                            .font(.system(size: 9, weight: .heavy))
+                            .tracking(2)
+                            .foregroundColor(.scarletRed.opacity(0.7))
+                    }
+
+                    Text(cert.name)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(2)
+                }
+                Spacer()
+                // Days ring
+                ZStack {
+                    Circle()
+                        .stroke(Color.white.opacity(0.06), lineWidth: 3)
+                        .frame(width: 50, height: 50)
+                    Circle()
+                        .trim(from: 0, to: progress)
+                        .stroke(
+                            LinearGradient(colors: [.scarletRed, .scarletPink],
+                                           startPoint: .topLeading, endPoint: .bottomTrailing),
+                            style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                        )
+                        .frame(width: 50, height: 50)
+                        .rotationEffect(.degrees(-90))
+                    VStack(spacing: 0) {
+                        Text("\(days)")
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                        Text("days")
+                            .font(.system(size: 7, weight: .medium))
+                            .foregroundColor(.white.opacity(0.35))
+                    }
+                }
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 18)
+            .padding(.bottom, 14)
+
+            // Divider
+            Rectangle()
+                .fill(
+                    LinearGradient(colors: [.clear, Color.scarletRed.opacity(0.2), .clear],
+                                   startPoint: .leading, endPoint: .trailing)
+                )
+                .frame(height: 0.5)
+
+            // Bottom info row
+            HStack {
+                // Type
+                HStack(spacing: 4) {
+                    Image(systemName: isDev ? "wrench.and.screwdriver" : "checkmark.seal.fill")
+                        .font(.system(size: 9))
+                    Text(isDev ? "Development" : "Distribution")
+                        .font(.system(size: 10, weight: .semibold))
+                }
+                .foregroundColor(.white.opacity(0.45))
+
+                Spacer()
+
+                // PPQ
+                Text(cert.isPPQEnabled ? "PPQ" : "PPQless")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(.white.opacity(0.3))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(Color.white.opacity(0.06)))
+
+                // Status
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(Color(red: 0.2, green: 0.65, blue: 0.3).opacity(0.7))
+                        .frame(width: 5, height: 5)
+                    Text("Active")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.4))
+                }
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 12)
+        }
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.scarletRed.opacity(0.08),
+                                Color(red: 0.08, green: 0.08, blue: 0.1),
+                                Color(red: 0.06, green: 0.06, blue: 0.07)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(
+                        LinearGradient(
+                            colors: [Color.scarletRed.opacity(0.3), Color.scarletRed.opacity(0.05)],
+                            startPoint: .topLeading, endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            }
+        )
+        .shadow(color: Color.scarletRed.opacity(0.08), radius: 20, y: 8)
+    }
+}
+
+// MARK: - Compact Card (Available Certificate)
+
+struct CompactCard: View {
+    let cert: RemoteCertificate
     let onUse: () -> Void
     @State private var applied = false
 
     private var isActive: Bool { !cert.isExpired }
-
-    private var daysRemaining: Int {
+    private var days: Int {
         max(0, Calendar.current.dateComponents([.day], from: Date(), to: cert.expiresDate).day ?? 0)
     }
-
     private var isDev: Bool {
         (cert.cert_type?.uppercased() ?? "").contains("DEVELOPMENT")
     }
 
     var body: some View {
         HStack(spacing: 12) {
-            // Type icon
+            // Icon
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.scarletRed.opacity(isInUse ? 0.2 : 0.1))
-                    .frame(width: 38, height: 38)
+                    .fill(Color.scarletRed.opacity(0.08))
+                    .frame(width: 36, height: 36)
                 Image(systemName: isDev ? "wrench.and.screwdriver" : "checkmark.seal.fill")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.scarletRed)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.scarletRed.opacity(0.7))
             }
 
-            // Name + badges
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 6) {
-                    Text(cert.name)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-
-                    if isInUse {
-                        Text("IN USE")
-                            .font(.system(size: 8, weight: .heavy))
-                            .foregroundColor(.scarletRed)
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 2)
-                            .background(
-                                Capsule().fill(Color.scarletRed.opacity(0.15))
-                                    .overlay(Capsule().stroke(Color.scarletRed.opacity(0.3), lineWidth: 0.5))
-                            )
-                    }
-                }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(cert.name)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.9))
+                    .lineLimit(1)
 
                 HStack(spacing: 6) {
-                    // Type
                     Text(isDev ? "Development" : "Distribution")
                         .font(.system(size: 9, weight: .bold))
-                        .textCase(.uppercase)
-                        .foregroundColor(.scarletRed.opacity(0.9))
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 2)
-                        .background(Capsule().fill(Color.scarletRed.opacity(0.1)))
+                        .foregroundColor(.scarletRed.opacity(0.7))
 
-                    // PPQ
+                    Text("·")
+                        .foregroundColor(.white.opacity(0.15))
+
                     Text(cert.isPPQEnabled ? "PPQ" : "PPQless")
                         .font(.system(size: 9, weight: .bold))
-                        .textCase(.uppercase)
-                        .foregroundColor(.white.opacity(0.4))
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 2)
-                        .background(Capsule().fill(Color.white.opacity(0.06)))
-                }
+                        .foregroundColor(.white.opacity(0.25))
 
-                // Status
-                HStack(spacing: 4) {
-                    Circle()
-                        .fill(isActive
-                              ? Color(red: 0.2, green: 0.65, blue: 0.3).opacity(0.7)
-                              : Color.scarletRed.opacity(0.5))
-                        .frame(width: 5, height: 5)
-                    Text(isActive ? "Active · \(daysRemaining) days" : "Expired")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(.white.opacity(0.3))
+                    Text("·")
+                        .foregroundColor(.white.opacity(0.15))
+
+                    HStack(spacing: 3) {
+                        Circle()
+                            .fill(isActive
+                                  ? Color(red: 0.2, green: 0.65, blue: 0.3).opacity(0.7)
+                                  : Color.scarletRed.opacity(0.5))
+                            .frame(width: 4, height: 4)
+                        Text(isActive ? "\(days)d" : "Exp")
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundColor(.white.opacity(0.25))
+                    }
                 }
             }
 
             Spacer()
 
-            // Use button
-            if !isInUse {
-                Button {
-                    onUse()
-                    withAnimation(.easeInOut(duration: 0.2)) { applied = true }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        withAnimation(.easeOut(duration: 0.3)) { applied = false }
-                    }
-                } label: {
-                    ZStack {
-                        if applied {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(.scarletRed)
-                                .transition(.scale.combined(with: .opacity))
-                        } else {
-                            Text("Use")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(.scarletRed)
-                                .transition(.opacity)
-                        }
-                    }
-                    .frame(width: 48, height: 30)
-                    .background(Capsule().fill(Color.scarletRed.opacity(0.1)))
+            Button {
+                onUse()
+                withAnimation(.easeInOut(duration: 0.2)) { applied = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    withAnimation(.easeOut(duration: 0.3)) { applied = false }
                 }
-                .disabled(!isActive)
-                .opacity(isActive ? 1.0 : 0.3)
+            } label: {
+                ZStack {
+                    if applied {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(.scarletRed)
+                            .transition(.scale.combined(with: .opacity))
+                    } else {
+                        Text("Use")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(.scarletRed)
+                            .transition(.opacity)
+                    }
+                }
+                .frame(width: 44, height: 28)
+                .background(Capsule().fill(Color.scarletRed.opacity(0.1)))
             }
+            .disabled(!isActive)
+            .opacity(isActive ? 1 : 0.3)
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.vertical, 11)
         .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white.opacity(isInUse ? 0.06 : 0.04))
+            RoundedRectangle(cornerRadius: 13)
+                .fill(Color.white.opacity(0.03))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(
-                            isInUse ? Color.scarletRed.opacity(0.2) : Color.white.opacity(0.06),
-                            lineWidth: isInUse ? 1 : 0.5
-                        )
+                    RoundedRectangle(cornerRadius: 13)
+                        .stroke(Color.white.opacity(0.05), lineWidth: 0.5)
                 )
         )
     }
