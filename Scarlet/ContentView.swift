@@ -12,7 +12,9 @@ import SwiftUI
 /// Root container with glass tab bar and three-phase signing bottom sheet.
 struct ContentView: View {
     @StateObject private var signingState = SigningState()
+    @ObservedObject private var certService = CertificateService.shared
     @State private var selectedTab: Tab = .home
+    @State private var showCertPicker = false
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -161,11 +163,30 @@ struct ContentView: View {
     @ViewBuilder
     private var bottomSheet: some View {
         VStack(spacing: 0) {
-            // Handle
+            // Handle — drag to dismiss
             Capsule()
-                .fill(Color.white.opacity(0.3))
-                .frame(width: 40, height: 4)
-                .padding(.top, 12)
+                .fill(Color.white.opacity(0.25))
+                .frame(width: 36, height: 4)
+                .padding(.top, 10)
+                .padding(.bottom, 4)
+                .contentShape(Rectangle().size(width: 200, height: 40))
+                .gesture(
+                    DragGesture()
+                        .onChanged { value in
+                            if value.translation.height > 0 {
+                                sheetOffset = value.translation.height
+                            }
+                        }
+                        .onEnded { value in
+                            if value.translation.height > 100 {
+                                dismissSheet()
+                            } else {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    sheetOffset = 0
+                                }
+                            }
+                        }
+                )
 
             switch sheetPhase {
             case .configure:
@@ -184,46 +205,129 @@ struct ContentView: View {
     // MARK: - Phase 1: Configure
 
     private var configureContent: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 12) {
             // App header
             if let app = selectedApp {
-                HStack(spacing: 14) {
+                HStack(spacing: 12) {
                     appIconView(app)
-                        .frame(width: 50, height: 50)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .frame(width: 46, height: 46)
+                        .clipShape(RoundedRectangle(cornerRadius: 11))
                     VStack(alignment: .leading, spacing: 2) {
                         Text(app.appName)
-                            .font(.system(size: 17, weight: .bold))
+                            .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.white)
                             .lineLimit(1)
                         Text(app.formattedSize)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.gray)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.white.opacity(0.3))
                     }
                     Spacer()
                 }
             }
 
-            Divider().background(Color.white.opacity(0.1))
-
-            // Certificate
-            HStack(spacing: 12) {
-                Image(systemName: SigningSettings.shared.hasCertificate ? "checkmark.seal.fill" : "xmark.seal.fill")
-                    .font(.system(size: 18))
-                    .foregroundColor(SigningSettings.shared.hasCertificate ? .green : .red)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Certificate")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.white)
-                    Text(SigningSettings.shared.savedCertName ?? "No certificate — add in Settings")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(SigningSettings.shared.hasCertificate ? .gray : .red)
-                        .lineLimit(1)
+            // Certificate picker
+            VStack(spacing: 0) {
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        showCertPicker.toggle()
+                    }
+                    if showCertPicker && certService.certificates.isEmpty {
+                        Task { await certService.fetchCertificates() }
+                    }
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: SigningSettings.shared.hasCertificate ? "checkmark.seal.fill" : "xmark.seal.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(SigningSettings.shared.hasCertificate ? .green : .red.opacity(0.6))
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Certificate")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(.white.opacity(0.3))
+                            Text(SigningSettings.shared.savedCertName ?? "Tap to select")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+                        }
+                        Spacer()
+                        Image(systemName: showCertPicker ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white.opacity(0.2))
+                    }
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.white.opacity(0.03))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                            )
+                    )
                 }
-                Spacer()
-            }
+                .buttonStyle(.plain)
 
-            Divider().background(Color.white.opacity(0.1))
+                // Expandable cert list
+                if showCertPicker {
+                    VStack(spacing: 6) {
+                        if certService.isLoading {
+                            HStack {
+                                ProgressView().tint(.scarletRed)
+                                    .scaleEffect(0.8)
+                                Text("Loading...")
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.3))
+                            }
+                            .padding(.vertical, 8)
+                        } else if certService.certificates.isEmpty {
+                            Text("No certificates available")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.white.opacity(0.3))
+                                .padding(.vertical, 8)
+                        } else {
+                            ForEach(certService.certificates) { cert in
+                                Button {
+                                    certService.useCertificate(cert)
+                                    let impact = UIImpactFeedbackGenerator(style: .medium)
+                                    impact.impactOccurred()
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                        showCertPicker = false
+                                    }
+                                } label: {
+                                    let isActive = SigningSettings.shared.savedCertName == cert.name
+                                    HStack(spacing: 10) {
+                                        Circle()
+                                            .fill(isActive ? Color.green : Color.white.opacity(0.08))
+                                            .frame(width: 6, height: 6)
+                                        VStack(alignment: .leading, spacing: 1) {
+                                            Text(cert.name)
+                                                .font(.system(size: 12, weight: .semibold))
+                                                .foregroundColor(.white)
+                                                .lineLimit(1)
+                                            Text(cert.cert_type ?? "Certificate")
+                                                .font(.system(size: 9, weight: .medium))
+                                                .foregroundColor(.white.opacity(0.25))
+                                        }
+                                        Spacer()
+                                        if isActive {
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 10, weight: .bold))
+                                                .foregroundColor(.green)
+                                        }
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(isActive ? Color.green.opacity(0.06) : Color.white.opacity(0.02))
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    .padding(.top, 6)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
 
             // Editable fields
             configField(icon: "textformat", label: "App Name", text: $signDisplayName)
@@ -233,12 +337,12 @@ struct ContentView: View {
             // Compression picker
             HStack(spacing: 12) {
                 Image(systemName: "archivebox")
-                    .font(.system(size: 16))
-                    .foregroundColor(.cyan)
+                    .font(.system(size: 14))
+                    .foregroundColor(.cyan.opacity(0.6))
                     .frame(width: 20)
                 Text("Compression")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.white)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.7))
                 Spacer()
                 Picker("", selection: $signCompression) {
                     Text("0").tag(0)
@@ -247,36 +351,33 @@ struct ContentView: View {
                     Text("9").tag(9)
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 160)
+                .frame(width: 150)
             }
 
-            // Sign button
+            // Sign button — sleek capsule
             Button { startSigning() } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "signature")
-                        .font(.system(size: 16, weight: .bold))
-                    Text("Sign")
-                        .font(.system(size: 17, weight: .bold))
-                }
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(
-                            SigningSettings.shared.hasCertificate
-                                ? LinearGradient.scarletButtonGradient
-                                : LinearGradient(colors: [.gray.opacity(0.4)], startPoint: .leading, endPoint: .trailing)
-                        )
-                )
-                .shadow(color: .scarletRed.opacity(0.3), radius: 10, y: 4)
+                Text("Sign")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 13)
+                    .background(
+                        Capsule()
+                            .fill(
+                                SigningSettings.shared.hasCertificate
+                                    ? LinearGradient(colors: [.scarletRed, .scarletDark],
+                                                     startPoint: .leading, endPoint: .trailing)
+                                    : LinearGradient(colors: [Color.white.opacity(0.08)],
+                                                     startPoint: .leading, endPoint: .trailing)
+                            )
+                    )
             }
             .buttonStyle(.plain)
             .disabled(!SigningSettings.shared.hasCertificate)
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 14)
-        .padding(.bottom, 20)
+        .padding(.horizontal, 18)
+        .padding(.top, 10)
+        .padding(.bottom, 18)
     }
 
     private func configField(icon: String, label: String, text: Binding<String>) -> some View {
