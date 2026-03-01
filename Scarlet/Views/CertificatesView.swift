@@ -22,10 +22,12 @@ struct CertificatesView: View {
     @State private var showFilePicker = false
     @State private var filePickerType: FilePickerType = .p12
 
+    // Selection animation
+    @State private var justSelectedId: String?
+
     enum ImportStep { case idle, pickProfile, enterPassword }
     enum FilePickerType { case p12, profile }
 
-    // Active cert
     private var activeCert: RemoteCertificate? {
         certService.certificates.first { settings.savedCertName == "\($0.id).p12" }
     }
@@ -35,7 +37,6 @@ struct CertificatesView: View {
 
     var body: some View {
         ZStack {
-            // Deep dark background
             Color(red: 0.04, green: 0.04, blue: 0.05).ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
@@ -80,35 +81,23 @@ struct CertificatesView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Certificates")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.white)
-                if let udid = certService.deviceUDID {
-                    Text(udid)
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .foregroundColor(.white.opacity(0.2))
-                }
-            }
-            Spacer()
-            Button {
-                filePickerType = .p12
-                showFilePicker = true
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(.scarletRed)
-                    .frame(width: 32, height: 32)
-                    .background(Circle().fill(Color.scarletRed.opacity(0.12)))
+        VStack(alignment: .leading, spacing: 2) {
+            Text("Certificates")
+                .font(.system(size: 28, weight: .bold))
+                .foregroundColor(.white)
+            if let udid = certService.deviceUDID {
+                Text(udid)
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .foregroundColor(.white.opacity(0.2))
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
         .padding(.top, 12)
         .padding(.bottom, 20)
     }
 
-    // MARK: - Active Certificate (Hero Card)
+    // MARK: - Certificate Content
 
     private var certContent: some View {
         VStack(spacing: 24) {
@@ -135,10 +124,10 @@ struct CertificatesView: View {
 
                     VStack(spacing: 10) {
                         ForEach(otherCerts) { cert in
-                            CompactCard(cert: cert) {
-                                certService.useCertificate(cert)
-                                settings.objectWillChange.send()
-                            }
+                            let isJustSelected = justSelectedId == cert.id
+                            CompactCard(cert: cert, isJustSelected: isJustSelected)
+                                .scaleEffect(isJustSelected ? 0.96 : 1.0)
+                                .onTapGesture { selectCert(cert) }
                         }
                     }
                     .padding(.horizontal, 20)
@@ -170,6 +159,34 @@ struct CertificatesView: View {
         }
     }
 
+    // MARK: - Selection Animation
+
+    private func selectCert(_ cert: RemoteCertificate) {
+        guard !cert.isExpired else { return }
+
+        // Haptic
+        let impact = UIImpactFeedbackGenerator(style: .medium)
+        impact.impactOccurred()
+
+        // Animate: shrink + glow
+        withAnimation(.spring(response: 0.25, dampingFraction: 0.6)) {
+            justSelectedId = cert.id
+        }
+
+        // Apply after brief delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            certService.useCertificate(cert)
+            settings.objectWillChange.send()
+        }
+
+        // Reset animation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            withAnimation(.easeOut(duration: 0.3)) {
+                justSelectedId = nil
+            }
+        }
+    }
+
     // MARK: - Empty / Loading
 
     private var loadingSection: some View {
@@ -179,18 +196,15 @@ struct CertificatesView: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.white.opacity(0.25))
         }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 100)
+        .frame(maxWidth: .infinity).padding(.top, 100)
     }
 
     private var emptySection: some View {
         VStack(spacing: 20) {
             ZStack {
                 Circle()
-                    .fill(
-                        RadialGradient(colors: [Color.scarletRed.opacity(0.15), .clear],
-                                       center: .center, startRadius: 0, endRadius: 50)
-                    )
+                    .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.15), .clear],
+                                         center: .center, startRadius: 0, endRadius: 50))
                     .frame(width: 100, height: 100)
                 Image(systemName: "lock.shield")
                     .font(.system(size: 34))
@@ -199,12 +213,30 @@ struct CertificatesView: View {
             Text("No Certificates")
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white.opacity(0.4))
-            Text("Tap + to import your own")
+            Text("Tap Import Certificate below")
                 .font(.system(size: 13))
                 .foregroundColor(.white.opacity(0.2))
+
+            // Import button in empty state too
+            Button {
+                filePickerType = .p12
+                showFilePicker = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "plus.circle")
+                        .font(.system(size: 16))
+                    Text("Import Certificate")
+                        .font(.system(size: 13, weight: .semibold))
+                }
+                .foregroundColor(.scarletRed)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+                .background(
+                    Capsule().fill(Color.scarletRed.opacity(0.12))
+                )
+            }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 80)
+        .frame(maxWidth: .infinity).padding(.top, 60)
     }
 
     // MARK: - Import Flow
@@ -262,16 +294,12 @@ struct HeroCard: View {
     private var isDev: Bool {
         (cert.cert_type?.uppercased() ?? "").contains("DEVELOPMENT")
     }
-    private var progress: Double {
-        min(1, Double(days) / 365.0)
-    }
+    private var progress: Double { min(1, Double(days) / 365.0) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Top section
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
-                    // Scarlet logo placeholder
                     HStack(spacing: 6) {
                         Circle()
                             .fill(Color.scarletRed)
@@ -281,14 +309,12 @@ struct HeroCard: View {
                             .tracking(2)
                             .foregroundColor(.scarletRed.opacity(0.7))
                     }
-
                     Text(cert.name)
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white)
                         .lineLimit(2)
                 }
                 Spacer()
-                // Days ring
                 ZStack {
                     Circle()
                         .stroke(Color.white.opacity(0.06), lineWidth: 3)
@@ -316,17 +342,12 @@ struct HeroCard: View {
             .padding(.top, 18)
             .padding(.bottom, 14)
 
-            // Divider
             Rectangle()
-                .fill(
-                    LinearGradient(colors: [.clear, Color.scarletRed.opacity(0.2), .clear],
-                                   startPoint: .leading, endPoint: .trailing)
-                )
+                .fill(LinearGradient(colors: [.clear, Color.scarletRed.opacity(0.2), .clear],
+                                     startPoint: .leading, endPoint: .trailing))
                 .frame(height: 0.5)
 
-            // Bottom info row
             HStack {
-                // Type
                 HStack(spacing: 4) {
                     Image(systemName: isDev ? "wrench.and.screwdriver" : "checkmark.seal.fill")
                         .font(.system(size: 9))
@@ -337,7 +358,6 @@ struct HeroCard: View {
 
                 Spacer()
 
-                // PPQ
                 Text(cert.isPPQEnabled ? "PPQ" : "PPQless")
                     .font(.system(size: 9, weight: .bold))
                     .foregroundColor(.white.opacity(0.3))
@@ -345,7 +365,6 @@ struct HeroCard: View {
                     .padding(.vertical, 2)
                     .background(Capsule().fill(Color.white.opacity(0.06)))
 
-                // Status
                 HStack(spacing: 4) {
                     Circle()
                         .fill(Color(red: 0.2, green: 0.65, blue: 0.3).opacity(0.7))
@@ -361,25 +380,15 @@ struct HeroCard: View {
         .background(
             ZStack {
                 RoundedRectangle(cornerRadius: 18)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.scarletRed.opacity(0.08),
-                                Color(red: 0.08, green: 0.08, blue: 0.1),
-                                Color(red: 0.06, green: 0.06, blue: 0.07)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(LinearGradient(
+                        colors: [Color.scarletRed.opacity(0.08),
+                                 Color(red: 0.08, green: 0.08, blue: 0.1),
+                                 Color(red: 0.06, green: 0.06, blue: 0.07)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing))
                 RoundedRectangle(cornerRadius: 18)
-                    .stroke(
-                        LinearGradient(
-                            colors: [Color.scarletRed.opacity(0.3), Color.scarletRed.opacity(0.05)],
-                            startPoint: .topLeading, endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
+                    .stroke(LinearGradient(
+                        colors: [Color.scarletRed.opacity(0.3), Color.scarletRed.opacity(0.05)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1)
             }
         )
         .shadow(color: Color.scarletRed.opacity(0.08), radius: 20, y: 8)
@@ -390,8 +399,7 @@ struct HeroCard: View {
 
 struct CompactCard: View {
     let cert: RemoteCertificate
-    let onUse: () -> Void
-    @State private var applied = false
+    var isJustSelected: Bool = false
 
     private var isActive: Bool { !cert.isExpired }
     private var days: Int {
@@ -403,7 +411,6 @@ struct CompactCard: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            // Icon
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(Color.scarletRed.opacity(0.08))
@@ -423,17 +430,11 @@ struct CompactCard: View {
                     Text(isDev ? "Development" : "Distribution")
                         .font(.system(size: 9, weight: .bold))
                         .foregroundColor(.scarletRed.opacity(0.7))
-
-                    Text("·")
-                        .foregroundColor(.white.opacity(0.15))
-
+                    Text("·").foregroundColor(.white.opacity(0.15))
                     Text(cert.isPPQEnabled ? "PPQ" : "PPQless")
                         .font(.system(size: 9, weight: .bold))
                         .foregroundColor(.white.opacity(0.25))
-
-                    Text("·")
-                        .foregroundColor(.white.opacity(0.15))
-
+                    Text("·").foregroundColor(.white.opacity(0.15))
                     HStack(spacing: 3) {
                         Circle()
                             .fill(isActive
@@ -446,44 +447,30 @@ struct CompactCard: View {
                     }
                 }
             }
-
             Spacer()
 
-            Button {
-                onUse()
-                withAnimation(.easeInOut(duration: 0.2)) { applied = true }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    withAnimation(.easeOut(duration: 0.3)) { applied = false }
-                }
-            } label: {
-                ZStack {
-                    if applied {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(.scarletRed)
-                            .transition(.scale.combined(with: .opacity))
-                    } else {
-                        Text("Use")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(.scarletRed)
-                            .transition(.opacity)
-                    }
-                }
-                .frame(width: 44, height: 28)
-                .background(Capsule().fill(Color.scarletRed.opacity(0.1)))
+            // Checkmark flash on selection
+            if isJustSelected {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.scarletRed)
+                    .transition(.scale.combined(with: .opacity))
             }
-            .disabled(!isActive)
-            .opacity(isActive ? 1 : 0.3)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
         .background(
             RoundedRectangle(cornerRadius: 13)
-                .fill(Color.white.opacity(0.03))
+                .fill(Color.white.opacity(isJustSelected ? 0.06 : 0.03))
                 .overlay(
                     RoundedRectangle(cornerRadius: 13)
-                        .stroke(Color.white.opacity(0.05), lineWidth: 0.5)
+                        .stroke(
+                            isJustSelected ? Color.scarletRed.opacity(0.35) : Color.white.opacity(0.05),
+                            lineWidth: isJustSelected ? 1 : 0.5
+                        )
                 )
         )
+        .opacity(isActive ? 1 : 0.4)
+        .animation(.easeInOut(duration: 0.25), value: isJustSelected)
     }
 }
