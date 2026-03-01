@@ -38,11 +38,12 @@ struct ContentView: View {
     @State private var signCompression: Int = 0
 
     enum Tab: Int, CaseIterable {
-        case home, sign, settings
+        case home, sign, certs, settings
         var icon: String {
             switch self {
             case .home: return "house.fill"
             case .sign: return "square.and.arrow.down.fill"
+            case .certs: return "person.badge.key.fill"
             case .settings: return "gearshape.fill"
             }
         }
@@ -50,6 +51,7 @@ struct ContentView: View {
             switch self {
             case .home: return "Home"
             case .sign: return "Library"
+            case .certs: return "Certs"
             case .settings: return "Settings"
             }
         }
@@ -73,6 +75,8 @@ struct ContentView: View {
                             openConfigSheet(app)
                         })
                     }
+                case .certs:
+                    NavigationStack { CertificatesView() }
                 case .settings:
                     NavigationStack { SettingsView() }
                 }

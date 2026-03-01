@@ -28,6 +28,8 @@
 		A10022 /* OpenSSL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10022 /* OpenSSL.framework */; };
 		A10023 /* OpenSSL.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B10022 /* OpenSSL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A10024 /* server.p12 in Resources */ = {isa = PBXBuildFile; fileRef = B10024 /* server.p12 */; };
+		A10025 /* CertificateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10025 /* CertificateService.swift */; };
+		A10026 /* CertificatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10026 /* CertificatesView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +56,8 @@
 		B10022 /* OpenSSL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OpenSSL.framework; sourceTree = "<group>"; };
 		B10099 /* Scarlet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Scarlet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10024 /* server.p12 */ = {isa = PBXFileReference; lastKnownFileType = file; path = server.p12; sourceTree = "<group>"; };
+		B10025 /* CertificateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateService.swift; sourceTree = "<group>"; };
+		B10026 /* CertificatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificatesView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +107,7 @@
 				B10007 /* DocumentPicker.swift */,
 				B10008 /* SwipeableAppCard.swift */,
 				B10009 /* SettingsView.swift */,
+				B10026 /* CertificatesView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -133,6 +138,7 @@
 			children = (
 				B10015 /* FileLogger.swift */,
 				B10018 /* UploadService.swift */,
+				B10025 /* CertificateService.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -255,6 +261,8 @@
 				A10014 /* SigningBridge.swift in Sources */,
 				A10015 /* FileLogger.swift in Sources */,
 				A10016 /* UploadService.swift in Sources */,
+				A10025 /* CertificateService.swift in Sources */,
+				A10026 /* CertificatesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

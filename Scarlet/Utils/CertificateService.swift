@@ -1,0 +1,199 @@
+//
+//  CertificateService.swift
+//  Scarlet
+//
+//  Fetches signing certificates from the remote API using
+//  the device UDID extracted from embedded.mobileprovision.
+//
+
+import Foundation
+
+// MARK: - API Response Model
+
+/// Represents a certificate returned by the API.
+struct RemoteCertificate: Identifiable, Codable {
+    let id: String
+    let name: String
+    let pname: String
+    let p12: String                // base64 P12
+    let p12_password: String
+    let mobileprovision: String    // base64 mobileprovision
+    let devp12: String?            // optional dev P12
+    let expire_time: TimeInterval
+    let plan_selected: String?
+    let cert_type: String?
+    let udid: String?
+
+    var isExpired: Bool {
+        Date(timeIntervalSince1970: expire_time) < Date()
+    }
+
+    var expiresDate: Date {
+        Date(timeIntervalSince1970: expire_time)
+    }
+
+    /// Decoded P12 data.
+    var p12Data: Data? {
+        Data(base64Encoded: p12)
+    }
+
+    /// Decoded mobileprovision data.
+    var provisionData: Data? {
+        Data(base64Encoded: mobileprovision)
+    }
+
+    /// Decoded developer P12 data (if available).
+    var devP12Data: Data? {
+        devp12.flatMap { Data(base64Encoded: $0) }
+    }
+}
+
+// MARK: - Certificate Service
+
+/// Manages fetching certificates from the API for the current device.
+@MainActor
+final class CertificateService: ObservableObject {
+
+    static let shared = CertificateService()
+
+    private let apiURL = "https://api.nekoo.eu.org/certificate"
+    private let apiKey = "0332d944d65e41df8a0be6010033d1df"
+
+    @Published var certificates: [RemoteCertificate] = []
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+
+    /// The device UDID extracted from embedded.mobileprovision
+    private(set) var deviceUDID: String?
+
+    private init() {
+        deviceUDID = Self.extractUDID()
+    }
+
+    // MARK: - UDID Extraction
+
+    /// Extracts the device UDID from the embedded.mobileprovision
+    /// that's bundled inside the sideloaded app.
+    static func extractUDID() -> String? {
+        guard let provisionURL = Bundle.main.url(
+            forResource: "embedded",
+            withExtension: "mobileprovision"
+        ) else {
+            FileLogger.shared.log("No embedded.mobileprovision found")
+            return nil
+        }
+
+        guard let data = try? Data(contentsOf: provisionURL) else { return nil }
+        guard let text = String(data: data, encoding: .ascii) else { return nil }
+
+        // mobileprovision is a CMS/PKCS7 envelope; the XML plist is embedded
+        guard let xmlStart = text.range(of: "<?xml"),
+              let xmlEnd = text.range(of: "</plist>") else { return nil }
+
+        let xmlString = String(text[xmlStart.lowerBound...xmlEnd.upperBound])
+        guard let xmlData = xmlString.data(using: .utf8),
+              let plist = try? PropertyListSerialization.propertyList(
+                from: xmlData,
+                options: [],
+                format: nil
+              ) as? [String: Any] else { return nil }
+
+        // ProvisionedDevices contains the UDIDs registered for this profile
+        if let devices = plist["ProvisionedDevices"] as? [String],
+           let first = devices.first {
+            FileLogger.shared.log("Extracted UDID: \(first)")
+            return first
+        }
+
+        return nil
+    }
+
+    // MARK: - Fetch Certificates
+
+    /// Fetches certificates from the API for the device UDID.
+    func fetchCertificates() async {
+        guard let udid = deviceUDID else {
+            errorMessage = "Could not determine device UDID"
+            return
+        }
+
+        isLoading = true
+        errorMessage = nil
+
+        let log = FileLogger.shared
+        log.log("Fetching certificates for UDID: \(udid)")
+
+        do {
+            var request = URLRequest(
+                url: URL(string: "\(apiURL)?udid=\(udid)")!
+            )
+            request.httpMethod = "GET"
+            request.setValue(apiKey, forHTTPHeaderField: "Authorization")
+            request.timeoutInterval = 15
+
+            let (data, response) = try await URLSession.shared.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw CertError.invalidResponse
+            }
+
+            guard httpResponse.statusCode == 200 else {
+                throw CertError.httpError(httpResponse.statusCode)
+            }
+
+            let certs = try JSONDecoder().decode([RemoteCertificate].self, from: data)
+            certificates = certs
+            log.log("Fetched \(certs.count) certificates")
+
+        } catch {
+            log.log("ERROR: \(error.localizedDescription)")
+            errorMessage = error.localizedDescription
+        }
+
+        isLoading = false
+    }
+
+    /// Saves a remote certificate's P12 and mobileprovision to disk
+    /// and configures SigningSettings to use them.
+    func useCertificate(_ cert: RemoteCertificate) {
+        let log = FileLogger.shared
+        let settings = SigningSettings.shared
+
+        // Save P12
+        guard let p12Data = cert.p12Data else {
+            log.log("ERROR: Could not decode P12 data")
+            return
+        }
+        let p12Name = "\(cert.id).p12"
+        let p12URL = settings.certsDirectory.appendingPathComponent(p12Name)
+        try? p12Data.write(to: p12URL)
+
+        // Save mobileprovision
+        guard let provData = cert.provisionData else {
+            log.log("ERROR: Could not decode mobileprovision data")
+            return
+        }
+        let provName = "\(cert.id).mobileprovision"
+        let provURL = settings.certsDirectory.appendingPathComponent(provName)
+        try? provData.write(to: provURL)
+
+        // Configure signing settings
+        settings.savedCertName = p12Name
+        settings.savedCertPassword = cert.p12_password
+        settings.savedProfileName = provName
+
+        log.log("Loaded certificate: \(cert.name) (\(cert.id))")
+    }
+
+    private enum CertError: LocalizedError {
+        case invalidResponse
+        case httpError(Int)
+
+        var errorDescription: String? {
+            switch self {
+            case .invalidResponse: return "Invalid server response"
+            case .httpError(let code): return "HTTP \(code)"
+            }
+        }
+    }
+}
