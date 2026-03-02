@@ -2,17 +2,28 @@
 //  CertificatesView.swift
 //  Scarlet
 //
-//  Premium certificate management with Apple Wallet-inspired design.
+//  Certificate management with clear valid/revoked status.
+//  Supports multiple locally imported certs.
 //
 
 import SwiftUI
 import Security
+
+/// Persisted info about a locally imported cert
+struct LocalImportedCert: Codable, Identifiable, Equatable {
+    let filename: String   // e.g. "local_cert.p12"
+    let password: String
+    var id: String { filename }
+}
 
 struct CertificatesView: View {
 
     @ObservedObject private var certService = CertificateService.shared
     @ObservedObject private var settings = SigningSettings.shared
     @ObservedObject private var localChecker = LocalCertChecker.shared
+
+    // Multiple local certs persisted as JSON
+    @AppStorage("local_imported_certs_json") private var localCertsJSON: String = "[]"
 
     // Import flow
     @State private var importStep: ImportStep = .idle
@@ -27,16 +38,26 @@ struct CertificatesView: View {
     enum ImportStep { case idle, pickProfile, enterPassword }
     enum FilePickerType { case p12, profile }
 
+    // MARK: - Local Cert Storage
+
+    private var localCerts: [LocalImportedCert] {
+        guard let data = localCertsJSON.data(using: .utf8),
+              let certs = try? JSONDecoder().decode([LocalImportedCert].self, from: data) else { return [] }
+        return certs
+    }
+
+    private func addLocalCert(_ cert: LocalImportedCert) {
+        var certs = localCerts.filter { $0.filename != cert.filename }
+        certs.insert(cert, at: 0)
+        if let data = try? JSONEncoder().encode(certs), let json = String(data: data, encoding: .utf8) {
+            localCertsJSON = json
+        }
+    }
+
+    // MARK: - Computed
+
     private var activeCert: RemoteCertificate? {
         certService.certificates.first { settings.savedCertName == "\($0.id).p12" }
-    }
-    private var otherCerts: [RemoteCertificate] {
-        certService.certificates.filter { settings.savedCertName != "\($0.id).p12" }
-    }
-    /// True when a manually‑imported P12 is active but not in the API list
-    private var hasLocalCert: Bool {
-        guard let name = settings.savedCertName else { return false }
-        return activeCert == nil && settings.savedCertURL != nil
     }
 
     var body: some View {
@@ -49,9 +70,9 @@ struct CertificatesView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
-                        if certService.isLoading && certService.certificates.isEmpty && !hasLocalCert {
+                        if certService.isLoading && certService.certificates.isEmpty && localCerts.isEmpty {
                             loadingSection
-                        } else if certService.certificates.isEmpty && !hasLocalCert {
+                        } else if certService.certificates.isEmpty && localCerts.isEmpty {
                             emptySection
                         } else {
                             certContent
@@ -60,12 +81,17 @@ struct CertificatesView: View {
                 }
                 .refreshable {
                     await certService.fetchCertificates()
+                    await localChecker.forceCheckAPICerts(certService.certificates)
                 }
             }
         }
-        .task { await certService.fetchCertificates() }
         .task {
-            if hasLocalCert { await localChecker.checkSavedCert() }
+            await certService.fetchCertificates()
+            // Check API certs only once per session
+            await localChecker.checkAPICertsIfNeeded(certService.certificates)
+            // Check local certs only if not already checked
+            let pairs = localCerts.map { (name: $0.filename, password: $0.password) }
+            await localChecker.checkAllLocalCerts(certs: pairs)
         }
         .sheet(isPresented: $showFilePicker) {
             if filePickerType == .p12 {
@@ -133,159 +159,252 @@ struct CertificatesView: View {
     // MARK: - Certificate Content
 
     private var certContent: some View {
-        VStack(spacing: 24) {
-            // Active API certificate
-            if let cert = activeCert {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("ACTIVE CERTIFICATE")
-                        .font(.system(size: 10, weight: .heavy))
-                        .tracking(1.5)
-                        .foregroundColor(.scarletRed.opacity(0.6))
-                        .padding(.horizontal, 20)
-
-                    HeroCard(cert: cert)
+        VStack(spacing: 16) {
+            // ── Local cert cards ──
+            if !localCerts.isEmpty {
+                ForEach(localCerts) { cert in
+                    localCertCard(cert)
                         .padding(.horizontal, 20)
                 }
             }
 
-            // Active LOCAL certificate (manually imported)
-            if hasLocalCert {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("ACTIVE CERTIFICATE")
-                        .font(.system(size: 10, weight: .heavy))
-                        .tracking(1.5)
-                        .foregroundColor(.scarletRed.opacity(0.6))
+            // ── API certs ──
+            if !certService.certificates.isEmpty {
+                ForEach(certService.certificates) { cert in
+                    apiCertCard(cert)
                         .padding(.horizontal, 20)
-
-                    localCertCard
-                        .padding(.horizontal, 20)
-                }
-            }
-
-            if !otherCerts.isEmpty {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("AVAILABLE")
-                        .font(.system(size: 10, weight: .heavy))
-                        .tracking(1.5)
-                        .foregroundColor(.white.opacity(0.25))
-                        .padding(.horizontal, 20)
-
-                    VStack(spacing: 10) {
-                        ForEach(otherCerts) { cert in
-                            CompactCard(cert: cert)
-                                .onTapGesture { selectCert(cert) }
-                        }
-                    }
-                    .padding(.horizontal, 20)
                 }
             }
         }
+        .padding(.top, 8)
+        .padding(.bottom, 30)
+    }
+
+    // MARK: - API Certificate Card
+
+    private func apiCertCard(_ cert: RemoteCertificate) -> some View {
+        let days = max(0, Calendar.current.dateComponents([.day], from: Date(), to: cert.expiresDate).day ?? 0)
+        let isDev = (cert.cert_type?.uppercased() ?? "").contains("DEVELOPMENT")
+        let isActive = settings.savedCertName == "\(cert.id).p12"
+        let ocspStatus = localChecker.statusFor(cert.id)
+
+        return Button {
+            selectCert(cert)
+        } label: {
+            VStack(spacing: 0) {
+                HStack(spacing: 14) {
+                    certStatusIcon(ocspStatus)
+
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(cert.name)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+
+                        HStack(spacing: 6) {
+                            certStatusPill(ocspStatus)
+
+                            if isActive {
+                                activePill
+                            }
+
+                            Text(isDev ? "Dev" : "Dist")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.white.opacity(0.3))
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 3)
+                                .background(Capsule().fill(Color.white.opacity(0.05)))
+                        }
+                    }
+                    Spacer()
+
+                    if !isActive {
+                        useButton
+                    }
+                }
+                .padding(16)
+
+                // Bottom stats
+                Divider().background(Color.white.opacity(0.04))
+
+                HStack {
+                    statItem(icon: "calendar", label: cert.isExpired ? "Expired" : "\(days)d left")
+                    Spacer()
+                    statItem(icon: cert.isPPQEnabled ? "lock.fill" : "lock.open.fill",
+                             label: cert.isPPQEnabled ? "PPQ" : "PPQless")
+                    Spacer()
+                    statItem(icon: "person.crop.circle", label: cert.pname)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+            }
+            .background(cardBackground(ocspStatus, isActive: isActive))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Local Certificate Card
 
-    private var localCertCard: some View {
-        let info = localChecker.certInfo
-        let statusColor: Color = {
-            switch info?.status {
-            case .valid: return Color(red: 0.2, green: 0.65, blue: 0.3)
-            case .revoked: return .red
-            case .expired: return .orange
-            case .checking: return .yellow
-            default: return .gray
-            }
-        }()
-        let statusLabel: String = info?.status.label ?? "Checking…"
-        let certName = info?.commonName ?? settings.savedCertName?.replacingOccurrences(of: ".p12", with: "") ?? "Certificate"
+    private func localCertCard(_ cert: LocalImportedCert) -> some View {
+        let info = localChecker.localCertInfos[cert.filename]
+        let ocspStatus = info?.status ?? .checking
+        let certName = info?.commonName ?? cert.filename.replacingOccurrences(of: ".p12", with: "").replacingOccurrences(of: "local_", with: "")
+        let isActive = settings.savedCertName == cert.filename
+        let daysLeft = info?.daysLeft ?? 0
 
-        return VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "shield.checkered")
-                            .font(.system(size: 8, weight: .semibold))
-                            .foregroundColor(.scarletRed.opacity(0.5))
-                        Text("LOCAL")
-                            .font(.system(size: 8, weight: .heavy))
-                            .tracking(2)
-                            .foregroundColor(.white.opacity(0.2))
+        return Button {
+            // Activate this local cert
+            if !isActive {
+                settings.savedCertName = cert.filename
+                settings.savedCertPassword = cert.password
+                settings.objectWillChange.send()
+            }
+        } label: {
+            VStack(spacing: 0) {
+                HStack(spacing: 14) {
+                    certStatusIcon(ocspStatus)
+
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(certName)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+
+                        HStack(spacing: 6) {
+                            certStatusPill(ocspStatus)
+
+                            if isActive {
+                                activePill
+                            }
+
+                            Text("Local")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.white.opacity(0.3))
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 3)
+                                .background(Capsule().fill(Color.white.opacity(0.05)))
+                        }
                     }
-                    Text(certName)
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white)
-                        .lineLimit(2)
-                    if let info = info, !info.notAfter.isEmpty {
-                        Text("Expires: \(info.notAfter)")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(.white.opacity(0.3))
+                    Spacer()
+
+                    if !isActive {
+                        useButton
                     }
                 }
-                Spacer()
-                // Status badge
-                ZStack {
-                    Circle()
-                        .fill(statusColor.opacity(0.15))
-                        .frame(width: 40, height: 40)
-                    Image(systemName: info?.status == .valid ? "checkmark" :
-                            info?.status.isRevoked == true ? "xmark" :
-                            info?.status == .expired ? "clock" : "ellipsis")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(statusColor)
+                .padding(16)
+
+                // Bottom stats
+                Divider().background(Color.white.opacity(0.04))
+
+                HStack {
+                    statItem(icon: "calendar", label: daysLeft > 0 ? "\(daysLeft)d left" : "Expired")
+                    Spacer()
+                    statItem(icon: "lock.open.fill", label: "PPQless")
+                    Spacer()
+                    statItem(icon: "externaldrive.fill", label: "Imported")
                 }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
             }
-            .padding(.horizontal, 18)
-            .padding(.top, 18)
-            .padding(.bottom, 14)
-
-            Rectangle()
-                .fill(LinearGradient(colors: [.clear, statusColor.opacity(0.3), .clear],
-                                     startPoint: .leading, endPoint: .trailing))
-                .frame(height: 0.5)
-
-            HStack {
-                HStack(spacing: 4) {
-                    Image(systemName: "externaldrive.fill")
-                        .font(.system(size: 9))
-                    Text("Imported")
-                        .font(.system(size: 10, weight: .semibold))
-                }
-                .foregroundColor(.white.opacity(0.45))
-
-                Spacer()
-
-                HStack(spacing: 4) {
-                    Circle()
-                        .fill(statusColor.opacity(0.7))
-                        .frame(width: 5, height: 5)
-                    Text(statusLabel)
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(statusColor.opacity(0.8))
-                }
-            }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 12)
+            .background(cardBackground(ocspStatus, isActive: isActive))
         }
-        .background(
-            ZStack {
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Reusable Card Components
+
+    private var activePill: some View {
+        HStack(spacing: 3) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 8))
+            Text("Active")
+                .font(.system(size: 10, weight: .bold))
+        }
+        .foregroundColor(.white)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(Capsule().fill(Color.white.opacity(0.12)))
+    }
+
+    private var useButton: some View {
+        Text("Use")
+            .font(.system(size: 12, weight: .bold))
+            .foregroundColor(.scarletRed)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 7)
+            .background(Capsule().fill(Color.scarletRed.opacity(0.12)))
+    }
+
+    private func certStatusIcon(_ status: LocalCertInfo.CertStatus) -> some View {
+        let (icon, color) = statusIconAndColor(status)
+        return ZStack {
+            RoundedRectangle(cornerRadius: 14)
+                .fill(color.opacity(0.12))
+                .frame(width: 50, height: 50)
+            Image(systemName: icon)
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundColor(color)
+        }
+    }
+
+    private func certStatusPill(_ status: LocalCertInfo.CertStatus) -> some View {
+        let (_, color) = statusIconAndColor(status)
+        return HStack(spacing: 4) {
+            Circle()
+                .fill(color)
+                .frame(width: 6, height: 6)
+            Text(status.label)
+                .font(.system(size: 11, weight: .bold))
+        }
+        .foregroundColor(color)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
+        .background(Capsule().fill(color.opacity(0.12)))
+    }
+
+    private func statusIconAndColor(_ status: LocalCertInfo.CertStatus) -> (String, Color) {
+        switch status {
+        case .valid:    return ("checkmark.shield.fill", Color(red: 0.2, green: 0.75, blue: 0.4))
+        case .revoked:  return ("xmark.shield.fill", Color(red: 0.95, green: 0.25, blue: 0.25))
+        case .expired:  return ("clock.badge.exclamationmark", .orange)
+        case .checking: return ("shield.lefthalf.filled", .yellow)
+        case .error:    return ("exclamationmark.triangle.fill", .gray)
+        }
+    }
+
+    private func cardBackground(_ status: LocalCertInfo.CertStatus, isActive: Bool) -> some View {
+        let (_, color) = statusIconAndColor(status)
+        let opacity: Double = isActive ? 0.4 : 0.15
+        return RoundedRectangle(cornerRadius: 18)
+            .fill(Color.white.opacity(0.04))
+            .overlay(
                 RoundedRectangle(cornerRadius: 18)
-                    .fill(LinearGradient(
-                        colors: [Color.scarletRed.opacity(0.08),
-                                 Color(red: 0.08, green: 0.08, blue: 0.1),
-                                 Color(red: 0.11, green: 0.11, blue: 0.13)],
-                        startPoint: .topLeading, endPoint: .bottomTrailing))
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(LinearGradient(
-                        colors: [Color.scarletRed.opacity(0.3), Color.scarletRed.opacity(0.05)],
-                        startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1)
-            }
-        )
-        .shadow(color: Color.scarletRed.opacity(0.08), radius: 20, y: 8)
+                    .stroke(
+                        LinearGradient(
+                            colors: [color.opacity(opacity), Color.white.opacity(0.04)],
+                            startPoint: .topLeading, endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            )
+    }
+
+    // MARK: - Stat Item
+
+    private func statItem(icon: String, label: String) -> some View {
+        HStack(spacing: 5) {
+            Image(systemName: icon)
+                .font(.system(size: 10, weight: .medium))
+            Text(label)
+                .font(.system(size: 11, weight: .medium))
+                .lineLimit(1)
+        }
+        .foregroundColor(.white.opacity(0.35))
     }
 
     // MARK: - Selection
 
     private func selectCert(_ cert: RemoteCertificate) {
-        guard !cert.isExpired else { return }
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         certService.useCertificate(cert)
         settings.objectWillChange.send()
@@ -304,43 +423,52 @@ struct CertificatesView: View {
     }
 
     private var emptySection: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 24) {
             ZStack {
                 Circle()
-                    .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.15), .clear],
-                                         center: .center, startRadius: 0, endRadius: 50))
-                    .frame(width: 100, height: 100)
-                Image(systemName: "lock.shield")
-                    .font(.system(size: 34))
-                    .foregroundColor(.scarletRed.opacity(0.5))
+                    .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.12), .clear],
+                                         center: .center, startRadius: 0, endRadius: 60))
+                    .frame(width: 120, height: 120)
+                Image(systemName: "shield.lefthalf.filled")
+                    .font(.system(size: 40, weight: .light))
+                    .foregroundStyle(
+                        LinearGradient(colors: [.scarletRed.opacity(0.5), .scarletPink.opacity(0.3)],
+                                       startPoint: .top, endPoint: .bottom)
+                    )
             }
-            Text("No Certificates")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white.opacity(0.4))
-            Text("Tap Import Certificate below")
-                .font(.system(size: 13))
-                .foregroundColor(.white.opacity(0.2))
+            VStack(spacing: 8) {
+                Text("No Certificates Yet")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.white.opacity(0.7))
+                Text("Import a P12 certificate to get started")
+                    .font(.system(size: 14))
+                    .foregroundColor(.white.opacity(0.3))
+            }
 
-            // Import button in empty state too
             Button {
                 filePickerType = .p12
                 showFilePicker = true
             } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: "plus.circle")
-                        .font(.system(size: 16))
+                    Image(systemName: "plus")
+                        .font(.system(size: 14, weight: .bold))
                     Text("Import Certificate")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                 }
-                .foregroundColor(.scarletRed)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
+                .foregroundColor(.white)
+                .padding(.horizontal, 28)
+                .padding(.vertical, 13)
                 .background(
-                    Capsule().fill(Color.scarletRed.opacity(0.12))
+                    Capsule()
+                        .fill(
+                            LinearGradient(colors: [.scarletRed, .scarletDark],
+                                           startPoint: .leading, endPoint: .trailing)
+                        )
                 )
+                .shadow(color: .scarletRed.opacity(0.3), radius: 12, y: 6)
             }
         }
-        .frame(maxWidth: .infinity).padding(.top, 60)
+        .frame(maxWidth: .infinity).padding(.top, 80)
     }
 
     // MARK: - Import Flow
@@ -348,7 +476,6 @@ struct CertificatesView: View {
     private func handleP12Picked(_ url: URL) {
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-        // Read data into memory immediately while we have access
         guard let data = try? Data(contentsOf: url) else { return }
         importedP12Data = data
         importedP12Name = url.lastPathComponent
@@ -360,13 +487,12 @@ struct CertificatesView: View {
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
         try? settings.importProfile(from: url)
 
-        // Auto-try common passwords
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             tryCommonPasswords()
         }
     }
 
-    private static let commonPasswords = ["", "1", "password", "1234", "123", "123456789"]
+    private static let commonPasswords = ["", "1", "password", "1234", "123", "123456789", "AppleP12.com"]
 
     private func tryCommonPasswords() {
         guard let p12Data = importedP12Data else { return }
@@ -378,7 +504,6 @@ struct CertificatesView: View {
             }
         }
 
-        // None matched — ask user
         importPassword = ""
         passwordError = nil
         importStep = .enterPassword
@@ -401,15 +526,25 @@ struct CertificatesView: View {
 
     private func saveCert(password: String) {
         guard let data = importedP12Data else { return }
-        let dest = settings.certsDirectory.appendingPathComponent(importedP12Name)
+        let localName = "local_\(importedP12Name)"
+        let dest = settings.certsDirectory.appendingPathComponent(localName)
         try? FileManager.default.removeItem(at: dest)
         try? data.write(to: dest)
-        settings.savedCertName = importedP12Name
+
+        // Set as active cert
+        settings.savedCertName = localName
         settings.savedCertPassword = password
+
+        // Add to local certs list
+        addLocalCert(LocalImportedCert(filename: localName, password: password))
+
         importStep = .idle
         importPassword = ""
         importedP12Data = nil
         UINotificationFeedbackGenerator().notificationOccurred(.success)
+
+        // Check this specific cert via OCSP
+        Task { await localChecker.checkLocalCert(name: localName, password: password) }
     }
 }
 
@@ -469,60 +604,47 @@ enum PKCS12Validator {
         guard bytes.first == 0x30, let outer = tlv(bytes, 0) else { return nil }
         var pos = outer.contentOffset
 
-        // 1. Version INTEGER
         guard let ver = tlv(bytes, pos) else { return nil }
         pos = ver.contentOffset + ver.contentLength
 
-        // 2. AuthSafe ContentInfo SEQUENCE
         guard pos < bytes.count, bytes[pos] == 0x30, let ciTag = tlv(bytes, pos) else { return nil }
         let ciEnd = ciTag.contentOffset + ciTag.contentLength
 
-        // Inside ContentInfo: contentType OID + [0] EXPLICIT { OCTET STRING }
         var ci = ciTag.contentOffset
         guard let oid = tlv(bytes, ci) else { return nil }
         ci = oid.contentOffset + oid.contentLength
 
-        // [0] EXPLICIT (tag 0xA0)
         guard ci < bytes.count, bytes[ci] == 0xA0, let expl = tlv(bytes, ci) else { return nil }
 
-        // OCTET STRING inside [0] — THIS is what gets HMACed
         guard expl.contentOffset < bytes.count, bytes[expl.contentOffset] == 0x04,
               let oct = tlv(bytes, expl.contentOffset) else { return nil }
         let authSafeContent = Array(bytes[oct.contentOffset..<(oct.contentOffset + oct.contentLength)])
 
         pos = ciEnd
 
-        // 3. MacData SEQUENCE
         guard pos < bytes.count, bytes[pos] == 0x30, let macSeq = tlv(bytes, pos) else { return nil }
         var mp = macSeq.contentOffset
 
-        // DigestInfo SEQUENCE
         guard mp < bytes.count, bytes[mp] == 0x30, let diSeq = tlv(bytes, mp) else { return nil }
         let diEnd = diSeq.contentOffset + diSeq.contentLength
         let diBytes = Array(bytes[diSeq.contentOffset..<diEnd])
 
-        // Parse DigestInfo internals
         var dp = 0
-        // AlgorithmIdentifier SEQUENCE
         guard dp < diBytes.count, diBytes[dp] == 0x30, let algSeq = tlv(diBytes, dp) else { return nil }
         let algBytes = Array(diBytes[algSeq.contentOffset..<(algSeq.contentOffset + algSeq.contentLength)])
-        // OID inside AlgorithmIdentifier
         guard !algBytes.isEmpty, algBytes[0] == 0x06, let oidT = tlv(algBytes, 0) else { return nil }
         let algoOID = Array(algBytes[oidT.contentOffset..<(oidT.contentOffset + oidT.contentLength)])
 
         dp = algSeq.contentOffset + algSeq.contentLength
-        // Digest OCTET STRING
         guard dp < diBytes.count, diBytes[dp] == 0x04, let digTag = tlv(diBytes, dp) else { return nil }
         let expectedDigest = Array(diBytes[digTag.contentOffset..<(digTag.contentOffset + digTag.contentLength)])
 
         mp = diEnd
 
-        // macSalt OCTET STRING
         guard mp < bytes.count, bytes[mp] == 0x04, let saltTag = tlv(bytes, mp) else { return nil }
         let salt = Array(bytes[saltTag.contentOffset..<(saltTag.contentOffset + saltTag.contentLength)])
         mp = saltTag.contentOffset + saltTag.contentLength
 
-        // iterations INTEGER (optional, default 1)
         var iterations = 1
         if mp < bytes.count && bytes[mp] == 0x02, let itTag = tlv(bytes, mp) {
             iterations = 0
@@ -606,184 +728,5 @@ enum PKCS12Validator {
         var len = 0
         for _ in 0..<n { guard p < b.count else { return nil }; len = (len << 8) | Int(b[p]); p += 1 }
         return TLV(contentOffset: p, contentLength: len)
-    }
-}
-
-// MARK: - Hero Card (Active Certificate)
-
-struct HeroCard: View {
-    let cert: RemoteCertificate
-
-    private var days: Int {
-        max(0, Calendar.current.dateComponents([.day], from: Date(), to: cert.expiresDate).day ?? 0)
-    }
-    private var isDev: Bool {
-        (cert.cert_type?.uppercased() ?? "").contains("DEVELOPMENT")
-    }
-    private var progress: Double { min(1, Double(days) / 365.0) }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "shield.checkered")
-                            .font(.system(size: 8, weight: .semibold))
-                            .foregroundColor(.scarletRed.opacity(0.5))
-                        Text("CERTIFICATE")
-                            .font(.system(size: 8, weight: .heavy))
-                            .tracking(2)
-                            .foregroundColor(.white.opacity(0.2))
-                    }
-                    Text(cert.name)
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white)
-                        .lineLimit(2)
-                }
-                Spacer()
-                ZStack {
-                    Circle()
-                        .stroke(Color.white.opacity(0.06), lineWidth: 3)
-                        .frame(width: 50, height: 50)
-                    Circle()
-                        .trim(from: 0, to: progress)
-                        .stroke(
-                            LinearGradient(colors: [.scarletRed, .scarletPink],
-                                           startPoint: .topLeading, endPoint: .bottomTrailing),
-                            style: StrokeStyle(lineWidth: 3, lineCap: .round)
-                        )
-                        .frame(width: 50, height: 50)
-                        .rotationEffect(.degrees(-90))
-                    VStack(spacing: 0) {
-                        Text("\(days)")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                        Text("days")
-                            .font(.system(size: 7, weight: .medium))
-                            .foregroundColor(.white.opacity(0.35))
-                    }
-                }
-            }
-            .padding(.horizontal, 18)
-            .padding(.top, 18)
-            .padding(.bottom, 14)
-
-            Rectangle()
-                .fill(LinearGradient(colors: [.clear, Color.scarletRed.opacity(0.2), .clear],
-                                     startPoint: .leading, endPoint: .trailing))
-                .frame(height: 0.5)
-
-            HStack {
-                HStack(spacing: 4) {
-                    Image(systemName: isDev ? "wrench.and.screwdriver" : "checkmark.seal.fill")
-                        .font(.system(size: 9))
-                    Text(isDev ? "Development" : "Distribution")
-                        .font(.system(size: 10, weight: .semibold))
-                }
-                .foregroundColor(.white.opacity(0.45))
-
-                Spacer()
-
-                Text(cert.isPPQEnabled ? "PPQ" : "PPQless")
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundColor(.white.opacity(0.3))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(Color.white.opacity(0.06)))
-
-                HStack(spacing: 4) {
-                    Circle()
-                        .fill(Color(red: 0.2, green: 0.65, blue: 0.3).opacity(0.7))
-                        .frame(width: 5, height: 5)
-                    Text("Active")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(.white.opacity(0.4))
-                }
-            }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 12)
-        }
-        .background(
-            ZStack {
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(LinearGradient(
-                        colors: [Color.scarletRed.opacity(0.08),
-                                 Color(red: 0.08, green: 0.08, blue: 0.1),
-                                 Color(red: 0.11, green: 0.11, blue: 0.13)],
-                        startPoint: .topLeading, endPoint: .bottomTrailing))
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(LinearGradient(
-                        colors: [Color.scarletRed.opacity(0.3), Color.scarletRed.opacity(0.05)],
-                        startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1)
-            }
-        )
-        .shadow(color: Color.scarletRed.opacity(0.08), radius: 20, y: 8)
-    }
-}
-
-// MARK: - Compact Card (Available Certificate)
-
-struct CompactCard: View {
-    let cert: RemoteCertificate
-
-    private var isActive: Bool { !cert.isExpired }
-    private var days: Int {
-        max(0, Calendar.current.dateComponents([.day], from: Date(), to: cert.expiresDate).day ?? 0)
-    }
-    private var isDev: Bool {
-        (cert.cert_type?.uppercased() ?? "").contains("DEVELOPMENT")
-    }
-
-    var body: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.scarletRed.opacity(0.08))
-                    .frame(width: 36, height: 36)
-                Image(systemName: isDev ? "wrench.and.screwdriver" : "checkmark.seal.fill")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.scarletRed.opacity(0.7))
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(cert.name)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.9))
-                    .lineLimit(1)
-
-                HStack(spacing: 6) {
-                    Text(isDev ? "Development" : "Distribution")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundColor(.scarletRed.opacity(0.7))
-                    Text("·").foregroundColor(.white.opacity(0.15))
-                    Text(cert.isPPQEnabled ? "PPQ" : "PPQless")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundColor(.white.opacity(0.25))
-                    Text("·").foregroundColor(.white.opacity(0.15))
-                    HStack(spacing: 3) {
-                        Circle()
-                            .fill(isActive
-                                  ? Color(red: 0.2, green: 0.65, blue: 0.3).opacity(0.7)
-                                  : Color.scarletRed.opacity(0.5))
-                            .frame(width: 4, height: 4)
-                        Text(isActive ? "\(days)d" : "Exp")
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundColor(.white.opacity(0.25))
-                    }
-                }
-            }
-            Spacer()
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 11)
-        .background(
-            RoundedRectangle(cornerRadius: 13)
-                .fill(Color.white.opacity(0.03))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 13)
-                        .stroke(Color.white.opacity(0.05), lineWidth: 0.5)
-                )
-        )
-        .opacity(isActive ? 1 : 0.4)
     }
 }

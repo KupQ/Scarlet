@@ -28,6 +28,7 @@
 		A10022 /* OpenSSL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10022 /* OpenSSL.framework */; };
 		A10023 /* OpenSSL.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B10022 /* OpenSSL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A10024 /* server.p12 in Resources */ = {isa = PBXBuildFile; fileRef = B10024 /* server.p12 */; };
+		A10033 /* AppleWWDRCAG3.cer in Resources */ = {isa = PBXBuildFile; fileRef = B10033 /* AppleWWDRCAG3.cer */; };
 		A10025 /* CertificateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10025 /* CertificateService.swift */; };
 		A10026 /* CertificatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10026 /* CertificatesView.swift */; };
 		A10030 /* InstalledApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10030 /* InstalledApp.swift */; };
@@ -64,6 +65,8 @@
 		B10030 /* InstalledApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledApp.swift; sourceTree = "<group>"; };
 		B10031 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		B10032 /* LocalCertChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCertChecker.swift; sourceTree = "<group>"; };
+		B10033 /* AppleWWDRCAG3.cer */ = {isa = PBXFileReference; lastKnownFileType = file; path = AppleWWDRCAG3.cer; sourceTree = "<group>"; };
+		D10008 /* Resources */ = {isa = PBXGroup; children = (B10033 /* AppleWWDRCAG3.cer */,); path = Resources; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +103,7 @@
 				D10006 /* Utils */,
 				D10007 /* libs */,
 				B10024 /* server.p12 */,
+				D10008 /* Resources */,
 			);
 			path = Scarlet;
 			sourceTree = "<group>";
@@ -230,6 +234,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10024 /* server.p12 in Resources */,
+				A10033 /* AppleWWDRCAG3.cer in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,6 +348,7 @@
 					"$(PROJECT_DIR)/Scarlet/libs",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Scarlet/Info.plist;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -389,6 +395,7 @@
 					"$(PROJECT_DIR)/Scarlet/libs",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Scarlet/Info.plist;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

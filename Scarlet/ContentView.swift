@@ -38,6 +38,7 @@ struct ContentView: View {
     @State private var signDisplayName: String = ""
     @State private var signVersion: String = ""
     @State private var signCompression: Int = 0
+    @State private var signIconPulse = false
 
     enum Tab: Int, CaseIterable {
         case home, sign, certs
@@ -125,6 +126,18 @@ struct ContentView: View {
         } message: { Text(errorMessage) }
         .sheet(isPresented: $showShareSheet) {
             if let url = signingOutputURL { ShareSheet(items: [url]) }
+        }
+        .task {
+            // Fetch certs and check OCSP at app launch, regardless of which tab is active
+            await certService.fetchCertificates()
+            await LocalCertChecker.shared.checkAPICertsIfNeeded(certService.certificates)
+            // Check local certs too
+            let localJSON = UserDefaults.standard.string(forKey: "local_imported_certs_json") ?? "[]"
+            if let data = localJSON.data(using: .utf8),
+               let localCerts = try? JSONDecoder().decode([LocalImportedCert].self, from: data) {
+                let pairs = localCerts.map { (name: $0.filename, password: $0.password) }
+                await LocalCertChecker.shared.checkAllLocalCerts(certs: pairs)
+            }
         }
     }
 
@@ -218,8 +231,16 @@ struct ContentView: View {
     // MARK: - Phase 1: Configure
 
     private var configureContent: some View {
-        VStack(spacing: 12) {
-            // App header
+        let localChecker = LocalCertChecker.shared
+        let localCertsJSON = UserDefaults.standard.string(forKey: "local_imported_certs_json") ?? "[]"
+        let localCerts: [LocalImportedCert] = {
+            guard let data = localCertsJSON.data(using: .utf8),
+                  let certs = try? JSONDecoder().decode([LocalImportedCert].self, from: data) else { return [] }
+            return certs
+        }()
+
+        return VStack(spacing: 12) {
+            // App header with reload button
             if let app = selectedApp {
                 HStack(spacing: 12) {
                     appIconView(app)
@@ -235,107 +256,29 @@ struct ContentView: View {
                             .foregroundColor(.white.opacity(0.3))
                     }
                     Spacer()
-                }
-            }
 
-            // Certificate picker
-            VStack(spacing: 0) {
-                Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                        showCertPicker.toggle()
-                    }
-                    if showCertPicker && certService.certificates.isEmpty {
-                        Task { await certService.fetchCertificates() }
-                    }
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: SigningSettings.shared.hasCertificate ? "checkmark.seal.fill" : "xmark.seal.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(SigningSettings.shared.hasCertificate ? .green : .red.opacity(0.6))
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text("Certificate")
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(.white.opacity(0.3))
-                            certDisplayText
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(.white)
-                                .lineLimit(1)
-                        }
-                        Spacer()
-                        Image(systemName: showCertPicker ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.white.opacity(0.2))
-                    }
-                    .padding(12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.white.opacity(0.03))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
-                            )
-                    )
-                }
-                .buttonStyle(.plain)
-
-                // Expandable cert list
-                if showCertPicker {
-                    VStack(spacing: 6) {
-                        if certService.isLoading {
-                            HStack {
-                                ProgressView().tint(.scarletRed)
-                                    .scaleEffect(0.8)
-                                Text("Loading...")
-                                    .font(.system(size: 11, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.3))
-                            }
+                    // Sign action
+                    Button {
+                        startSigning()
+                    } label: {
+                        Text("Sign")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.6))
+                            .padding(.horizontal, 16)
                             .padding(.vertical, 8)
-                        } else if certService.certificates.isEmpty {
-                            Text("No certificates available")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(.white.opacity(0.3))
-                                .padding(.vertical, 8)
-                        } else {
-                            ForEach(certService.certificates) { cert in
-                                Button {
-                                    certService.useCertificate(cert)
-                                    let impact = UIImpactFeedbackGenerator(style: .medium)
-                                    impact.impactOccurred()
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                        showCertPicker = false
-                                    }
-                                } label: {
-                                    let isActive = SigningSettings.shared.savedCertName == "\(cert.id).p12"
-                                    HStack(spacing: 10) {
-                                        Circle()
-                                            .fill(isActive ? Color.scarletRed : Color.white.opacity(0.08))
-                                            .frame(width: 6, height: 6)
-                                        VStack(alignment: .leading, spacing: 1) {
-                                            Text(cert.name)
-                                                .font(.system(size: 12, weight: .semibold))
-                                                .foregroundColor(.white)
-                                                .lineLimit(1)
-                                            HStack(spacing: 4) {
-                                                Text(certTypeLabel(cert.cert_type))
-                                                    .font(.system(size: 9, weight: .bold))
-                                                    .foregroundColor(certTypeLabel(cert.cert_type) == "Development" ? .blue.opacity(0.6) : .orange.opacity(0.6))
-                                            }
-                                        }
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .fill(isActive ? Color.scarletRed.opacity(0.06) : Color.white.opacity(0.02))
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.white.opacity(0.04))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
                                     )
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
+                            )
+                            .overlay(PulseGlow(cornerRadius: 8))
                     }
-                    .padding(.top, 6)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    .buttonStyle(.plain)
+                    .disabled(!SigningSettings.shared.hasCertificate)
+                    .opacity(SigningSettings.shared.hasCertificate ? 1.0 : 0.35)
                 }
             }
 
@@ -348,7 +291,7 @@ struct ContentView: View {
             HStack(spacing: 12) {
                 Image(systemName: "archivebox")
                     .font(.system(size: 14))
-                    .foregroundColor(.cyan.opacity(0.6))
+                    .foregroundColor(.scarletRed)
                     .frame(width: 20)
                 Text("Compression")
                     .font(.system(size: 12, weight: .semibold))
@@ -364,21 +307,148 @@ struct ContentView: View {
                 .frame(width: 150)
             }
 
-            // Slide to Sign
-            if SigningSettings.shared.hasCertificate {
-                SlideToActionView(text: "Slide to Sign",
-                                  gradient: [.scarletDark, Color(red: 0.35, green: 0.04, blue: 0.06)]) {
-                    startSigning()
+            // Certificate — symbol row style, tappable to expand list
+            VStack(spacing: 6) {
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        showCertPicker.toggle()
+                    }
+                    if showCertPicker && certService.certificates.isEmpty {
+                        Task { await certService.fetchCertificates() }
+                    }
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "shield")
+                            .font(.system(size: 16))
+                            .foregroundColor(.scarletRed)
+                            .frame(width: 20)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Certificate")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(.gray)
+                            certDisplayText
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+                        }
+                        Spacer()
+                        Image(systemName: showCertPicker ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white.opacity(0.3))
+                    }
                 }
-            } else {
-                Text("Add certificate to sign")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.white.opacity(0.25))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 13)
-                    .background(
-                        Capsule().fill(Color.white.opacity(0.04))
-                    )
+                .buttonStyle(.plain)
+
+                // Expandable cert list
+                if showCertPicker {
+                    VStack(spacing: 4) {
+                        // API certs
+                        ForEach(certService.certificates) { cert in
+                            let isActive = SigningSettings.shared.savedCertName == "\(cert.id).p12"
+                            let status = localChecker.statusFor(cert.id)
+                            let isDev = (cert.cert_type?.uppercased() ?? "").contains("DEVELOPMENT")
+
+                            Button {
+                                certService.useCertificate(cert)
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    showCertPicker = false
+                                }
+                            } label: {
+                                HStack(spacing: 10) {
+                                    certStatusDot(status)
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Text(cert.name)
+                                            .font(.system(size: 12, weight: .semibold))
+                                            .foregroundColor(.white)
+                                            .lineLimit(1)
+                                        HStack(spacing: 4) {
+                                            Text(statusLabel(status))
+                                                .font(.system(size: 9, weight: .bold))
+                                                .foregroundColor(statusColor(status))
+                                            Text("·")
+                                                .foregroundColor(.white.opacity(0.15))
+                                            Text(isDev ? "Dev" : "Dist")
+                                                .font(.system(size: 9, weight: .bold))
+                                                .foregroundColor(isDev ? .blue.opacity(0.6) : .orange.opacity(0.6))
+                                        }
+                                    }
+                                    Spacer()
+                                    if isActive {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(.white.opacity(0.5))
+                                    }
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(isActive ? Color.white.opacity(0.05) : Color.white.opacity(0.02))
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        // Local certs
+                        ForEach(localCerts, id: \.filename) { cert in
+                            let isActive = SigningSettings.shared.savedCertName == cert.filename
+                            let info = localChecker.localCertInfos[cert.filename]
+                            let status = info?.status ?? .checking
+                            let certName = info?.commonName ?? cert.filename.replacingOccurrences(of: ".p12", with: "").replacingOccurrences(of: "local_", with: "")
+
+                            Button {
+                                SigningSettings.shared.savedCertName = cert.filename
+                                SigningSettings.shared.savedCertPassword = cert.password
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    showCertPicker = false
+                                }
+                            } label: {
+                                HStack(spacing: 10) {
+                                    certStatusDot(status)
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Text(certName)
+                                            .font(.system(size: 12, weight: .semibold))
+                                            .foregroundColor(.white)
+                                            .lineLimit(1)
+                                        HStack(spacing: 4) {
+                                            Text(statusLabel(status))
+                                                .font(.system(size: 9, weight: .bold))
+                                                .foregroundColor(statusColor(status))
+                                            Text("·")
+                                                .foregroundColor(.white.opacity(0.15))
+                                            Text("Local")
+                                                .font(.system(size: 9, weight: .bold))
+                                                .foregroundColor(.white.opacity(0.3))
+                                        }
+                                    }
+                                    Spacer()
+                                    if isActive {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(.white.opacity(0.5))
+                                    }
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(isActive ? Color.white.opacity(0.05) : Color.white.opacity(0.02))
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        if certService.certificates.isEmpty && localCerts.isEmpty {
+                            Text("No certificates available")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.white.opacity(0.3))
+                                .padding(.vertical, 8)
+                        }
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
             }
         }
         .padding(.horizontal, 18)
@@ -386,18 +456,97 @@ struct ContentView: View {
         .padding(.bottom, 18)
     }
 
+    // Current cert display row
+    private var certDisplayRow: some View {
+        let localChecker = LocalCertChecker.shared
+        let settings = SigningSettings.shared
+        let localCertsJSON = UserDefaults.standard.string(forKey: "local_imported_certs_json") ?? "[]"
+        let localCerts: [LocalImportedCert] = {
+            guard let data = localCertsJSON.data(using: .utf8),
+                  let decoded = try? JSONDecoder().decode([LocalImportedCert].self, from: data) else { return [] }
+            return decoded
+        }()
+
+        return HStack(spacing: 10) {
+            // Status dot instead of green checkmark
+            Group {
+                if let savedName = settings.savedCertName {
+                    if let cert = certService.certificates.first(where: { "\($0.id).p12" == savedName }) {
+                        certStatusDot(localChecker.statusFor(cert.id))
+                    } else if let localCert = localCerts.first(where: { $0.filename == savedName }) {
+                        let status = localChecker.localCertInfos[localCert.filename]?.status ?? .checking
+                        certStatusDot(status)
+                    } else {
+                        certStatusDot(.error("Not found"))
+                    }
+                } else {
+                    certStatusDot(.error("None"))
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Certificate")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.white.opacity(0.3))
+                certDisplayText
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+            }
+            Spacer()
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.white.opacity(0.03))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                )
+        )
+    }
+
+    // Cert status helpers for signing sheet
+    private func certStatusDot(_ status: LocalCertInfo.CertStatus) -> some View {
+        Circle()
+            .fill(statusColor(status))
+            .frame(width: 8, height: 8)
+    }
+
+    private func statusColor(_ status: LocalCertInfo.CertStatus) -> Color {
+        switch status {
+        case .valid: return Color(red: 0.2, green: 0.75, blue: 0.4)
+        case .revoked: return Color(red: 0.95, green: 0.25, blue: 0.25)
+        case .expired: return .orange
+        case .checking: return .yellow
+        case .error: return .gray
+        }
+    }
+
+    private func statusLabel(_ status: LocalCertInfo.CertStatus) -> String {
+        status.label
+    }
+
     // Certificate display text showing actual cert name + type
     private var certDisplayText: Text {
         guard SigningSettings.shared.hasCertificate else {
             return Text("Tap to select")
         }
-        // Try to find matching cert by savedCertName (which is "id.p12")
         if let savedName = SigningSettings.shared.savedCertName,
            let matchingCert = certService.certificates.first(where: { "\($0.id).p12" == savedName }) {
             let typeStr = certTypeLabel(matchingCert.cert_type)
             return Text(matchingCert.name) + Text(" · \(typeStr)").foregroundColor(typeStr == "Development" ? .blue.opacity(0.6) : .orange.opacity(0.6))
         }
-        return Text(SigningSettings.shared.savedCertName ?? "Tap to select")
+        // Local cert
+        if let savedName = SigningSettings.shared.savedCertName {
+            let localChecker = LocalCertChecker.shared
+            if let info = localChecker.localCertInfos[savedName] {
+                return Text(info.commonName) + Text(" · Local").foregroundColor(.white.opacity(0.3))
+            }
+            let cleanName = savedName.replacingOccurrences(of: ".p12", with: "").replacingOccurrences(of: "local_", with: "")
+            return Text(cleanName) + Text(" · Local").foregroundColor(.white.opacity(0.3))
+        }
+        return Text("Tap to select")
     }
 
     private func certTypeLabel(_ type: String?) -> String {
@@ -505,7 +654,7 @@ struct ContentView: View {
         .padding(8)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.white.opacity(0.03))
+                                                .fill(Color.white.opacity(0.03))
         )
     }
 
@@ -521,24 +670,26 @@ struct ContentView: View {
 
     private var successContent: some View {
         VStack(spacing: 14) {
-            // App icon + status
+            // App icon + status + install button
             HStack(spacing: 14) {
-                ZStack {
-                    Circle()
-                        .stroke(Color.white.opacity(0.06), lineWidth: 3)
-                        .frame(width: 52, height: 52)
-                    if let iconURL = selectedApp?.iconURL,
-                       let iconData = try? Data(contentsOf: iconURL),
-                       let uiImage = UIImage(data: iconData) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                            .clipShape(RoundedRectangle(cornerRadius: 9))
-                    } else {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.scarletRed)
-                    }
+                // App icon — NO circle behind it
+                if let iconURL = selectedApp?.iconURL,
+                   let iconData = try? Data(contentsOf: iconURL),
+                   let uiImage = UIImage(data: iconData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .frame(width: 46, height: 46)
+                        .clipShape(RoundedRectangle(cornerRadius: 11))
+                } else {
+                    RoundedRectangle(cornerRadius: 11)
+                        .fill(LinearGradient(colors: [.scarletRed, .scarletDark],
+                                             startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 46, height: 46)
+                        .overlay(
+                            Text(String(selectedApp?.appName.prefix(1) ?? "?"))
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.white)
+                        )
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -547,20 +698,67 @@ struct ContentView: View {
                         .foregroundColor(.white)
                         .lineLimit(1)
                     installStatusText
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(Color.white.opacity(0.06))
-                                .frame(height: 3)
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(LinearGradient(colors: [.scarletRed, .scarletDark],
-                                                     startPoint: .leading, endPoint: .trailing))
-                                .frame(width: geo.size.width * installProgressValue, height: 3)
+                    if signingState.installStatus != .completed {
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(Color.white.opacity(0.06))
+                                    .frame(height: 3)
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(LinearGradient(colors: [.scarletRed, .scarletDark],
+                                                         startPoint: .leading, endPoint: .trailing))
+                                    .frame(width: geo.size.width * installProgressValue, height: 3)
+                            }
                         }
+                        .frame(height: 3)
                     }
-                    .frame(height: 3)
                 }
                 Spacer(minLength: 0)
+
+                // Actions
+                if signingState.installStatus == .completed {
+                    Button {
+                        InstallProgressPoller.openApp(bundleId: signingState.installingBundleId)
+                    } label: {
+                        Text("Open")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.6))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.white.opacity(0.04))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                                    )
+                            )
+                            .overlay(PulseGlow(cornerRadius: 8))
+                    }
+                    .buttonStyle(.plain)
+                } else if signingState.isUploading {
+                    VStack(spacing: 3) {
+                        ProgressView().tint(.scarletRed).scaleEffect(0.8)
+                        Text("Installing")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.3))
+                    }
+                } else if let url = signingState.installURL,
+                          signingState.installStatus != .completed {
+                    Button {
+                        UIApplication.shared.open(url)
+                    } label: {
+                        VStack(spacing: 3) {
+                            Image(systemName: "arrow.down.to.line")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(.scarletRed)
+                            Text("Install")
+                                .font(.system(size: 9, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.3))
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
             }
 
             // App info
@@ -569,59 +767,7 @@ struct ContentView: View {
                 infoChip(label: "Version", value: signVersion.isEmpty ? "—" : signVersion)
             }
 
-            // Action buttons
-            HStack(spacing: 10) {
-                // Install / Open / Loading
-                if signingState.installStatus == .completed {
-                    Button {
-                        InstallProgressPoller.openApp(bundleId: signingState.installingBundleId)
-                    } label: {
-                        Text("Open")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 11)
-                            .background(
-                                Capsule()
-                                    .fill(LinearGradient(colors: [.scarletRed, .scarletDark],
-                                                         startPoint: .leading, endPoint: .trailing))
-                            )
-                    }
-                    .buttonStyle(.plain)
-                } else if signingState.isUploading {
-                    HStack(spacing: 8) {
-                        ProgressView().tint(.white).scaleEffect(0.8)
-                        Text("Installing...")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.5))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 11)
-                    .background(
-                        Capsule().fill(Color.white.opacity(0.05))
-                    )
-                } else if let url = signingState.installURL,
-                          signingState.installStatus != .completed {
-                    SlideToActionView(text: "Slide to Install",
-                                      gradient: [.scarletDark, Color(red: 0.35, green: 0.04, blue: 0.06)]) {
-                        UIApplication.shared.open(url)
-                    }
-                }
 
-                // Close button
-                Button { dismissSheet() } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(.white.opacity(0.4))
-                        .frame(width: 36, height: 36)
-                        .background(
-                            Circle()
-                                .fill(Color.white.opacity(0.05))
-                                .overlay(Circle().stroke(Color.white.opacity(0.06), lineWidth: 0.5))
-                        )
-                }
-                .buttonStyle(.plain)
-            }
         }
         .padding(.horizontal, 18)
         .padding(.top, 12)
@@ -636,11 +782,9 @@ struct ContentView: View {
                 }
             }
             if case .completed = newStatus {
-                // Record app as installed in the separate installed store
                 if let app = selectedApp {
                     InstalledAppsManager.shared.add(from: app)
                 }
-                // Clean up signed temp files
                 cleanupSignedFiles()
             }
         }
@@ -755,23 +899,12 @@ struct ContentView: View {
     private var sheetBackground: some View {
         RoundedRectangle(cornerRadius: 28)
             .fill(.ultraThinMaterial)
+            .environment(\.colorScheme, .dark)
             .overlay(
                 RoundedRectangle(cornerRadius: 28)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.scarletRed.opacity(0.1),
-                                Color.white.opacity(0.03)
-                            ],
-                            startPoint: .topLeading, endPoint: .bottomTrailing
-                        )
-                    )
+                    .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 28)
-                    .stroke(Color.scarletRed.opacity(0.2), lineWidth: 0.5)
-            )
-            .shadow(color: .black.opacity(0.4), radius: 30, y: -10)
+            .shadow(color: .black.opacity(0.5), radius: 30, y: -10)
     }
 
     // MARK: - Tab Bar
@@ -782,22 +915,18 @@ struct ContentView: View {
                 tabButton(tab)
             }
         }
-        .padding(.horizontal, 36)
-        .padding(.vertical, 16)
+        .padding(.horizontal, 40)
+        .padding(.vertical, 20)
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 24)
                 .fill(.ultraThinMaterial)
                 .environment(\.colorScheme, .dark)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.white.opacity(0.04))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
                 )
         )
-        .padding(.horizontal, 60)
+        .padding(.horizontal, 40)
         .padding(.bottom, 20)
     }
 
@@ -807,7 +936,7 @@ struct ContentView: View {
         } label: {
             VStack(spacing: 6) {
                 Image(systemName: tab.icon)
-                    .font(.system(size: 22, weight: selectedTab == tab ? .semibold : .regular))
+                    .font(.system(size: 24, weight: selectedTab == tab ? .semibold : .regular))
                     .foregroundColor(selectedTab == tab ? .scarletRed : .gray.opacity(0.6))
 
                 Capsule()
@@ -845,7 +974,7 @@ struct SlideToActionView: View {
             ZStack(alignment: .leading) {
                 // ── Glass card track (same as home quick actions) ──
                 RoundedRectangle(cornerRadius: cr)
-                    .fill(Color.white.opacity(0.03))
+                                                    .fill(Color.white.opacity(0.03))
                     .overlay(
                         RoundedRectangle(cornerRadius: cr)
                             .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
@@ -951,6 +1080,70 @@ struct SlideToActionView: View {
         .onAppear {
             withAnimation(.linear(duration: 2.5).repeatForever(autoreverses: false)) {
                 shimmer = 1
+            }
+        }
+    }
+}
+
+// MARK: - Flat Scarlet Action Button
+
+/// Flat dark button with spinning scarlet arc and ambient blood glow.
+/// Matches the app's flat dark aesthetic — no glass, no 3D.
+struct ScarletSignButton: View {
+    let icon: String
+    let action: () -> Void
+    var accentColor: Color = .scarletRed
+    var size: CGFloat = 48
+
+    @State private var arcRotation: Double = 0
+    @State private var pulseScale: CGFloat = 1.0
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                // Ambient blood glow
+                Circle()
+                    .fill(accentColor.opacity(0.10))
+                    .frame(width: size + 16, height: size + 16)
+                    .blur(radius: 12)
+                    .scaleEffect(pulseScale)
+
+                // Spinning scarlet arc
+                Circle()
+                    .trim(from: 0, to: 0.25)
+                    .stroke(
+                        LinearGradient(
+                            colors: [accentColor.opacity(0.8), accentColor.opacity(0.05)],
+                            startPoint: .leading, endPoint: .trailing
+                        ),
+                        style: StrokeStyle(lineWidth: 1.5, lineCap: .round)
+                    )
+                    .frame(width: size + 2, height: size + 2)
+                    .rotationEffect(.degrees(arcRotation))
+
+                // Flat dark fill
+                Circle()
+                    .fill(Color(red: 0.12, green: 0.03, blue: 0.04))
+                    .frame(width: size - 4, height: size - 4)
+                    .overlay(
+                        Circle()
+                            .stroke(accentColor.opacity(0.25), lineWidth: 0.5)
+                    )
+                    .shadow(color: accentColor.opacity(0.3), radius: 10, y: 2)
+
+                // Icon
+                Image(systemName: icon)
+                    .font(.system(size: size * 0.36, weight: .heavy))
+                    .foregroundColor(accentColor.opacity(0.9))
+            }
+        }
+        .buttonStyle(.plain)
+        .onAppear {
+            withAnimation(.linear(duration: 2.5).repeatForever(autoreverses: false)) {
+                arcRotation = 360
+            }
+            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                pulseScale = 1.15
             }
         }
     }

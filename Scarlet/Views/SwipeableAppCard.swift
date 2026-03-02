@@ -2,9 +2,9 @@
 //  SwipeableAppCard.swift
 //  Scarlet
 //
-//  Generic card wrapper that supports swipe-left-to-delete.
-//  Reveals a red Delete button on partial swipe, or instant-deletes
-//  on a full swipe past the trigger threshold.
+//  Generic card wrapper that supports swipe-left-to-reveal-delete.
+//  Partial swipe reveals a Delete button; tap it to confirm deletion.
+//  Swiping back or tapping the card snaps it closed.
 //
 
 import SwiftUI
@@ -13,10 +13,10 @@ import SwiftUI
 
 /// A generic card wrapper that adds swipe-to-delete gesture support.
 ///
-/// Wrap any card content to enable:
-/// - **Partial swipe** (> 60pt): Reveals a "Delete" button
-/// - **Full swipe** (> 140pt): Instantly deletes with slide-off animation
-/// - **Tap while revealed**: Snaps the card back to its default position
+/// - **Partial swipe left** (> 50pt): Reveals a "Delete" button
+/// - **Tap Delete button**: Confirms and performs deletion
+/// - **Swipe right or tap card**: Snaps back to closed position
+/// - No auto-delete on full swipe — always requires explicit tap
 struct SwipeableAppCard<Content: View>: View {
     let app: ImportedApp
     let onTap: () -> Void
@@ -27,11 +27,12 @@ struct SwipeableAppCard<Content: View>: View {
 
     @State private var offset: CGFloat = 0
     @State private var showDelete = false
+    @State private var isDeleting = false
 
     // MARK: Constants
 
     private let deleteWidth: CGFloat = 80
-    private let triggerThreshold: CGFloat = 140
+    private let revealThreshold: CGFloat = 50
 
     // MARK: Body
 
@@ -40,12 +41,11 @@ struct SwipeableAppCard<Content: View>: View {
             deleteBackground
             mainCard
         }
-        .clipped()
+        .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
     // MARK: - Delete Background
 
-    /// Red delete button revealed behind the card on swipe.
     private var deleteBackground: some View {
         HStack {
             Spacer()
@@ -59,32 +59,25 @@ struct SwipeableAppCard<Content: View>: View {
                         .font(.system(size: 10, weight: .semibold))
                 }
                 .foregroundColor(.scarletRed.opacity(0.8))
-                .frame(width: deleteWidth, height: 84)
-                .background(
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(Color.white.opacity(0.03))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 18)
-                                .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
-                        )
-                )
+                .frame(width: deleteWidth, height: .infinity)
+                .frame(maxHeight: .infinity)
             }
             .buttonStyle(.plain)
             .opacity(showDelete ? 1 : 0)
             .scaleEffect(showDelete ? 1 : 0.5)
+            .animation(.spring(response: 0.25, dampingFraction: 0.8), value: showDelete)
         }
-        .padding(.trailing, 4)
+        .background(Color.scarletRed.opacity(0.03))
     }
 
     // MARK: - Main Card
 
-    /// The content card with drag gesture and tap handler.
     private var mainCard: some View {
         content()
             .offset(x: offset)
-            .gesture(swipeGesture)
+            .highPriorityGesture(swipeGesture)
             .onTapGesture {
-                if offset < 0 {
+                if showDelete {
                     snapBack()
                 } else {
                     onTap()
@@ -95,21 +88,40 @@ struct SwipeableAppCard<Content: View>: View {
     // MARK: - Gesture
 
     private var swipeGesture: some Gesture {
-        DragGesture(minimumDistance: 20)
+        DragGesture(minimumDistance: 15, coordinateSpace: .local)
             .onChanged { value in
-                let translation = value.translation.width
-                if translation < 0 {
-                    offset = translation
-                    showDelete = abs(translation) > 30
+                guard !isDeleting else { return }
+                let tx = value.translation.width
+
+                if showDelete {
+                    // Already revealed — allow dragging back or further left
+                    let newOffset = -deleteWidth + tx
+                    offset = min(0, newOffset)
+                } else {
+                    // Only allow left swipe
+                    if tx < 0 {
+                        // Rubber-band resistance past deleteWidth
+                        let clamped = abs(tx)
+                        if clamped > deleteWidth {
+                            let excess = clamped - deleteWidth
+                            offset = -(deleteWidth + excess * 0.3)
+                        } else {
+                            offset = tx
+                        }
+                    } else {
+                        offset = 0
+                    }
                 }
+                showDelete = offset < -30
             }
             .onEnded { value in
-                let translation = value.translation.width
-                if abs(translation) > triggerThreshold {
-                    performDelete()
-                } else if abs(translation) > 60 {
+                guard !isDeleting else { return }
+
+                if offset < -revealThreshold {
+                    // Reveal delete button — snap to deleteWidth
                     revealDeleteButton()
                 } else {
+                    // Not enough swipe — snap back
                     snapBack()
                 }
             }
@@ -118,10 +130,13 @@ struct SwipeableAppCard<Content: View>: View {
     // MARK: - Actions
 
     private func performDelete() {
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+        guard !isDeleting else { return }
+        isDeleting = true
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
             offset = -UIScreen.main.bounds.width
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             onDelete()
         }
     }

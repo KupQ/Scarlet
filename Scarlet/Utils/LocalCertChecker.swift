@@ -2,20 +2,21 @@
 //  LocalCertChecker.swift
 //  Scarlet
 //
-//  Checks locally imported P12 certificates using the Rust/OpenSSL
-//  OCSP checker (same logic as the server). Rust handles crypto,
-//  Swift handles the HTTP call to Apple's OCSP responder.
+//  Checks P12 certificates via Rust/OpenSSL OCSP.
+//  Maintains status dictionaries for both local and API certs.
+//  Checks only once per app launch + on new cert import.
 //
 
 import Foundation
 
-/// Info extracted from a locally imported P12.
+/// Info extracted from a P12 certificate.
 struct LocalCertInfo {
     let commonName: String
     let notBefore: String
     let notAfter: String
     let serialHex: String
     var status: CertStatus = .checking
+    var daysLeft: Int = 0
 
     enum CertStatus: Equatable {
         case checking
@@ -43,55 +44,170 @@ struct LocalCertInfo {
     }
 }
 
-/// Parses a local P12 file via Rust/OpenSSL and checks OCSP status.
+/// Checks P12 certificates via Rust/OpenSSL OCSP.
 @MainActor
 final class LocalCertChecker: ObservableObject {
 
     static let shared = LocalCertChecker()
 
-    @Published var certInfo: LocalCertInfo?
-    @Published var isChecking = false
+    /// Info for locally imported certs, keyed by filename
+    @Published var localCertInfos: [String: LocalCertInfo] = [:]
+
+    /// OCSP status for API certs, keyed by cert ID
+    @Published var apiCertStatuses: [String: LocalCertInfo.CertStatus] = [:]
+
+    /// Tracks whether we already checked this session (avoid re-checking on tab switches)
+    private var hasCheckedAPIThisSession = false
+    private var checkedLocalCerts: Set<String> = []
 
     private let ocspURL = "http://ocsp.apple.com/ocsp03-wwdrg3"
-    private let issuerURL = "https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer"
 
-    /// Check the currently saved local P12 certificate.
-    func checkSavedCert() async {
+    /// Reusable URL session for OCSP (HTTP-only)
+    private lazy var ocspSession: URLSession = {
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 10
+        return URLSession(configuration: config, delegate: PermissiveDelegate(), delegateQueue: nil)
+    }()
+
+    /// Cached issuer DER (loaded once from bundle)
+    private lazy var cachedIssuerDER: Data? = {
+        guard let url = Bundle.main.url(forResource: "AppleWWDRCAG3", withExtension: "cer") else { return nil }
+        return try? Data(contentsOf: url)
+    }()
+
+    // MARK: - Check a single local cert (used after import)
+
+    func checkLocalCert(name: String, password: String) async {
         let settings = SigningSettings.shared
-        guard let certURL = settings.savedCertURL,
-              let p12Data = try? Data(contentsOf: certURL) else {
-            certInfo = nil
-            return
-        }
-
-        let password = settings.savedCertPassword
-
-        isChecking = true
-
-        // Step 1: Extract cert info via Rust/OpenSSL
-        guard let info = getCertInfo(p12Data: p12Data, password: password) else {
-            certInfo = LocalCertInfo(
-                commonName: settings.savedCertName?.replacingOccurrences(of: ".p12", with: "") ?? "Unknown",
+        let certURL = settings.certsDirectory.appendingPathComponent(name)
+        guard let p12Data = try? Data(contentsOf: certURL) else {
+            localCertInfos[name] = LocalCertInfo(
+                commonName: name.replacingOccurrences(of: ".p12", with: "").replacingOccurrences(of: "local_", with: ""),
                 notBefore: "", notAfter: "", serialHex: "",
-                status: .error("Can't parse P12")
+                status: .error("Can't read file")
             )
-            isChecking = false
             return
         }
 
-        var result = info
+        // Extract cert info
+        var info = getCertInfo(p12Data: p12Data, password: password) ?? LocalCertInfo(
+            commonName: name.replacingOccurrences(of: ".p12", with: "").replacingOccurrences(of: "local_", with: ""),
+            notBefore: "", notAfter: "", serialHex: "",
+            status: .error("Can't parse P12")
+        )
 
-        // Step 2: Check OCSP status via Rust + Apple HTTP
-        let status = await checkOCSP(p12Data: p12Data, password: password)
-        result.status = status
+        // Calculate days left
+        info.daysLeft = parseDaysLeft(info.notAfter)
 
-        certInfo = result
-        isChecking = false
+        // OCSP check
+        let status = await checkOCSPStatus(p12Data: p12Data, password: password)
+        info.status = status
+
+        localCertInfos[name] = info
+        checkedLocalCerts.insert(name)
+    }
+
+    // MARK: - Check all local certs (on app launch only)
+
+    func checkAllLocalCerts(certs: [(name: String, password: String)]) async {
+        for cert in certs {
+            guard !checkedLocalCerts.contains(cert.name) else { continue }
+            await checkLocalCert(name: cert.name, password: cert.password)
+        }
+    }
+
+    // MARK: - Check API Certificates (once per session)
+
+    func checkAPICertsIfNeeded(_ certs: [RemoteCertificate]) async {
+        guard !hasCheckedAPIThisSession else { return }
+        hasCheckedAPIThisSession = true
+
+        for cert in certs {
+            guard let p12Data = cert.p12Data else {
+                apiCertStatuses[cert.id] = .error("No P12 data")
+                continue
+            }
+            apiCertStatuses[cert.id] = .checking
+            let status = await checkOCSPStatus(p12Data: p12Data, password: cert.p12_password)
+            apiCertStatuses[cert.id] = status
+        }
+    }
+
+    /// Force re-check API certs (e.g. pull-to-refresh)
+    func forceCheckAPICerts(_ certs: [RemoteCertificate]) async {
+        for cert in certs {
+            guard let p12Data = cert.p12Data else { continue }
+            let previousStatus = apiCertStatuses[cert.id]
+            apiCertStatuses[cert.id] = .checking
+            let status = await checkOCSPStatus(p12Data: p12Data, password: cert.p12_password)
+            if case .error = status, let prev = previousStatus, prev != .checking {
+                apiCertStatuses[cert.id] = prev
+            } else {
+                apiCertStatuses[cert.id] = status
+            }
+        }
+    }
+
+    /// Get status for an API cert by ID.
+    func statusFor(_ certId: String) -> LocalCertInfo.CertStatus {
+        apiCertStatuses[certId] ?? .checking
+    }
+
+    // MARK: - Date Parsing
+
+    private func parseDaysLeft(_ notAfter: String) -> Int {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "GMT")
+
+        for fmt in ["MMM dd HH:mm:ss yyyy z", "MMM  d HH:mm:ss yyyy z"] {
+            formatter.dateFormat = fmt
+            if let date = formatter.date(from: notAfter) {
+                return max(0, Calendar.current.dateComponents([.day], from: Date(), to: date).day ?? 0)
+            }
+        }
+        return 0
+    }
+
+    // MARK: - Core OCSP Check
+
+    private func checkOCSPStatus(p12Data: Data, password: String) async -> LocalCertInfo.CertStatus {
+        do {
+            guard let issuerDER = cachedIssuerDER else {
+                FileLogger.shared.log("OCSP: Bundled issuer cert not found")
+                return .error("Missing issuer cert")
+            }
+
+            guard let ocspReqData = buildOCSPRequest(p12Data: p12Data, password: password, issuerDER: issuerDER) else {
+                FileLogger.shared.log("OCSP: build failed")
+                return .error("OCSP build failed")
+            }
+
+            var request = URLRequest(url: URL(string: ocspURL)!)
+            request.httpMethod = "POST"
+            request.setValue("application/ocsp-request", forHTTPHeaderField: "Content-Type")
+            request.httpBody = ocspReqData
+
+            let (respData, response) = try await ocspSession.data(for: request)
+
+            guard let httpResp = response as? HTTPURLResponse, httpResp.statusCode == 200 else {
+                FileLogger.shared.log("OCSP: HTTP error")
+                return .error("OCSP HTTP error")
+            }
+
+            let status = parseOCSPResponse(p12Data: p12Data, password: password,
+                                           issuerDER: issuerDER, responseDER: respData)
+            return status
+
+        } catch {
+            FileLogger.shared.log("OCSP: \(error.localizedDescription)")
+            return .error("OCSP: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Rust FFI: Get Cert Info
 
-    private func getCertInfo(p12Data: Data, password: String) -> LocalCertInfo? {
+    func getCertInfo(p12Data: Data, password: String) -> LocalCertInfo? {
         let jsonPtr = p12Data.withUnsafeBytes { rawBuf -> UnsafeMutablePointer<CChar>? in
             guard let ptr = rawBuf.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return nil }
             return password.withCString { pwd in
@@ -103,7 +219,6 @@ final class LocalCertChecker: ObservableObject {
         let jsonStr = String(cString: jsonPtr)
         scarlet_free_string(jsonPtr)
 
-        // Parse the JSON manually (simple format)
         guard let data = jsonStr.data(using: String.Encoding.utf8),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: String] else {
             return nil
@@ -115,51 +230,6 @@ final class LocalCertChecker: ObservableObject {
             notAfter: json["not_after"] ?? "",
             serialHex: json["serial"] ?? ""
         )
-    }
-
-    // MARK: - OCSP Check (Rust crypto + Swift HTTP)
-
-    private func checkOCSP(p12Data: Data, password: String) async -> LocalCertInfo.CertStatus {
-        do {
-            // 1. Download Apple WWDR issuer cert
-            let issuerDER = try await downloadIssuer()
-
-            // 2. Build OCSP request via Rust/OpenSSL
-            guard let ocspReqData = buildOCSPRequest(p12Data: p12Data, password: password, issuerDER: issuerDER) else {
-                return .error("OCSP build failed")
-            }
-
-            // 3. Send OCSP request to Apple via Swift HTTP
-            var request = URLRequest(url: URL(string: ocspURL)!)
-            request.httpMethod = "POST"
-            request.setValue("application/ocsp-request", forHTTPHeaderField: "Content-Type")
-            request.httpBody = ocspReqData
-            request.timeoutInterval = 10
-
-            let (respData, response) = try await URLSession.shared.data(for: request)
-
-            guard let httpResp = response as? HTTPURLResponse, httpResp.statusCode == 200 else {
-                return .error("OCSP HTTP error")
-            }
-
-            // 4. Parse OCSP response via Rust/OpenSSL
-            let status = parseOCSPResponse(p12Data: p12Data, password: password,
-                                           issuerDER: issuerDER, responseDER: respData)
-            return status
-
-        } catch {
-            return .error(error.localizedDescription)
-        }
-    }
-
-    private func downloadIssuer() async throws -> Data {
-        let cacheURL = FileManager.default.temporaryDirectory.appendingPathComponent("apple_wwdr_g3.cer")
-        if let cached = try? Data(contentsOf: cacheURL) {
-            return cached
-        }
-        let (data, _) = try await URLSession.shared.data(from: URL(string: issuerURL)!)
-        try? data.write(to: cacheURL)
-        return data
     }
 
     // MARK: - Rust FFI: Build OCSP Request
@@ -221,5 +291,14 @@ final class LocalCertChecker: ObservableObject {
         case "Unknown": return .error("Unknown status")
         default: return .error(status)
         }
+    }
+}
+
+/// Delegate that permits HTTP connections (needed for Apple's HTTP-only OCSP responder).
+private class PermissiveDelegate: NSObject, URLSessionDelegate {
+    func urlSession(_ session: URLSession,
+                    didReceive challenge: URLAuthenticationChallenge,
+                    completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        completionHandler(.performDefaultHandling, nil)
     }
 }

@@ -14,6 +14,7 @@ struct SigningView: View {
 
     @StateObject private var appsManager = ImportedAppsManager.shared
     @State private var showIPAImportPicker = false
+    @State private var signIconPulse = false
 
     var body: some View {
         ZStack {
@@ -24,7 +25,7 @@ struct SigningView: View {
                 Ellipse()
                     .fill(
                         RadialGradient(
-                            colors: [Color.scarletRed.opacity(0.10), Color.clear],
+                            colors: [Color.white.opacity(0.03), Color.clear],
                             center: .center, startRadius: 10, endRadius: 180
                         )
                     )
@@ -80,7 +81,7 @@ struct SigningView: View {
             Button { showIPAImportPicker = true } label: {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white.opacity(0.03))
+                                                        .fill(Color.white.opacity(0.03))
                         .frame(width: 40, height: 40)
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
@@ -115,10 +116,10 @@ struct SigningView: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.scarletRed.opacity(0.06))
+                .fill(Color.white.opacity(0.03))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.scarletRed.opacity(0.12), lineWidth: 0.5)
+                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
                 )
         )
     }
@@ -129,7 +130,7 @@ struct SigningView: View {
         VStack(spacing: 20) {
             ZStack {
                 Circle()
-                    .fill(Color.white.opacity(0.03))
+                                                    .fill(Color.white.opacity(0.03))
                     .frame(width: 80, height: 80)
                 Image(systemName: "arrow.down.doc")
                     .font(.system(size: 30))
@@ -155,7 +156,7 @@ struct SigningView: View {
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.white.opacity(0.03))
+                                                        .fill(Color.white.opacity(0.03))
                         .overlay(
                             RoundedRectangle(cornerRadius: 14)
                                 .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
@@ -236,11 +237,11 @@ struct SigningView: View {
                 HStack(spacing: 6) {
                     Label("v\(app.version)", systemImage: "number")
                         .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(.scarletPink.opacity(0.7))
+                        .foregroundColor(.white.opacity(0.35))
                     Text("·").foregroundColor(.white.opacity(0.15))
                     Label(validityText, systemImage: "clock")
                         .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(.scarletRed.opacity(0.7))
+                        .foregroundColor(.white.opacity(0.35))
                 }
             }
             Spacer()
@@ -248,7 +249,7 @@ struct SigningView: View {
             VStack(spacing: 3) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.white.opacity(0.03))
+                                                        .fill(Color.white.opacity(0.03))
                         .frame(width: 34, height: 34)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
@@ -266,7 +267,7 @@ struct SigningView: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 18)
-                .fill(Color.white.opacity(0.03))
+                                                .fill(Color.white.opacity(0.03))
                 .overlay(
                     RoundedRectangle(cornerRadius: 18)
                         .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
@@ -316,7 +317,7 @@ struct SigningView: View {
                 HStack(spacing: 6) {
                     Label("v\(app.version)", systemImage: "number")
                         .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(.scarletPink.opacity(0.7))
+                        .foregroundColor(.white.opacity(0.35))
                     Text("·").foregroundColor(.white.opacity(0.15))
                     Text(app.formattedSize)
                         .font(.system(size: 10, weight: .medium))
@@ -325,28 +326,25 @@ struct SigningView: View {
             }
             Spacer()
 
-            VStack(spacing: 3) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.white.opacity(0.03))
-                        .frame(width: 34, height: 34)
+            Text("Sign")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(.white.opacity(0.6))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.white.opacity(0.04))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
                         )
-                    Image(systemName: "signature")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.scarletRed.opacity(0.8))
-                }
-                Text("Sign")
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.3))
-            }
+                )
+                .overlay(PulseGlow(cornerRadius: 8))
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 18)
-                .fill(Color.white.opacity(0.03))
+                                                .fill(Color.white.opacity(0.03))
                 .overlay(
                     RoundedRectangle(cornerRadius: 18)
                         .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
@@ -395,5 +393,22 @@ struct SigningView: View {
 
     private func signApp(_ app: ImportedApp) {
         onAppTapped(app)
+    }
+}
+
+// Isolated glow — manages own @State so parent never re-renders
+struct PulseGlow: View {
+    let cornerRadius: CGFloat
+    @State private var on = false
+    var body: some View {
+        RoundedRectangle(cornerRadius: cornerRadius)
+            .stroke(Color.white.opacity(0.25), lineWidth: 0.5)
+            .opacity(on ? 1 : 0)
+            .allowsHitTesting(false)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
+                    on = true
+                }
+            }
     }
 }
