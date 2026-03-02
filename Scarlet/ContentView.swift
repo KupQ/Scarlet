@@ -1025,7 +1025,7 @@ struct ContentView: View {
         } label: {
             VStack(spacing: 6) {
                 Image(systemName: tab.icon)
-                    .font(.system(size: 29, weight: selectedTab == tab ? .semibold : .regular))
+                    .font(.system(size: 32, weight: selectedTab == tab ? .light : .thin))
                     .foregroundColor(selectedTab == tab ? .scarletRed : .gray.opacity(0.6))
 
                 Capsule()
