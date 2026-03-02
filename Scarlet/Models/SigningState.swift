@@ -179,13 +179,20 @@ final class SigningState: ObservableObject {
         let appName = settings.displayName.isEmpty ? app.appName : settings.displayName
         self.installingBundleId = bundleId
 
+        // Load app icon for OTA manifest
+        var appIconData: Data? = nil
+        if let iconURL = app.iconURL {
+            appIconData = try? Data(contentsOf: iconURL)
+        }
+
         let server = LocalIPAServer()
         do {
             try server.start(
                 servingIPA: outputURL,
                 bundleId: bundleId,
                 version: version,
-                appName: appName
+                appName: appName,
+                iconData: appIconData
             )
             self.localServer = server
 

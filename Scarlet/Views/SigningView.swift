@@ -245,48 +245,38 @@ struct SigningView: View {
                     .font(.system(size: 15, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(1)
-                HStack(spacing: 6) {
-                    Text(dl.sizeString)
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(.white.opacity(0.25))
-                    Spacer()
-                    Text("\(Int(dl.progress * 100))%")
-                        .font(.system(size: 11, weight: .heavy, design: .monospaced))
-                        .foregroundColor(.scarletRed)
-                }
-                // Progress bar
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(Color.white.opacity(0.06))
-                            .frame(height: 5)
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(Color.scarletRed)
-                            .frame(width: geo.size.width * dl.progress, height: 5)
-                            .animation(.linear(duration: 0.2), value: dl.progress)
-                    }
-                }
-                .frame(height: 5)
+                Text(dl.sizeString)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.white.opacity(0.25))
             }
 
-            // Cancel button
+            Spacer()
+
+            // App Store-style circular progress ring (tap to cancel)
             Button {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     downloadManager.cancelDownload(id: dl.id)
                 }
             } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(.white.opacity(0.7))
-                    .frame(width: 28, height: 28)
-                    .background(
-                        Circle()
-                            .fill(Color.scarletRed.opacity(0.25))
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.scarletRed.opacity(0.3), lineWidth: 0.5)
-                            )
-                    )
+                ZStack {
+                    // Background track
+                    Circle()
+                        .stroke(Color.white.opacity(0.08), lineWidth: 3)
+                        .frame(width: 32, height: 32)
+
+                    // Progress arc
+                    Circle()
+                        .trim(from: 0, to: dl.progress)
+                        .stroke(Color.scarletRed, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                        .frame(width: 32, height: 32)
+                        .rotationEffect(.degrees(-90))
+                        .animation(.linear(duration: 0.2), value: dl.progress)
+
+                    // Stop icon (square)
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.scarletRed)
+                        .frame(width: 10, height: 10)
+                }
             }
             .buttonStyle(.plain)
         }

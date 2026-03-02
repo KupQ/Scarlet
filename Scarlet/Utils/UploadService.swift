@@ -40,6 +40,7 @@ enum InstallStatus: Equatable {
 final class LocalIPAServer: ObservableObject {
     private var listener: NWListener?
     private var ipaURL: URL?
+    private var iconData: Data?
     private var manifestData: Data?
     private let uuid = UUID().uuidString
     private(set) var port: UInt16 = 0
@@ -67,9 +68,11 @@ final class LocalIPAServer: ObservableObject {
         servingIPA ipaURL: URL,
         bundleId: String,
         version: String,
-        appName: String
+        appName: String,
+        iconData: Data? = nil
     ) throws {
         self.ipaURL = ipaURL
+        self.iconData = iconData
 
         // Build manifest plist
         buildManifest(bundleId: bundleId, version: version, appName: appName)
@@ -125,6 +128,7 @@ final class LocalIPAServer: ObservableObject {
         listener?.cancel()
         listener = nil
         ipaURL = nil
+        iconData = nil
         manifestData = nil
         port = 0
         status = .idle
@@ -163,12 +167,19 @@ final class LocalIPAServer: ObservableObject {
     /// Builds the OTA manifest plist pointing to the local IPA endpoint.
     private func buildManifest(bundleId: String, version: String, appName: String) {
         let ipaEndpoint = "https://\(hostname):\(port == 0 ? 0 : port)/\(uuid).ipa"
+        let iconEndpoint = "https://\(hostname):\(port == 0 ? 0 : port)/icon.png"
+
+        var assets: [[String: String]] = [
+            ["kind": "software-package", "url": ipaEndpoint]
+        ]
+        if iconData != nil {
+            assets.append(["kind": "display-image", "needs-shine": "false", "url": iconEndpoint])
+            assets.append(["kind": "full-size-image", "needs-shine": "false", "url": iconEndpoint])
+        }
 
         let manifest: [String: Any] = [
             "items": [[
-                "assets": [
-                    ["kind": "software-package", "url": ipaEndpoint]
-                ],
+                "assets": assets,
                 "metadata": [
                     "bundle-identifier": bundleId,
                     "bundle-version": version,
@@ -188,12 +199,19 @@ final class LocalIPAServer: ObservableObject {
     /// Rebuilds manifest with the actual port once known (called externally).
     func rebuildManifest(bundleId: String, version: String, appName: String) {
         let ipaEndpoint = "https://\(hostname):\(port)/\(uuid).ipa"
+        let iconEndpoint = "https://\(hostname):\(port)/icon.png"
+
+        var assets: [[String: String]] = [
+            ["kind": "software-package", "url": ipaEndpoint]
+        ]
+        if iconData != nil {
+            assets.append(["kind": "display-image", "needs-shine": "false", "url": iconEndpoint])
+            assets.append(["kind": "full-size-image", "needs-shine": "false", "url": iconEndpoint])
+        }
 
         let manifest: [String: Any] = [
             "items": [[
-                "assets": [
-                    ["kind": "software-package", "url": ipaEndpoint]
-                ],
+                "assets": assets,
                 "metadata": [
                     "bundle-identifier": bundleId,
                     "bundle-version": version,
@@ -233,6 +251,12 @@ final class LocalIPAServer: ObservableObject {
                 log.log("iOS requesting manifest plist")
                 DispatchQueue.main.async { self.status = .sendingManifest }
                 let response = self.buildManifestResponse()
+                connection.send(content: response, completion: .contentProcessed { _ in
+                    connection.cancel()
+                })
+            } else if request.contains("GET /icon.png") {
+                log.log("iOS requesting app icon")
+                let response = self.buildIconResponse()
                 connection.send(content: response, completion: .contentProcessed { _ in
                     connection.cancel()
                 })
@@ -312,6 +336,22 @@ final class LocalIPAServer: ObservableObject {
 
         var response = Data(header.utf8)
         response.append(manifestData)
+        return response
+    }
+
+    private func buildIconResponse() -> Data {
+        guard let iconData else { return build404Response() }
+
+        let header = [
+            "HTTP/1.1 200 OK",
+            "Content-Type: image/png",
+            "Content-Length: \(iconData.count)",
+            "Connection: close",
+            "", ""
+        ].joined(separator: "\r\n")
+
+        var response = Data(header.utf8)
+        response.append(iconData)
         return response
     }
 
