@@ -60,6 +60,19 @@ struct SigningView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.bottom, 80)
+                    .gesture(
+                        DragGesture(minimumDistance: 40, coordinateSpace: .local)
+                            .onEnded { value in
+                                let horizontal = value.translation.width
+                                let vertical = abs(value.translation.height)
+                                guard abs(horizontal) > vertical else { return } // ensure horizontal swipe
+                                if horizontal < 0 && libraryTab == 0 {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { libraryTab = 1 }
+                                } else if horizontal > 0 && libraryTab == 1 {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { libraryTab = 0 }
+                                }
+                            }
+                    )
                 }
             }
             .navigationBarHidden(true)
