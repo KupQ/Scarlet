@@ -79,11 +79,12 @@ final class LocalIPAServer: ObservableObject {
 
         // Load TLS identity from bundled P12
         let tlsOptions = NWProtocolTLS.Options()
+        let secOptions = tlsOptions.securityProtocolOptions
+        // Explicitly set TLS 1.2+ for iOS 16.x compatibility
+        sec_protocol_options_set_min_tls_protocol_version(secOptions, .TLSv12)
+        sec_protocol_options_set_max_tls_protocol_version(secOptions, .TLSv13)
         if let identity = loadIdentity() {
-            sec_protocol_options_set_local_identity(
-                tlsOptions.securityProtocolOptions,
-                identity
-            )
+            sec_protocol_options_set_local_identity(secOptions, identity)
         } else {
             FileLogger.shared.log("WARNING: Could not load TLS identity, falling back to plain HTTP")
         }
