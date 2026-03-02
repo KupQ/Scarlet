@@ -73,7 +73,29 @@ struct HomeView: View {
                         }
                     }
                     .buttonStyle(.plain)
-                    .onLongPressGesture(minimumDuration: 0.5) { showBulkAdd = true }
+                    .contextMenu {
+                        Button { showAddRepo = true } label: {
+                            Label("Add Repo", systemImage: "plus.app")
+                        }
+                        Button { showBulkAdd = true } label: {
+                            Label("Add Multiple", systemImage: "list.bullet.rectangle")
+                        }
+                        Button {
+                            if let clip = UIPasteboard.general.string, !clip.isEmpty {
+                                let urls = clip
+                                    .components(separatedBy: .newlines)
+                                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                                    .filter { $0.hasPrefix("http") }
+                                if urls.isEmpty {
+                                    repoService.addRepo(url: clip.trimmingCharacters(in: .whitespacesAndNewlines))
+                                } else {
+                                    for url in urls { repoService.addRepo(url: url) }
+                                }
+                            }
+                        } label: {
+                            Label("Add from Clipboard", systemImage: "doc.on.clipboard")
+                        }
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
