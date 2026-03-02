@@ -8,10 +8,20 @@
 //
 
 import SwiftUI
+import UIKit
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication,
+                     handleEventsForBackgroundURLSession identifier: String,
+                     completionHandler: @escaping () -> Void) {
+        DownloadManager.shared.backgroundCompletionHandler = completionHandler
+    }
+}
 
 /// Scarlet — iOS IPA Signing App
 @main
 struct ScarletApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var showSplash = !UserDefaults.standard.bool(forKey: "splashShown")
 
     var body: some Scene {

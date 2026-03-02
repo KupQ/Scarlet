@@ -17,8 +17,14 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
     @Published var pendingDownloads: [PendingDownload] = []
     private var tasks: [URLSessionDownloadTask: String] = [:]  // task -> app id
     private var completions: [String: (URL) -> Void] = [:]
+    var backgroundCompletionHandler: (() -> Void)?
+
     private lazy var session: URLSession = {
-        URLSession(configuration: .default, delegate: self, delegateQueue: .main)
+        let config = URLSessionConfiguration.background(withIdentifier: "com.scarlet.download")
+        config.isDiscretionary = false
+        config.sessionSendsLaunchEvents = true
+        config.allowsCellularAccess = true
+        return URLSession(configuration: config, delegate: self, delegateQueue: .main)
     }()
 
     func download(id: String, url: URL, appName: String = "", iconURL: String? = nil, sizeString: String = "", completion: @escaping (URL) -> Void) {
@@ -62,6 +68,13 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
             completions.removeValue(forKey: id)
             activeDownloads.removeValue(forKey: id)
             pendingDownloads.removeAll { $0.id == id }
+        }
+    }
+
+    func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
+        DispatchQueue.main.async { [weak self] in
+            self?.backgroundCompletionHandler?()
+            self?.backgroundCompletionHandler = nil
         }
     }
 }
