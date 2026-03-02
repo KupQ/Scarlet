@@ -36,7 +36,7 @@ struct SigningView: View {
             .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                headerSection.padding(.top, 8)
+                headerSection
                     .background(Color.bgPrimary)
 
                 ScrollView(.vertical, showsIndicators: false) {
@@ -93,6 +93,8 @@ struct SigningView: View {
             }
         }
         .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 16)
     }
 
     // MARK: - Importing

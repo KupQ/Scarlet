@@ -59,8 +59,8 @@ struct HomeView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 12)
+                .padding(.top, 12)
+                .padding(.bottom, 16)
                 .background(Color.bgPrimary)
 
             ScrollView(.vertical, showsIndicators: false) {
