@@ -22,7 +22,7 @@ struct DocumentPicker: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
         let picker = UIDocumentPickerViewController(
             forOpeningContentTypes: contentTypes,
-            asCopy: false
+            asCopy: true
         )
         picker.allowsMultipleSelection = false
         picker.delegate = context.coordinator

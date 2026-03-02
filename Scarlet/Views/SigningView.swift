@@ -59,7 +59,7 @@ struct SigningView: View {
             }
         }
         .sheet(isPresented: $showIPAImportPicker) {
-            DocumentPicker(contentTypes: [.ipa, .data]) { url in
+            DocumentPicker(contentTypes: [.ipa]) { url in
                 appsManager.importIPA(from: url)
             }
         }
@@ -171,6 +171,7 @@ struct SigningView: View {
     // MARK: - Apps List (split into installed + all)
 
     @StateObject private var installedManager = InstalledAppsManager.shared
+    @ObservedObject private var downloadManager = DownloadManager.shared
 
     private var allAppsSorted: [ImportedApp] {
         appsManager.apps.sorted { $0.importDate > $1.importDate }
@@ -178,6 +179,20 @@ struct SigningView: View {
 
     private var appsList: some View {
         VStack(spacing: 16) {
+            // ── Downloading ──
+            if !downloadManager.pendingDownloads.isEmpty {
+                sectionHeader(title: "Downloading", count: downloadManager.pendingDownloads.count)
+                VStack(spacing: 10) {
+                    ForEach(downloadManager.pendingDownloads) { dl in
+                        downloadingCard(dl)
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .top).combined(with: .opacity),
+                                removal: .scale.combined(with: .opacity)
+                            ))
+                    }
+                }
+            }
+
             // ── All Apps (sign / re-sign) ──
             sectionHeader(title: "All Apps", count: allAppsSorted.count)
             VStack(spacing: 10) {
@@ -197,6 +212,72 @@ struct SigningView: View {
             }
         }
         .padding(.horizontal, 20)
+    }
+
+    // MARK: - Downloading Card
+
+    private func downloadingCard(_ dl: PendingDownload) -> some View {
+        HStack(spacing: 14) {
+            // Icon
+            if let iconStr = dl.iconURL, let url = URL(string: iconStr) {
+                AsyncImage(url: url) { img in
+                    img.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    RoundedRectangle(cornerRadius: 13)
+                        .fill(Color.white.opacity(0.04))
+                }
+                .frame(width: 52, height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: 13))
+            } else {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 13)
+                        .fill(LinearGradient(colors: [.scarletRed.opacity(0.3), .scarletDark.opacity(0.3)],
+                                             startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 52, height: 52)
+                    Image(systemName: "arrow.down.circle")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.scarletRed)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(dl.appName)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(dl.sizeString)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.white.opacity(0.25))
+                    Spacer()
+                    Text("\(Int(dl.progress * 100))%")
+                        .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                        .foregroundColor(.scarletRed)
+                }
+                // Progress bar
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(Color.white.opacity(0.06))
+                            .frame(height: 5)
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(Color.scarletRed)
+                            .frame(width: geo.size.width * dl.progress, height: 5)
+                            .animation(.linear(duration: 0.2), value: dl.progress)
+                    }
+                }
+                .frame(height: 5)
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color.white.opacity(0.03))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
+                )
+        )
     }
 
     // MARK: - Section Header

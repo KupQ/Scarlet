@@ -13,7 +13,11 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var signingState = SigningState()
     @ObservedObject private var certService = CertificateService.shared
+    @ObservedObject private var repoService = RepoService.shared
+    @ObservedObject private var downloadManager = DownloadManager.shared
     @State private var selectedTab: Tab = .home
+    @State private var isSearching = false
+    @State private var searchText = ""
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -74,8 +78,15 @@ struct ContentView: View {
                 }
             }
 
-            // Tab bar
+            // Search results overlay (above content, below tab bar)
+            if isSearching && !searchText.isEmpty {
+                searchResultsOverlay
+                    .zIndex(80)
+            }
+
+            // Tab bar (ALWAYS on top so search field is visible)
             glassTabBar
+                .zIndex(95)
 
             // Dimmed backdrop
             if sheetVisible {
@@ -355,29 +366,44 @@ struct ContentView: View {
                                     showCertPicker = false
                                 }
                             } label: {
-                                HStack(spacing: 10) {
-                                    certStatusDot(status)
-                                    VStack(alignment: .leading, spacing: 1) {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack {
                                         Text(cert.name)
                                             .font(.system(size: 12, weight: .semibold))
                                             .foregroundColor(.white)
                                             .lineLimit(1)
-                                        HStack(spacing: 4) {
-                                            Text(statusLabel(status))
-                                                .font(.system(size: 9, weight: .bold))
-                                                .foregroundColor(statusColor(status))
-                                            Text("·")
-                                                .foregroundColor(.white.opacity(0.15))
-                                            Text(isDev ? "Dev" : "Dist")
-                                                .font(.system(size: 9, weight: .bold))
-                                                .foregroundColor(isDev ? .blue.opacity(0.6) : .orange.opacity(0.6))
+                                        Spacer()
+                                        if isActive {
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 10, weight: .bold))
+                                                .foregroundColor(.white.opacity(0.5))
                                         }
                                     }
-                                    Spacer()
-                                    if isActive {
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 10, weight: .bold))
-                                            .foregroundColor(.white.opacity(0.5))
+                                    HStack(spacing: 8) {
+                                        // Status
+                                        HStack(spacing: 3) {
+                                            Image(systemName: statusIcon(status))
+                                                .font(.system(size: 8, weight: .bold))
+                                            Text(statusLabel(status))
+                                                .font(.system(size: 9, weight: .bold))
+                                        }
+                                        .foregroundColor(statusColor(status))
+                                        // Type
+                                        HStack(spacing: 3) {
+                                            Image(systemName: isDev ? "hammer" : "building.2")
+                                                .font(.system(size: 8, weight: .bold))
+                                            Text(isDev ? "Development" : "Distribution")
+                                                .font(.system(size: 9, weight: .bold))
+                                        }
+                                        .foregroundColor(.white.opacity(0.3))
+                                        // PPQ
+                                        HStack(spacing: 3) {
+                                            Image(systemName: cert.isPPQEnabled ? "lock.fill" : "lock.open")
+                                                .font(.system(size: 8, weight: .bold))
+                                            Text(cert.isPPQEnabled ? "PPQ" : "PPQless")
+                                                .font(.system(size: 9, weight: .bold))
+                                        }
+                                        .foregroundColor(.white.opacity(0.3))
                                     }
                                 }
                                 .padding(.horizontal, 12)
@@ -405,29 +431,36 @@ struct ContentView: View {
                                     showCertPicker = false
                                 }
                             } label: {
-                                HStack(spacing: 10) {
-                                    certStatusDot(status)
-                                    VStack(alignment: .leading, spacing: 1) {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack {
                                         Text(certName)
                                             .font(.system(size: 12, weight: .semibold))
                                             .foregroundColor(.white)
                                             .lineLimit(1)
-                                        HStack(spacing: 4) {
-                                            Text(statusLabel(status))
-                                                .font(.system(size: 9, weight: .bold))
-                                                .foregroundColor(statusColor(status))
-                                            Text("·")
-                                                .foregroundColor(.white.opacity(0.15))
-                                            Text("Local")
-                                                .font(.system(size: 9, weight: .bold))
-                                                .foregroundColor(.white.opacity(0.3))
+                                        Spacer()
+                                        if isActive {
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 10, weight: .bold))
+                                                .foregroundColor(.white.opacity(0.5))
                                         }
                                     }
-                                    Spacer()
-                                    if isActive {
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 10, weight: .bold))
-                                            .foregroundColor(.white.opacity(0.5))
+                                    HStack(spacing: 8) {
+                                        // Status
+                                        HStack(spacing: 3) {
+                                            Image(systemName: statusIcon(status))
+                                                .font(.system(size: 8, weight: .bold))
+                                            Text(statusLabel(status))
+                                                .font(.system(size: 9, weight: .bold))
+                                        }
+                                        .foregroundColor(statusColor(status))
+                                        // Local
+                                        HStack(spacing: 3) {
+                                            Image(systemName: "externaldrive")
+                                                .font(.system(size: 8, weight: .bold))
+                                            Text("Local")
+                                                .font(.system(size: 9, weight: .bold))
+                                        }
+                                        .foregroundColor(.white.opacity(0.3))
                                     }
                                 }
                                 .padding(.horizontal, 12)
@@ -525,6 +558,16 @@ struct ContentView: View {
 
     private func statusLabel(_ status: LocalCertInfo.CertStatus) -> String {
         status.label
+    }
+
+    private func statusIcon(_ status: LocalCertInfo.CertStatus) -> String {
+        switch status {
+        case .valid: return "checkmark.shield"
+        case .revoked: return "xmark.shield"
+        case .expired: return "clock.badge.xmark"
+        case .checking: return "arrow.triangle.2.circlepath"
+        case .error: return "exclamationmark.triangle"
+        }
     }
 
     // Certificate display text showing actual cert name + type
@@ -911,11 +954,57 @@ struct ContentView: View {
 
     private var glassTabBar: some View {
         HStack(spacing: 0) {
-            ForEach(Tab.allCases, id: \.rawValue) { tab in
-                tabButton(tab)
+            if isSearching {
+                // Search mode
+                HStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.white.opacity(0.4))
+
+                    TextField("Search apps...", text: $searchText)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(.white)
+                        .tint(.scarletRed)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            searchText = ""
+                            isSearching = false
+                        }
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(.white.opacity(0.3))
+                    }
+                }
+                .padding(.horizontal, 16)
+            } else {
+                // Normal tab mode
+                ForEach(Tab.allCases, id: \.rawValue) { tab in
+                    tabButton(tab)
+                }
+                // Search button
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        isSearching = true
+                    }
+                } label: {
+                    VStack(spacing: 6) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 22, weight: .regular))
+                            .foregroundColor(.gray.opacity(0.6))
+                        Capsule()
+                            .fill(Color.clear)
+                            .frame(width: 14, height: 2.5)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 40)
+        .padding(.horizontal, isSearching ? 20 : 40)
         .padding(.vertical, 20)
         .background(
             RoundedRectangle(cornerRadius: 24)
@@ -926,7 +1015,7 @@ struct ContentView: View {
                         .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
                 )
         )
-        .padding(.horizontal, 40)
+        .padding(.horizontal, isSearching ? 16 : 40)
         .padding(.bottom, 20)
     }
 
@@ -936,7 +1025,7 @@ struct ContentView: View {
         } label: {
             VStack(spacing: 6) {
                 Image(systemName: tab.icon)
-                    .font(.system(size: 24, weight: selectedTab == tab ? .semibold : .regular))
+                    .font(.system(size: 29, weight: selectedTab == tab ? .semibold : .regular))
                     .foregroundColor(selectedTab == tab ? .scarletRed : .gray.opacity(0.6))
 
                 Capsule()
@@ -946,6 +1035,110 @@ struct ContentView: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Search Results
+
+    private var searchResultsOverlay: some View {
+        let filtered = repoService.allApps.filter {
+            $0.displayName.localizedCaseInsensitiveContains(searchText)
+        }
+        return VStack(spacing: 0) {
+            Spacer().frame(height: 1)
+            ScrollView {
+                LazyVStack(spacing: 8) {
+                    ForEach(filtered) { app in
+                        searchResultRow(app)
+                    }
+                    if filtered.isEmpty {
+                        Text("No apps found")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.white.opacity(0.3))
+                            .padding(.top, 30)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 120)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.bgPrimary.ignoresSafeArea())
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+    }
+
+    private func searchResultRow(_ app: RepoApp) -> some View {
+        let progress = downloadManager.activeDownloads[app.id]
+
+        return HStack(spacing: 12) {
+            if let iconStr = app.resolvedIconURL, let url = URL(string: iconStr) {
+                AsyncImage(url: url) { image in
+                    image.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.white.opacity(0.05))
+                }
+                .frame(width: 40, height: 40)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            } else {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.white.opacity(0.05))
+                    .frame(width: 40, height: 40)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(app.displayName)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                Text("v\(app.version ?? "?") • \(app.sizeString)")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.white.opacity(0.25))
+            }
+            Spacer()
+            if let p = progress {
+                Text("\(Int(p * 100))%")
+                    .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                    .foregroundColor(.scarletRed)
+                    .frame(width: 50)
+            } else {
+                Button { downloadFromSearch(app) } label: {
+                    Text("GET")
+                        .font(.system(size: 11, weight: .heavy))
+                        .foregroundColor(.scarletRed)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(Capsule().fill(Color.scarletRed.opacity(0.12)))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white.opacity(0.03))
+        )
+    }
+
+    private func downloadFromSearch(_ app: RepoApp) {
+        guard let dlStr = app.resolvedDownloadURL, let url = URL(string: dlStr) else { return }
+        withAnimation { isSearching = false; searchText = "" }
+        selectedTab = .sign
+
+        downloadManager.download(
+            id: app.id, url: url,
+            appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString
+        ) { tempURL in
+            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let filename = "\(app.bundleID ?? app.bundleIdentifier ?? UUID().uuidString).ipa"
+            let dest = docs.appendingPathComponent(filename)
+            try? FileManager.default.removeItem(at: dest)
+            do {
+                try FileManager.default.moveItem(at: tempURL, to: dest)
+                ImportedAppsManager.shared.importIPA(from: dest)
+            } catch {
+                print("[Search] Move error: \(error)")
+            }
+        }
     }
 }
 

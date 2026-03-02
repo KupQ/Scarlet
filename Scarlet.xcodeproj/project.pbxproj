@@ -7,169 +7,196 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10001 /* ScarletApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10001 /* ScarletApp.swift */; };
-		A10002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10002 /* ContentView.swift */; };
-		A10003 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10003 /* Theme.swift */; };
-		A10004 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10004 /* HomeView.swift */; };
-		A10005 /* SigningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10005 /* SigningView.swift */; };
-		A10006 /* ResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10006 /* ResultView.swift */; };
-		A10007 /* DocumentPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10007 /* DocumentPicker.swift */; };
-		A10008 /* SwipeableAppCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10008 /* SwipeableAppCard.swift */; };
-		A10009 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10009 /* SettingsView.swift */; };
-		A10010 /* SigningState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10010 /* SigningState.swift */; };
-		A10011 /* SigningSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10011 /* SigningSettings.swift */; };
-		A10012 /* ImportedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10012 /* ImportedApp.swift */; };
-		A10013 /* IPAParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10013 /* IPAParser.swift */; };
-		A10014 /* SigningBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10014 /* SigningBridge.swift */; };
-		A10015 /* FileLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10015 /* FileLogger.swift */; };
-		A10016 /* UploadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10018 /* UploadService.swift */; };
-		A10020 /* libscarlet_signing.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B10020 /* libscarlet_signing.a */; };
-		A10021 /* libzsign.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B10021 /* libzsign.a */; };
-		A10022 /* OpenSSL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10022 /* OpenSSL.framework */; };
-		A10023 /* OpenSSL.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B10022 /* OpenSSL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A10024 /* server.p12 in Resources */ = {isa = PBXBuildFile; fileRef = B10024 /* server.p12 */; };
-		A10033 /* AppleWWDRCAG3.cer in Resources */ = {isa = PBXBuildFile; fileRef = B10033 /* AppleWWDRCAG3.cer */; };
-		A10025 /* CertificateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10025 /* CertificateService.swift */; };
-		A10026 /* CertificatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10026 /* CertificatesView.swift */; };
-		A10030 /* InstalledApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10030 /* InstalledApp.swift */; };
-		A10031 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10031 /* SplashView.swift */; };
-		A10032 /* LocalCertChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10032 /* LocalCertChecker.swift */; };
+        '7623841A74D24406A357D8E1' = {isa = PBXBuildFile; fileRef = '1AF93D0110424CE6A90866B1'; };
+		061045B48843202A469994B3 /* RepoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0BA443991662CB3224DFAD9 /* RepoService.swift */; };
+                CA869CEA12CF44A19D24DBA0 /* RepoDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF93D0110424CE6A90866B1 /* RepoDetailView.swift */; };
+		'A10001' = {isa = PBXBuildFile; fileRef = B10001; };
+		'A10002' = {isa = PBXBuildFile; fileRef = B10002; };
+		'A10003' = {isa = PBXBuildFile; fileRef = B10003; };
+		'A10004' = {isa = PBXBuildFile; fileRef = B10004; };
+		'A10005' = {isa = PBXBuildFile; fileRef = B10005; };
+		'A10006' = {isa = PBXBuildFile; fileRef = B10006; };
+		'A10007' = {isa = PBXBuildFile; fileRef = B10007; };
+		'A10008' = {isa = PBXBuildFile; fileRef = B10008; };
+		'A10009' = {isa = PBXBuildFile; fileRef = B10009; };
+		'A10010' = {isa = PBXBuildFile; fileRef = B10010; };
+		'A10011' = {isa = PBXBuildFile; fileRef = B10011; };
+		'A10012' = {isa = PBXBuildFile; fileRef = B10012; };
+		'A10013' = {isa = PBXBuildFile; fileRef = B10013; };
+		'A10014' = {isa = PBXBuildFile; fileRef = B10014; };
+		'A10015' = {isa = PBXBuildFile; fileRef = B10015; };
+		'A10016' = {isa = PBXBuildFile; fileRef = B10018; };
+		'A10020' = {isa = PBXBuildFile; fileRef = B10020; };
+		'A10021' = {isa = PBXBuildFile; fileRef = B10021; };
+		'A10022' = {isa = PBXBuildFile; fileRef = B10022; };
+		'A10023' = {isa = PBXBuildFile; fileRef = B10022; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		'A10024' = {isa = PBXBuildFile; fileRef = B10024; };
+		'A10025' = {isa = PBXBuildFile; fileRef = B10025; };
+		'A10026' = {isa = PBXBuildFile; fileRef = B10026; };
+		'A10030' = {isa = PBXBuildFile; fileRef = B10030; };
+		'A10031' = {isa = PBXBuildFile; fileRef = B10031; };
+		'A10032' = {isa = PBXBuildFile; fileRef = B10032; };
+		'A10033' = {isa = PBXBuildFile; fileRef = B10033; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		'E10004' = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				A10023,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		B10001 /* ScarletApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScarletApp.swift; sourceTree = "<group>"; };
-		B10002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		B10003 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		B10004 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		B10005 /* SigningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningView.swift; sourceTree = "<group>"; };
-		B10006 /* ResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultView.swift; sourceTree = "<group>"; };
-		B10007 /* DocumentPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPicker.swift; sourceTree = "<group>"; };
-		B10008 /* SwipeableAppCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeableAppCard.swift; sourceTree = "<group>"; };
-		B10009 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		B10010 /* SigningState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningState.swift; sourceTree = "<group>"; };
-		B10011 /* SigningSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningSettings.swift; sourceTree = "<group>"; };
-		B10012 /* ImportedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedApp.swift; sourceTree = "<group>"; };
-		B10013 /* IPAParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPAParser.swift; sourceTree = "<group>"; };
-		B10014 /* SigningBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningBridge.swift; sourceTree = "<group>"; };
-		B10015 /* FileLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileLogger.swift; sourceTree = "<group>"; };
-		B10018 /* UploadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadService.swift; sourceTree = "<group>"; };
-		B10016 /* scarlet_signing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = scarlet_signing.h; sourceTree = "<group>"; };
-		B10017 /* Scarlet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Scarlet-Bridging-Header.h"; sourceTree = "<group>"; };
-		B10020 /* libscarlet_signing.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libscarlet_signing.a; sourceTree = "<group>"; };
-		B10021 /* libzsign.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libzsign.a; sourceTree = "<group>"; };
-		B10022 /* OpenSSL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OpenSSL.framework; sourceTree = "<group>"; };
-		B10099 /* Scarlet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Scarlet.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		B10024 /* server.p12 */ = {isa = PBXFileReference; lastKnownFileType = file; path = server.p12; sourceTree = "<group>"; };
-		B10025 /* CertificateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateService.swift; sourceTree = "<group>"; };
-		B10026 /* CertificatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificatesView.swift; sourceTree = "<group>"; };
-		B10030 /* InstalledApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledApp.swift; sourceTree = "<group>"; };
-		B10031 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
-		B10032 /* LocalCertChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCertChecker.swift; sourceTree = "<group>"; };
-		B10033 /* AppleWWDRCAG3.cer */ = {isa = PBXFileReference; lastKnownFileType = file; path = AppleWWDRCAG3.cer; sourceTree = "<group>"; };
-		D10008 /* Resources */ = {isa = PBXGroup; children = (B10033 /* AppleWWDRCAG3.cer */,); path = Resources; sourceTree = "<group>"; };
+		'B10001' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScarletApp.swift; sourceTree = "<group>"; };
+		'B10002' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		'B10003' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		'B10004' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+                '1AF93D0110424CE6A90866B1' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RepoDetailView.swift; path = Scarlet/Views/RepoDetailView.swift; sourceTree = SOURCE_ROOT; };
+		'B10005' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningView.swift; sourceTree = "<group>"; };
+		'B10006' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultView.swift; sourceTree = "<group>"; };
+		'B10007' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPicker.swift; sourceTree = "<group>"; };
+		'B10008' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeableAppCard.swift; sourceTree = "<group>"; };
+		'B10009' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		'B10010' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningState.swift; sourceTree = "<group>"; };
+		'B10011' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningSettings.swift; sourceTree = "<group>"; };
+		'B10012' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedApp.swift; sourceTree = "<group>"; };
+		'B10013' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPAParser.swift; sourceTree = "<group>"; };
+		'B10014' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningBridge.swift; sourceTree = "<group>"; };
+		'B10015' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileLogger.swift; sourceTree = "<group>"; };
+		'B10016' = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = scarlet_signing.h; sourceTree = "<group>"; };
+		'B10017' = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Scarlet-Bridging-Header.h"; sourceTree = "<group>"; };
+		'B10018' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadService.swift; sourceTree = "<group>"; };
+		'B10020' = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libscarlet_signing.a; sourceTree = "<group>"; };
+		'B10021' = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libzsign.a; sourceTree = "<group>"; };
+		'B10022' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OpenSSL.framework; sourceTree = "<group>"; };
+		'B10024' = {isa = PBXFileReference; lastKnownFileType = file; path = server.p12; sourceTree = "<group>"; };
+		'B10025' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateService.swift; sourceTree = "<group>"; };
+		'B10026' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificatesView.swift; sourceTree = "<group>"; };
+		'B10030' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledApp.swift; sourceTree = "<group>"; };
+		'B10031' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+		'B10032' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCertChecker.swift; sourceTree = "<group>"; };
+		'B10033' = {isa = PBXFileReference; lastKnownFileType = file; path = AppleWWDRCAG3.cer; sourceTree = "<group>"; };
+		'B10099' = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Scarlet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0BA443991662CB3224DFAD9 /* RepoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RepoService.swift; path = Scarlet/RepoService.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		C10001 /* Frameworks */ = {
+		'C10001' = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10020 /* libscarlet_signing.a in Frameworks */,
-				A10021 /* libzsign.a in Frameworks */,
-				A10022 /* OpenSSL.framework in Frameworks */,
+				A10020,
+				A10021,
+				A10022,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		D10001 = {
+		'D10001' = {
 			isa = PBXGroup;
 			children = (
-				D10002 /* Scarlet */,
-				D10099 /* Products */,
+				D10002,
+				D10099,
+				E0BA443991662CB3224DFAD9 /* RepoService.swift */,
 			);
 			sourceTree = "<group>";
 		};
-		D10002 /* Scarlet */ = {
+		'D10002' = {
 			isa = PBXGroup;
 			children = (
-				B10001 /* ScarletApp.swift */,
-				B10002 /* ContentView.swift */,
-				B10003 /* Theme.swift */,
-				D10003 /* Views */,
-				D10004 /* Models */,
-				D10005 /* Bridge */,
-				D10006 /* Utils */,
-				D10007 /* libs */,
-				B10024 /* server.p12 */,
-				D10008 /* Resources */,
+				B10001,
+				B10002,
+				B10003,
+				D10003,
+				D10004,
+				D10005,
+				D10006,
+				D10007,
+				B10024,
+				D10008,
 			);
 			path = Scarlet;
 			sourceTree = "<group>";
 		};
-		D10003 /* Views */ = {
+		'D10003' = {
 			isa = PBXGroup;
 			children = (
-				B10004 /* HomeView.swift */,
-				B10005 /* SigningView.swift */,
-				B10006 /* ResultView.swift */,
-				B10007 /* DocumentPicker.swift */,
-				B10008 /* SwipeableAppCard.swift */,
-				B10009 /* SettingsView.swift */,
-				B10026 /* CertificatesView.swift */,
-				B10031 /* SplashView.swift */,
+				B10004,
+				B10005,
+				B10006,
+				B10007,
+				B10008,
+				B10009,
+				B10026,
+				B10031,
 			);
 			path = Views;
 			sourceTree = "<group>";
 		};
-		D10004 /* Models */ = {
+		'D10004' = {
 			isa = PBXGroup;
 			children = (
-				B10010 /* SigningState.swift */,
-				B10011 /* SigningSettings.swift */,
-				B10012 /* ImportedApp.swift */,
-				B10030 /* InstalledApp.swift */,
-				B10013 /* IPAParser.swift */,
+				B10010,
+				B10011,
+				B10012,
+				B10030,
+				B10013,
 			);
 			path = Models;
 			sourceTree = "<group>";
 		};
-		D10005 /* Bridge */ = {
+		'D10005' = {
 			isa = PBXGroup;
 			children = (
-				B10014 /* SigningBridge.swift */,
-				B10016 /* scarlet_signing.h */,
-				B10017 /* Scarlet-Bridging-Header.h */,
+				B10014,
+				B10016,
+				B10017,
 			);
 			path = Bridge;
 			sourceTree = "<group>";
 		};
-		D10006 /* Utils */ = {
+		'D10006' = {
 			isa = PBXGroup;
 			children = (
-				B10015 /* FileLogger.swift */,
-				B10018 /* UploadService.swift */,
-				B10025 /* CertificateService.swift */,
-				B10032 /* LocalCertChecker.swift */,
+				B10015,
+				B10018,
+				B10025,
+				B10032,
 			);
 			path = Utils;
 			sourceTree = "<group>";
 		};
-		D10007 /* libs */ = {
+		'D10007' = {
 			isa = PBXGroup;
 			children = (
-				B10020 /* libscarlet_signing.a */,
-				B10021 /* libzsign.a */,
-				B10022 /* OpenSSL.framework */,
+				B10020,
+				B10021,
+				B10022,
 			);
 			path = libs;
 			sourceTree = "<group>";
 		};
-		D10099 /* Products */ = {
+		'D10008' = {
 			isa = PBXGroup;
 			children = (
-				B10099 /* Scarlet.app */,
+				B10033,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		'D10099' = {
+			isa = PBXGroup;
+			children = (
+				B10099,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -177,14 +204,14 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		E10001 /* Scarlet */ = {
+		'E10001' = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F10003 /* Build configuration list for PBXNativeTarget "Scarlet" */;
+			buildConfigurationList = F10003;
 			buildPhases = (
-				E10002 /* Sources */,
-				C10001 /* Frameworks */,
-				E10003 /* Resources */,
-				E10004 /* Embed Frameworks */,
+				E10002,
+				C10001,
+				E10003,
+				E10004,
 			);
 			buildRules = (
 			);
@@ -192,13 +219,13 @@
 			);
 			name = Scarlet;
 			productName = Scarlet;
-			productReference = B10099 /* Scarlet.app */;
+			productReference = B10099;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		E10099 /* Project object */ = {
+		'E10099' = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
@@ -210,7 +237,7 @@
 					};
 				};
 			};
-			buildConfigurationList = F10001 /* Build configuration list for PBXProject "Scarlet" */;
+			buildConfigurationList = F10001;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -219,74 +246,62 @@
 				Base,
 			);
 			mainGroup = D10001;
-			productRefGroup = D10099 /* Products */;
+			productRefGroup = D10099;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				E10001 /* Scarlet */,
+				E10001,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		E10003 /* Resources */ = {
+		'E10003' = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10024 /* server.p12 in Resources */,
-				A10033 /* AppleWWDRCAG3.cer in Resources */,
+				A10024,
+				A10033,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		E10004 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				A10023 /* OpenSSL.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
-		E10002 /* Sources */ = {
+		'E10002' = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10001 /* ScarletApp.swift in Sources */,
-				A10002 /* ContentView.swift in Sources */,
-				A10003 /* Theme.swift in Sources */,
-				A10004 /* HomeView.swift in Sources */,
-				A10005 /* SigningView.swift in Sources */,
-				A10006 /* ResultView.swift in Sources */,
-				A10007 /* DocumentPicker.swift in Sources */,
-				A10008 /* SwipeableAppCard.swift in Sources */,
-				A10009 /* SettingsView.swift in Sources */,
-				A10010 /* SigningState.swift in Sources */,
-				A10011 /* SigningSettings.swift in Sources */,
-				A10012 /* ImportedApp.swift in Sources */,
-				A10013 /* IPAParser.swift in Sources */,
-				A10014 /* SigningBridge.swift in Sources */,
-				A10015 /* FileLogger.swift in Sources */,
-				A10016 /* UploadService.swift in Sources */,
-				A10025 /* CertificateService.swift in Sources */,
-				A10026 /* CertificatesView.swift in Sources */,
-				A10030 /* InstalledApp.swift in Sources */,
-				A10031 /* SplashView.swift in Sources */,
-				A10032 /* LocalCertChecker.swift in Sources */,
+				A10001,
+				A10002,
+				A10003,
+				A10004,
+				A10005,
+				A10006,
+				A10007,
+				A10008,
+				A10009,
+				A10010,
+				A10011,
+				A10012,
+				A10013,
+				A10014,
+				A10015,
+				A10016,
+				A10025,
+				A10026,
+				A10030,
+				A10031,
+				A10032,
+				061045B48843202A469994B3 /* RepoService.swift in Sources */,
+                                CA869CEA12CF44A19D24DBA0 /* RepoDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		F10010 /* Debug */ = {
+		'F10010' = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -312,7 +327,7 @@
 			};
 			name = Debug;
 		};
-		F10011 /* Release */ = {
+		'F10011' = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -334,7 +349,7 @@
 			};
 			name = Release;
 		};
-		F10020 /* Debug */ = {
+		'F10020' = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -382,7 +397,7 @@
 			};
 			name = Debug;
 		};
-		F10021 /* Release */ = {
+		'F10021' = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -432,25 +447,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		F10001 /* Build configuration list for PBXProject "Scarlet" */ = {
+		'F10001' = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				F10010 /* Debug */,
-				F10011 /* Release */,
+				F10010,
+				F10011,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		F10003 /* Build configuration list for PBXNativeTarget "Scarlet" */ = {
+		'F10003' = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				F10020 /* Debug */,
-				F10021 /* Release */,
+				F10020,
+				F10021,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = E10099 /* Project object */;
+	rootObject = E10099;
 }

@@ -34,6 +34,8 @@ struct CertificatesView: View {
     @State private var passwordError: String?
     @State private var showFilePicker = false
     @State private var filePickerType: FilePickerType = .p12
+    @State private var certToDelete: LocalImportedCert?
+    @State private var showDeleteConfirm = false
 
     enum ImportStep { case idle, pickProfile, enterPassword }
     enum FilePickerType { case p12, profile }
@@ -51,6 +53,24 @@ struct CertificatesView: View {
         certs.insert(cert, at: 0)
         if let data = try? JSONEncoder().encode(certs), let json = String(data: data, encoding: .utf8) {
             localCertsJSON = json
+        }
+    }
+
+    private func deleteLocalCert(_ cert: LocalImportedCert) {
+        // Remove from JSON storage
+        var certs = localCerts.filter { $0.filename != cert.filename }
+        if let data = try? JSONEncoder().encode(certs), let json = String(data: data, encoding: .utf8) {
+            localCertsJSON = json
+        }
+        // Delete file from disk
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let fileURL = docs.appendingPathComponent(cert.filename)
+        try? FileManager.default.removeItem(at: fileURL)
+        // Clear active cert if it was the deleted one
+        if settings.savedCertName == cert.filename {
+            settings.savedCertName = ""
+            settings.savedCertPassword = ""
+            settings.objectWillChange.send()
         }
     }
 
@@ -110,6 +130,17 @@ struct CertificatesView: View {
         } message: {
             Text(passwordError ?? "Enter the password for \(importedP12Name)")
         }
+        .alert("Delete Certificate", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) { certToDelete = nil }
+            Button("Delete", role: .destructive) {
+                if let cert = certToDelete {
+                    deleteLocalCert(cert)
+                    certToDelete = nil
+                }
+            }
+        } message: {
+            Text("Are you sure you want to delete \(certToDelete?.filename.replacingOccurrences(of: "local_", with: "").replacingOccurrences(of: ".p12", with: "") ?? "this certificate")?")
+        }
         .onChange(of: importStep) { step in
             if step == .pickProfile {
                 filePickerType = .profile
@@ -164,6 +195,14 @@ struct CertificatesView: View {
             if !localCerts.isEmpty {
                 ForEach(localCerts) { cert in
                     localCertCard(cert)
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                certToDelete = cert
+                                showDeleteConfirm = true
+                            } label: {
+                                Label("Delete Certificate", systemImage: "trash")
+                            }
+                        }
                         .padding(.horizontal, 20)
                 }
             }
@@ -187,58 +226,60 @@ struct CertificatesView: View {
         let isDev = (cert.cert_type?.uppercased() ?? "").contains("DEVELOPMENT")
         let isActive = settings.savedCertName == "\(cert.id).p12"
         let ocspStatus = localChecker.statusFor(cert.id)
+        let (_, statusClr) = statusIconAndColor(ocspStatus)
 
         return Button {
             selectCert(cert)
         } label: {
-            VStack(spacing: 0) {
-                HStack(spacing: 14) {
-                    certStatusIcon(ocspStatus)
+            HStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(statusClr)
+                    .frame(width: 3)
+                    .padding(.vertical, 6)
 
-                    VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 6) {
+                    // Name row
+                    HStack {
                         Text(cert.name)
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.white)
                             .lineLimit(1)
-
-                        HStack(spacing: 6) {
-                            certStatusPill(ocspStatus)
-
-                            if isActive {
-                                activePill
-                            }
-
-                            Text(isDev ? "Dev" : "Dist")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.white.opacity(0.3))
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 3)
-                                .background(Capsule().fill(Color.white.opacity(0.05)))
+                        Spacer()
+                        HStack(spacing: 3) {
+                            Image(systemName: statusIconName(ocspStatus))
+                                .font(.system(size: 8))
+                            Text(ocspStatus.label)
+                                .font(.system(size: 9, weight: .bold))
                         }
+                        .foregroundColor(statusClr)
                     }
-                    Spacer()
-
-                    if !isActive {
-                        useButton
+                    // Info row
+                    HStack(spacing: 6) {
+                        chipView(icon: isDev ? "hammer" : "building.2", text: isDev ? "Development" : "Distribution")
+                        chipView(icon: cert.isPPQEnabled ? "lock.fill" : "lock.open", text: cert.isPPQEnabled ? "PPQ" : "PPQless")
+                        chipView(icon: "calendar", text: cert.isExpired ? "Expired" : "\(days)d", color: cert.isExpired ? .orange : nil)
+                        if isActive {
+                            chipView(icon: "checkmark.circle.fill", text: "Active", color: .white.opacity(0.5))
+                        }
+                        Spacer(minLength: 0)
+                        Text(cert.pname)
+                            .font(.system(size: 9))
+                            .foregroundColor(.white.opacity(0.2))
+                            .lineLimit(1)
                     }
                 }
-                .padding(16)
-
-                // Bottom stats
-                Divider().background(Color.white.opacity(0.04))
-
-                HStack {
-                    statItem(icon: "calendar", label: cert.isExpired ? "Expired" : "\(days)d left")
-                    Spacer()
-                    statItem(icon: cert.isPPQEnabled ? "lock.fill" : "lock.open.fill",
-                             label: cert.isPPQEnabled ? "PPQ" : "PPQless")
-                    Spacer()
-                    statItem(icon: "person.crop.circle", label: cert.pname)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .padding(.leading, 10)
+                .padding(.trailing, 12)
+                .padding(.vertical, 10)
             }
-            .background(cardBackground(ocspStatus, isActive: isActive))
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.white.opacity(isActive ? 0.05 : 0.025))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(statusClr.opacity(isActive ? 0.15 : 0.06), lineWidth: 0.5)
+                    )
+            )
         }
         .buttonStyle(.plain)
     }
@@ -251,115 +292,75 @@ struct CertificatesView: View {
         let certName = info?.commonName ?? cert.filename.replacingOccurrences(of: ".p12", with: "").replacingOccurrences(of: "local_", with: "")
         let isActive = settings.savedCertName == cert.filename
         let daysLeft = info?.daysLeft ?? 0
+        let (_, statusClr) = statusIconAndColor(ocspStatus)
+        let isDev = certName.localizedCaseInsensitiveContains("Development")
 
         return Button {
-            // Activate this local cert
             if !isActive {
                 settings.savedCertName = cert.filename
                 settings.savedCertPassword = cert.password
                 settings.objectWillChange.send()
             }
         } label: {
-            VStack(spacing: 0) {
-                HStack(spacing: 14) {
-                    certStatusIcon(ocspStatus)
+            HStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(statusClr)
+                    .frame(width: 3)
+                    .padding(.vertical, 6)
 
-                    VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 6) {
+                    // Name row
+                    HStack {
                         Text(certName)
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.white)
                             .lineLimit(1)
-
-                        HStack(spacing: 6) {
-                            certStatusPill(ocspStatus)
-
-                            if isActive {
-                                activePill
-                            }
-
-                            Text("Local")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.white.opacity(0.3))
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 3)
-                                .background(Capsule().fill(Color.white.opacity(0.05)))
+                        Spacer()
+                        HStack(spacing: 3) {
+                            Image(systemName: statusIconName(ocspStatus))
+                                .font(.system(size: 8))
+                            Text(ocspStatus.label)
+                                .font(.system(size: 9, weight: .bold))
                         }
+                        .foregroundColor(statusClr)
                     }
-                    Spacer()
-
-                    if !isActive {
-                        useButton
+                    // Info row
+                    HStack(spacing: 6) {
+                        chipView(icon: isDev ? "hammer" : "building.2", text: isDev ? "Development" : "Distribution")
+                        chipView(icon: "lock.open", text: "PPQless")
+                        chipView(icon: "calendar", text: daysLeft > 0 ? "\(daysLeft)d" : "Expired", color: daysLeft > 0 ? nil : .orange)
+                        if isActive {
+                            chipView(icon: "checkmark.circle.fill", text: "Active", color: .white.opacity(0.5))
+                        }
+                        Spacer(minLength: 0)
                     }
                 }
-                .padding(16)
-
-                // Bottom stats
-                Divider().background(Color.white.opacity(0.04))
-
-                HStack {
-                    statItem(icon: "calendar", label: daysLeft > 0 ? "\(daysLeft)d left" : "Expired")
-                    Spacer()
-                    statItem(icon: "lock.open.fill", label: "PPQless")
-                    Spacer()
-                    statItem(icon: "externaldrive.fill", label: "Imported")
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .padding(.leading, 10)
+                .padding(.trailing, 12)
+                .padding(.vertical, 10)
             }
-            .background(cardBackground(ocspStatus, isActive: isActive))
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.white.opacity(isActive ? 0.05 : 0.025))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(statusClr.opacity(isActive ? 0.15 : 0.06), lineWidth: 0.5)
+                    )
+            )
         }
         .buttonStyle(.plain)
     }
 
     // MARK: - Reusable Card Components
 
-    private var activePill: some View {
+    private func chipView(icon: String, text: String, color: Color? = nil) -> some View {
         HStack(spacing: 3) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 8))
-            Text("Active")
-                .font(.system(size: 10, weight: .bold))
-        }
-        .foregroundColor(.white)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 3)
-        .background(Capsule().fill(Color.white.opacity(0.12)))
-    }
-
-    private var useButton: some View {
-        Text("Use")
-            .font(.system(size: 12, weight: .bold))
-            .foregroundColor(.scarletRed)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 7)
-            .background(Capsule().fill(Color.scarletRed.opacity(0.12)))
-    }
-
-    private func certStatusIcon(_ status: LocalCertInfo.CertStatus) -> some View {
-        let (icon, color) = statusIconAndColor(status)
-        return ZStack {
-            RoundedRectangle(cornerRadius: 14)
-                .fill(color.opacity(0.12))
-                .frame(width: 50, height: 50)
             Image(systemName: icon)
-                .font(.system(size: 22, weight: .semibold))
-                .foregroundColor(color)
+                .font(.system(size: 8, weight: .bold))
+            Text(text)
+                .font(.system(size: 9, weight: .bold))
         }
-    }
-
-    private func certStatusPill(_ status: LocalCertInfo.CertStatus) -> some View {
-        let (_, color) = statusIconAndColor(status)
-        return HStack(spacing: 4) {
-            Circle()
-                .fill(color)
-                .frame(width: 6, height: 6)
-            Text(status.label)
-                .font(.system(size: 11, weight: .bold))
-        }
-        .foregroundColor(color)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
-        .background(Capsule().fill(color.opacity(0.12)))
+        .foregroundColor(color ?? .white.opacity(0.3))
     }
 
     private func statusIconAndColor(_ status: LocalCertInfo.CertStatus) -> (String, Color) {
@@ -372,24 +373,15 @@ struct CertificatesView: View {
         }
     }
 
-    private func cardBackground(_ status: LocalCertInfo.CertStatus, isActive: Bool) -> some View {
-        let (_, color) = statusIconAndColor(status)
-        let opacity: Double = isActive ? 0.4 : 0.15
-        return RoundedRectangle(cornerRadius: 18)
-            .fill(Color.white.opacity(0.04))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(
-                        LinearGradient(
-                            colors: [color.opacity(opacity), Color.white.opacity(0.04)],
-                            startPoint: .topLeading, endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
-            )
+    private func statusIconName(_ status: LocalCertInfo.CertStatus) -> String {
+        switch status {
+        case .valid:    return "checkmark.shield"
+        case .revoked:  return "xmark.shield"
+        case .expired:  return "clock.badge.xmark"
+        case .checking: return "arrow.triangle.2.circlepath"
+        case .error:    return "exclamationmark.triangle"
+        }
     }
-
-    // MARK: - Stat Item
 
     private func statItem(icon: String, label: String) -> some View {
         HStack(spacing: 5) {

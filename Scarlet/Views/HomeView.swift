@@ -11,8 +11,11 @@ struct HomeView: View {
     @ObservedObject var signingState: SigningState
     var switchToLibrary: () -> Void
 
+    @ObservedObject private var repoService = RepoService.shared
     @State private var animatePulse = false
     @State private var animateGlow = false
+    @State private var showAddRepo = false
+    @State private var repoURLInput = ""
 
     var body: some View {
         ZStack {
@@ -82,7 +85,9 @@ struct HomeView: View {
                             quickActionCard(icon: "square.and.pencil", title: "Sign IPA", color: .scarletRed) {
                                 switchToLibrary()
                             }
-                            quickActionCard(icon: "doc.text.magnifyingglass", title: "View Logs", color: .blue) {}
+                            quickActionCard(icon: "plus.app", title: "Add Repo", color: .green) {
+                                showAddRepo = true
+                            }
                             quickActionCard(icon: "gearshape.2", title: "Options", color: .purple) {}
                         }
                         .padding(.horizontal, 20)
@@ -91,6 +96,11 @@ struct HomeView: View {
                     // Start Signing CTA
                     signingCTACard
                         .padding(.horizontal, 20)
+
+                    // Repos
+                    if !repoService.repos.isEmpty {
+                        repoAppsSection
+                    }
 
                     // Features
                     VStack(alignment: .leading, spacing: 10) {
@@ -114,6 +124,26 @@ struct HomeView: View {
         .onAppear {
             animateGlow = true
             animatePulse = true
+        }
+        .alert("Add Repository", isPresented: $showAddRepo) {
+            TextField("https://example.com/repo.json", text: $repoURLInput)
+                .autocapitalization(.none)
+            Button("Cancel", role: .cancel) { repoURLInput = "" }
+            Button("Add") {
+                let url = repoURLInput
+                repoURLInput = ""
+                repoService.addRepo(url: url)
+            }
+        } message: {
+            Text("Enter the repo JSON URL")
+        }
+        .alert("Repo Error", isPresented: Binding(
+            get: { repoService.lastError != nil },
+            set: { if !$0 { repoService.lastError = nil } }
+        )) {
+            Button("OK") { repoService.lastError = nil }
+        } message: {
+            Text(repoService.lastError ?? "Unknown error")
         }
     }
 
@@ -279,5 +309,89 @@ struct HomeView: View {
                 )
         )
         .padding(.horizontal, 20)
+    }
+
+    // MARK: - Repo Cards
+
+    private var repoAppsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("REPOSITORIES")
+                    .font(.system(size: 10, weight: .heavy))
+                    .tracking(1.5)
+                    .foregroundColor(.white.opacity(0.25))
+                Spacer()
+                if repoService.isLoading {
+                    ProgressView()
+                        .tint(.white.opacity(0.3))
+                        .scaleEffect(0.7)
+                }
+            }
+            .padding(.horizontal, 20)
+
+            ForEach(repoService.repos) { repo in
+                NavigationLink(destination: RepoDetailView(repo: repo)) {
+                    repoCard(repo)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 20)
+            }
+        }
+    }
+
+    private func repoCard(_ repo: LoadedRepo) -> some View {
+        HStack(spacing: 14) {
+            // Repo icon
+            if let iconStr = repo.manifest.iconURL, let url = URL(string: iconStr) {
+                AsyncImage(url: url) { img in
+                    img.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.05))
+                }
+                .frame(width: 48, height: 48)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.white.opacity(0.05))
+                    .frame(width: 48, height: 48)
+                    .overlay(
+                        Image(systemName: "square.stack.3d.up.fill")
+                            .foregroundColor(.white.opacity(0.2))
+                    )
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(repo.manifest.displayName)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text("\(repo.manifest.appCount) apps")
+                        .font(.system(size: 11, weight: .medium))
+                    if let sub = repo.manifest.subtitle {
+                        Text("•")
+                        Text(sub)
+                            .font(.system(size: 11, weight: .medium))
+                            .lineLimit(1)
+                    }
+                }
+                .foregroundColor(.white.opacity(0.3))
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(.white.opacity(0.15))
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white.opacity(0.03))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                )
+        )
     }
 }
