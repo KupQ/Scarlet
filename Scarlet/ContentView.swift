@@ -1130,12 +1130,14 @@ struct ContentView: View {
         .padding(.bottom, 20)
     }
 
+    @State private var settingsIconScale: CGFloat = 1.0
+
     private func tabButton(_ tab: Tab) -> some View {
-        Button {
+        let isActive = tab == .settings ? showSettingsCard : selectedTab == tab
+
+        return Button {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                if tab == .settings {
-                    showSettingsCard.toggle()
-                } else {
+                if tab != .settings {
                     selectedTab = tab
                     showSettingsCard = false
                 }
@@ -1143,16 +1145,29 @@ struct ContentView: View {
         } label: {
             VStack(spacing: 6) {
                 Image(systemName: tab.icon)
-                    .font(.system(size: 32, weight: (tab == .settings ? showSettingsCard : selectedTab == tab) ? .light : .thin))
-                    .foregroundColor((tab == .settings ? showSettingsCard : selectedTab == tab) ? .scarletRed : .gray.opacity(0.6))
+                    .font(.system(size: 32, weight: isActive ? .light : .thin))
+                    .foregroundColor(isActive ? .scarletRed : .gray.opacity(0.6))
+                    .scaleEffect(tab == .settings ? settingsIconScale : 1.0)
 
                 Capsule()
-                    .fill((tab == .settings ? showSettingsCard : selectedTab == tab) ? Color.white : .clear)
+                    .fill(isActive ? Color.white : .clear)
                     .frame(width: 14, height: 2.5)
             }
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+        .onLongPressGesture(minimumDuration: 0.3) {
+            guard tab == .settings else { return }
+            withAnimation(.spring(response: 0.15, dampingFraction: 0.4)) {
+                settingsIconScale = 1.3
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    settingsIconScale = 1.0
+                    showSettingsCard.toggle()
+                }
+            }
+        }
     }
 
     // MARK: - Settings Icon Button
