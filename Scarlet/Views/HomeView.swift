@@ -115,6 +115,7 @@ struct HomeView: View {
                     // API-driven hero slideshow
                     heroBanner
                         .padding(.horizontal, 20)
+                        .padding(.top, 12)
 
                     // Repos
                     if !repoService.repos.isEmpty {

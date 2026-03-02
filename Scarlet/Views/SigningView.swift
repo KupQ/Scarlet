@@ -45,6 +45,7 @@ struct SigningView: View {
                 // Unsigned / Signed picker
                 libraryPicker
                     .padding(.horizontal, 20)
+                    .padding(.top, 8)
                     .padding(.bottom, 8)
 
                 ScrollView(.vertical, showsIndicators: false) {
