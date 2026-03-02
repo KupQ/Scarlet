@@ -233,19 +233,6 @@ struct CertificatesView: View {
             VStack(spacing: 0) {
                 // Top section — shield + name + status
                 HStack(spacing: 14) {
-                    // Shield icon with glow
-                    ZStack {
-                        Circle()
-                            .fill(statusClr.opacity(0.08))
-                            .frame(width: 48, height: 48)
-                        Circle()
-                            .stroke(statusClr.opacity(0.2), lineWidth: 1)
-                            .frame(width: 48, height: 48)
-                        Image(systemName: statusIconName(ocspStatus))
-                            .font(.system(size: 20, weight: .light))
-                            .foregroundColor(statusClr)
-                    }
-
                     VStack(alignment: .leading, spacing: 4) {
                         Text(cert.name)
                             .font(.system(size: 14, weight: .bold))
@@ -332,18 +319,6 @@ struct CertificatesView: View {
             VStack(spacing: 0) {
                 // Top section — shield + name + status
                 HStack(spacing: 14) {
-                    ZStack {
-                        Circle()
-                            .fill(statusClr.opacity(0.08))
-                            .frame(width: 48, height: 48)
-                        Circle()
-                            .stroke(statusClr.opacity(0.2), lineWidth: 1)
-                            .frame(width: 48, height: 48)
-                        Image(systemName: statusIconName(ocspStatus))
-                            .font(.system(size: 20, weight: .light))
-                            .foregroundColor(statusClr)
-                    }
-
                     VStack(alignment: .leading, spacing: 4) {
                         Text(certName)
                             .font(.system(size: 14, weight: .bold))
