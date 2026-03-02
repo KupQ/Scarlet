@@ -233,6 +233,10 @@ struct CertificatesView: View {
             VStack(spacing: 0) {
                 // Top section — shield + name + status
                 HStack(spacing: 14) {
+                    Image(systemName: statusIconName(ocspStatus))
+                        .font(.system(size: 24, weight: .thin))
+                        .foregroundColor(statusClr.opacity(0.5))
+                        .frame(width: 28)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(cert.name)
                             .font(.system(size: 14, weight: .bold))
@@ -319,6 +323,10 @@ struct CertificatesView: View {
             VStack(spacing: 0) {
                 // Top section — shield + name + status
                 HStack(spacing: 14) {
+                    Image(systemName: statusIconName(ocspStatus))
+                        .font(.system(size: 24, weight: .thin))
+                        .foregroundColor(statusClr.opacity(0.5))
+                        .frame(width: 28)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(certName)
                             .font(.system(size: 14, weight: .bold))
