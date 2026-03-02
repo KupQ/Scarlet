@@ -22,22 +22,6 @@ struct SigningView: View {
         ZStack {
             Color.bgPrimary.ignoresSafeArea()
 
-            // Ambient glow
-            VStack {
-                Ellipse()
-                    .fill(
-                        RadialGradient(
-                            colors: [Color.white.opacity(0.03), Color.clear],
-                            center: .center, startRadius: 10, endRadius: 180
-                        )
-                    )
-                    .frame(width: 350, height: 200)
-                    .offset(y: -40)
-                    .blur(radius: 40)
-                Spacer()
-            }
-            .ignoresSafeArea()
-
             VStack(spacing: 0) {
                 headerSection
                     .background(Color.bgPrimary)
@@ -45,7 +29,7 @@ struct SigningView: View {
                 // Unsigned / Signed picker
                 libraryPicker
                     .padding(.horizontal, 20)
-                    .padding(.top, 8)
+                    .padding(.top, 16)
                     .padding(.bottom, 8)
 
                 ScrollView(.vertical, showsIndicators: false) {

@@ -26,33 +26,6 @@ struct HomeView: View {
         ZStack {
             Color.bgPrimary.ignoresSafeArea()
 
-            // Ambient scarlet glow
-            VStack {
-                Ellipse()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                Color.scarletRed.opacity(0.20),
-                                Color.scarletDark.opacity(0.06),
-                                Color.clear
-                            ],
-                            center: .center,
-                            startRadius: 20,
-                            endRadius: 220
-                        )
-                    )
-                    .frame(width: 400, height: 260)
-                    .offset(y: -60)
-                    .blur(radius: 40)
-                    .scaleEffect(animateGlow ? 1.05 : 0.95)
-                    .animation(
-                        .easeInOut(duration: 4).repeatForever(autoreverses: true),
-                        value: animateGlow
-                    )
-                Spacer()
-            }
-            .ignoresSafeArea()
-
             VStack(spacing: 0) {
                 // Pinned header
                 HStack {
@@ -115,7 +88,7 @@ struct HomeView: View {
                     // API-driven hero slideshow
                     heroBanner
                         .padding(.horizontal, 20)
-                        .padding(.top, 12)
+                        .padding(.top, 20)
 
                     // Repos
                     if !repoService.repos.isEmpty {
