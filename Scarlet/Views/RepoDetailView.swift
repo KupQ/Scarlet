@@ -147,12 +147,13 @@ struct RepoDetailView: View {
 
                 // Lazy app list
                 ScrollView {
-                    LazyVStack(spacing: 6) {
+                    LazyVStack(spacing: 10) {
                         ForEach(apps) { app in
                             repoAppRow(app)
                         }
                     }
                     .padding(.horizontal, 20)
+                    .padding(.top, 8)
                     .padding(.bottom, 100)
                 }
             }
