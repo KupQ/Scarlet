@@ -162,19 +162,9 @@ struct SigningView: View {
         .padding(.horizontal, 40)
     }
 
-    // MARK: - Apps List (split into installed + unsigned)
+    // MARK: - Apps List (split into installed + all)
 
-    private var installedApps: [ImportedApp] {
-        appsManager.apps.filter(\.isInstalled).sorted {
-            ($0.installedDate ?? .distantPast) > ($1.installedDate ?? .distantPast)
-        }
-    }
-
-    private var unsignedApps: [ImportedApp] {
-        appsManager.apps.filter { !$0.isSigned }.sorted {
-            $0.importDate > $1.importDate
-        }
-    }
+    @StateObject private var installedManager = InstalledAppsManager.shared
 
     private var allAppsSorted: [ImportedApp] {
         appsManager.apps.sorted { $0.importDate > $1.importDate }
@@ -182,19 +172,25 @@ struct SigningView: View {
 
     private var appsList: some View {
         VStack(spacing: 16) {
-            // ── Installed Apps ──
-            if !installedApps.isEmpty {
-                sectionHeader(title: "Installed Apps", count: installedApps.count)
+            // ── Installed Apps (from separate store) ──
+            if !installedManager.sorted.isEmpty {
+                sectionHeader(title: "Installed Apps", count: installedManager.sorted.count)
                 VStack(spacing: 10) {
-                    ForEach(installedApps) { app in
-                        SwipeableAppCard(app: app, onTap: {
+                    ForEach(installedManager.sorted) { app in
+                        Button {
                             InstallProgressPoller.openApp(bundleId: app.bundleIdentifier)
-                        }, onDelete: {
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                appsManager.unmarkInstalled(app)
-                            }
-                        }) {
+                        } label: {
                             installedCardContent(app)
+                        }
+                        .buttonStyle(.plain)
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                    installedManager.remove(app)
+                                }
+                            } label: {
+                                Label("Remove from Installed", systemImage: "trash")
+                            }
                         }
                         .transition(.asymmetric(
                             insertion: .move(edge: .top).combined(with: .opacity),
@@ -245,9 +241,9 @@ struct SigningView: View {
 
     // MARK: - Installed Card
 
-    private func installedCardContent(_ app: ImportedApp) -> some View {
+    private func installedCardContent(_ app: InstalledApp) -> some View {
         HStack(spacing: 14) {
-            appIcon(app)
+            installedAppIcon(app)
                 .frame(width: 52, height: 52)
                 .clipShape(RoundedRectangle(cornerRadius: 13))
 
@@ -264,10 +260,6 @@ struct SigningView: View {
                     Label("v\(app.version)", systemImage: "number")
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.scarletPink.opacity(0.7))
-                    Text("·").foregroundColor(.white.opacity(0.15))
-                    Text(app.formattedSize)
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(.white.opacity(0.25))
                     Text("·").foregroundColor(.white.opacity(0.15))
                     Label(validityText, systemImage: "clock")
                         .font(.system(size: 10, weight: .semibold))
@@ -303,6 +295,28 @@ struct SigningView: View {
                         .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
                 )
         )
+    }
+
+    @ViewBuilder
+    private func installedAppIcon(_ app: InstalledApp) -> some View {
+        if let iconURL = app.iconURL,
+           let data = try? Data(contentsOf: iconURL),
+           let uiImage = UIImage(data: data) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+        } else {
+            ZStack {
+                RoundedRectangle(cornerRadius: 13)
+                    .fill(
+                        LinearGradient(colors: [.scarletRed, .scarletDark],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                Text(String(app.appName.prefix(1)))
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundColor(.white)
+            }
+        }
     }
 
     // MARK: - Unsigned Card

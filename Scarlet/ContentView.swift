@@ -636,9 +636,9 @@ struct ContentView: View {
                 }
             }
             if case .completed = newStatus {
-                // Mark the app as installed on device
+                // Record app as installed in the separate installed store
                 if let app = selectedApp {
-                    ImportedAppsManager.shared.markAsInstalled(app)
+                    InstalledAppsManager.shared.add(from: app)
                 }
                 // Clean up signed temp files
                 cleanupSignedFiles()

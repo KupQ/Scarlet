@@ -11,10 +11,25 @@ import SwiftUI
 /// Scarlet — iOS IPA Signing App
 @main
 struct ScarletApp: App {
+    @State private var showSplash = true
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .preferredColorScheme(.dark)
+            ZStack {
+                ContentView()
+                    .opacity(showSplash ? 0 : 1)
+
+                if showSplash {
+                    SplashView {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            showSplash = false
+                        }
+                    }
+                    .transition(.opacity)
+                    .zIndex(1)
+                }
+            }
+            .preferredColorScheme(.dark)
         }
     }
 }

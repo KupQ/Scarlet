@@ -30,6 +30,8 @@
 		A10024 /* server.p12 in Resources */ = {isa = PBXBuildFile; fileRef = B10024 /* server.p12 */; };
 		A10025 /* CertificateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10025 /* CertificateService.swift */; };
 		A10026 /* CertificatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10026 /* CertificatesView.swift */; };
+		A10030 /* InstalledApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10030 /* InstalledApp.swift */; };
+		A10031 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10031 /* SplashView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,6 +60,8 @@
 		B10024 /* server.p12 */ = {isa = PBXFileReference; lastKnownFileType = file; path = server.p12; sourceTree = "<group>"; };
 		B10025 /* CertificateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateService.swift; sourceTree = "<group>"; };
 		B10026 /* CertificatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificatesView.swift; sourceTree = "<group>"; };
+		B10030 /* InstalledApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledApp.swift; sourceTree = "<group>"; };
+		B10031 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +112,7 @@
 				B10008 /* SwipeableAppCard.swift */,
 				B10009 /* SettingsView.swift */,
 				B10026 /* CertificatesView.swift */,
+				B10031 /* SplashView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -118,6 +123,7 @@
 				B10010 /* SigningState.swift */,
 				B10011 /* SigningSettings.swift */,
 				B10012 /* ImportedApp.swift */,
+				B10030 /* InstalledApp.swift */,
 				B10013 /* IPAParser.swift */,
 			);
 			path = Models;
@@ -263,6 +269,8 @@
 				A10016 /* UploadService.swift in Sources */,
 				A10025 /* CertificateService.swift in Sources */,
 				A10026 /* CertificatesView.swift in Sources */,
+				A10030 /* InstalledApp.swift in Sources */,
+				A10031 /* SplashView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
