@@ -21,7 +21,7 @@ struct ContentView: View {
     @State private var isSearching = false
     @State private var searchText = ""
     @State private var showSettingsCard = false
-    @AppStorage("settings_guide_v2") private var settingsGuideDismissed = false
+    @AppStorage("settings_guide_dismissed") private var settingsGuideDismissed = false
     @State private var settingsGuidePulse = false
     @State private var showCertsCard = false
     @State private var showLangCard = false
