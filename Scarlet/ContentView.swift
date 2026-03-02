@@ -160,62 +160,6 @@ struct ContentView: View {
                 .zIndex(92)
             }
 
-            // ── Settings setup guide ── floating above tab bar
-            if !settingsGuideDismissed && !showSettingsCard && !isSearching {
-                VStack(spacing: 0) {
-                    Spacer()
-
-                    HStack {
-                        Spacer()
-
-                        VStack(spacing: 0) {
-                            // Tooltip pill
-                            HStack(spacing: 8) {
-                                Circle()
-                                    .fill(Color.scarletRed)
-                                    .frame(width: 5, height: 5)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.scarletRed.opacity(0.3), lineWidth: 2)
-                                            .frame(width: 12, height: 12)
-                                            .opacity(settingsGuidePulse ? 0.8 : 0)
-                                            .scaleEffect(settingsGuidePulse ? 1.3 : 0.8)
-                                            .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: settingsGuidePulse)
-                                    )
-                                Text(L("Tap ⚙ to setup certificates"))
-                                    .font(.system(size: 11, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.7))
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
-                            .background(
-                                Capsule()
-                                    .fill(Color.white.opacity(0.06))
-                                    .overlay(
-                                        Capsule()
-                                            .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
-                                    )
-                            )
-
-                            // Thin line pointing down
-                            Rectangle()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [Color.scarletRed.opacity(0.3), Color.scarletRed.opacity(0.05)],
-                                        startPoint: .top, endPoint: .bottom
-                                    )
-                                )
-                                .frame(width: 1, height: 18)
-                        }
-                        .padding(.trailing, 30)
-                    }
-                    .padding(.bottom, 88)
-                }
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
-                .onAppear { settingsGuidePulse = true }
-                .zIndex(85)
-            }
-
             // Tab bar (ALWAYS on top so search field is visible)
             glassTabBar
                 .zIndex(95)
@@ -1428,15 +1372,46 @@ struct ContentView: View {
 
     private var settingsTabButton: some View {
         VStack(spacing: 6) {
-            Image(systemName: Tab.settings.icon)
-                .font(.system(size: 32, weight: showSettingsCard ? .light : .thin))
-                .foregroundColor(showSettingsCard ? .scarletRed : .gray.opacity(0.6))
-            Capsule()
-                .fill(showSettingsCard ? Color.white : .clear)
-                .frame(width: 14, height: 2.5)
+            ZStack {
+                // Pulsing guide ring — only until first tap
+                if !settingsGuideDismissed && !showSettingsCard {
+                    Circle()
+                        .stroke(Color.scarletRed.opacity(0.4), lineWidth: 1.5)
+                        .frame(width: 42, height: 42)
+                        .scaleEffect(settingsGuidePulse ? 1.3 : 0.9)
+                        .opacity(settingsGuidePulse ? 0 : 0.8)
+                        .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false), value: settingsGuidePulse)
+
+                    Circle()
+                        .stroke(Color.scarletRed.opacity(0.2), lineWidth: 1)
+                        .frame(width: 42, height: 42)
+                        .scaleEffect(settingsGuidePulse ? 1.6 : 0.9)
+                        .opacity(settingsGuidePulse ? 0 : 0.5)
+                        .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false).delay(0.3), value: settingsGuidePulse)
+                }
+
+                Image(systemName: Tab.settings.icon)
+                    .font(.system(size: 32, weight: showSettingsCard ? .light : .thin))
+                    .foregroundColor(showSettingsCard ? .scarletRed : (!settingsGuideDismissed ? .scarletRed.opacity(0.6) : .gray.opacity(0.6)))
+            }
+
+            // Floating label guide
+            if !settingsGuideDismissed && !showSettingsCard {
+                Text(L("Setup"))
+                    .font(.system(size: 8, weight: .heavy))
+                    .foregroundColor(.scarletRed.opacity(0.5))
+                    .tracking(1.5)
+                    .offset(y: -2)
+                    .transition(.opacity)
+            } else {
+                Capsule()
+                    .fill(showSettingsCard ? Color.white : .clear)
+                    .frame(width: 14, height: 2.5)
+            }
         }
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
+        .onAppear { settingsGuidePulse = true }
         .onTapGesture {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 showSettingsCard.toggle()
