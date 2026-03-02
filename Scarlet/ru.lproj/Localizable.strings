@@ -1,5 +1,5 @@
 /* ============================================
-   Scarlet — Русский (Russian)
+   1Sign — Русский (Russian)
    ============================================ */
 
 // ─── General / Buttons ───
@@ -13,7 +13,7 @@
 "Import" = "Импорт";
 
 // ─── Home View ───
-"Scarlet" = "Scarlet";
+"Scarlet" = "1Sign";
 "iOS App Signing" = "Подпись приложений iOS";
 "Sign & Install" = "Подписать и установить";
 "Powered by zsign" = "На базе zsign";
@@ -88,7 +88,7 @@
 "Strip app extensions" = "Удалить расширения приложений";
 "About" = "О приложении";
 "Language" = "Язык";
-"About Scarlet" = "О Scarlet";
+"About Scarlet" = "О 1Sign";
 
 // ─── Signing Sheet ───
 "Compression" = "Сжатие";

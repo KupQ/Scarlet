@@ -21,8 +21,10 @@
 	<array>
 		<string>itms-services</string>
 	</array>
+	<key>CFBundleDisplayName</key>
+	<string>1Sign</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Scarlet runs a local server to install signed apps on this device.</string>
+	<string>1Sign runs a local server to install signed apps on this device.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
