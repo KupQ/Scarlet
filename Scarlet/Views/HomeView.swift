@@ -15,7 +15,9 @@ struct HomeView: View {
     @State private var animatePulse = false
     @State private var animateGlow = false
     @State private var showAddRepo = false
+    @State private var showBulkAdd = false
     @State private var repoURLInput = ""
+    @State private var bulkRepoInput = ""
 
     var body: some View {
         ZStack {
@@ -60,6 +62,18 @@ struct HomeView: View {
                             .foregroundColor(.white.opacity(0.3))
                     }
                     Spacer()
+                    Button { showAddRepo = true } label: {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white.opacity(0.06))
+                                .frame(width: 36, height: 36)
+                            Image(systemName: "plus")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.scarletRed)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .onLongPressGesture(minimumDuration: 0.5) { showBulkAdd = true }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
@@ -73,25 +87,7 @@ struct HomeView: View {
                     heroBanner
                         .padding(.horizontal, 20)
 
-                    // Quick Actions
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("QUICK ACTIONS")
-                            .font(.system(size: 10, weight: .heavy))
-                            .tracking(1.5)
-                            .foregroundColor(.white.opacity(0.25))
-                            .padding(.horizontal, 20)
 
-                        HStack(spacing: 10) {
-                            quickActionCard(icon: "square.and.pencil", title: "Sign IPA", color: .scarletRed) {
-                                switchToLibrary()
-                            }
-                            quickActionCard(icon: "plus.app", title: "Add Repo", color: .green) {
-                                showAddRepo = true
-                            }
-                            quickActionCard(icon: "gearshape.2", title: "Options", color: .purple) {}
-                        }
-                        .padding(.horizontal, 20)
-                    }
 
                     // Start Signing CTA
                     signingCTACard
@@ -102,19 +98,7 @@ struct HomeView: View {
                         repoAppsSection
                     }
 
-                    // Features
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("FEATURES")
-                            .font(.system(size: 10, weight: .heavy))
-                            .tracking(1.5)
-                            .foregroundColor(.white.opacity(0.25))
-                            .padding(.horizontal, 20)
-
-                        featureRow(icon: "lock.shield.fill", title: "P12 & PEM Certificates", subtitle: "OpenSSL-powered parsing", color: .orange)
-                        featureRow(icon: "cpu", title: "ARM64 & FAT Binaries", subtitle: "Universal Mach-O support", color: .blue)
-                        featureRow(icon: "bolt.fill", title: "Fast Signing", subtitle: "Native C++ zsign engine", color: .yellow)
-                    }
-                    .padding(.bottom, 80)
+                    Spacer().frame(height: 80)
                 }
             }
             }
@@ -136,6 +120,21 @@ struct HomeView: View {
             }
         } message: {
             Text("Enter the repo JSON URL")
+        }
+        .alert("Add Multiple Repos", isPresented: $showBulkAdd) {
+            TextField("One URL per line", text: $bulkRepoInput)
+                .autocapitalization(.none)
+            Button("Cancel", role: .cancel) { bulkRepoInput = "" }
+            Button("Add All") {
+                let urls = bulkRepoInput
+                    .components(separatedBy: .newlines)
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                    .filter { !$0.isEmpty }
+                bulkRepoInput = ""
+                for url in urls { repoService.addRepo(url: url) }
+            }
+        } message: {
+            Text("Enter repo URLs, one per line")
         }
         .alert("Repo Error", isPresented: Binding(
             get: { repoService.lastError != nil },
@@ -198,34 +197,7 @@ struct HomeView: View {
 
     // MARK: - Quick Actions
 
-    private func quickActionCard(icon: String, title: String, color: Color, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack(spacing: 10) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(color.opacity(0.10))
-                        .frame(width: 44, height: 44)
-                    Image(systemName: icon)
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(color.opacity(0.8))
-                }
-                Text(title)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.6))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(0.03))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
-                    )
-            )
-        }
-        .buttonStyle(.plain)
-    }
+
 
     // MARK: - Signing CTA
 
@@ -277,39 +249,7 @@ struct HomeView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Feature Rows
 
-    private func featureRow(icon: String, title: String, subtitle: String, color: Color) -> some View {
-        HStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(color.opacity(0.08))
-                    .frame(width: 40, height: 40)
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                    .foregroundColor(color.opacity(0.7))
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.85))
-                Text(subtitle)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.white.opacity(0.25))
-            }
-            Spacer()
-        }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white.opacity(0.03))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color.white.opacity(0.05), lineWidth: 0.5)
-                )
-        )
-        .padding(.horizontal, 20)
-    }
 
     // MARK: - Repo Cards
 
