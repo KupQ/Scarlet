@@ -158,18 +158,15 @@ final class ImportedAppsManager: ObservableObject {
         importingFileName = url.lastPathComponent
         isImporting = true
 
-        Task { @MainActor [weak self] in
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self else { return }
-            defer { self.isImporting = false }
 
             let log = FileLogger.shared
             log.log("Importing IPA: \(url.lastPathComponent)")
 
-            // Parse metadata from the IPA (off main thread)
-            guard let metadata = await Task.detached(operation: {
-                IPAParser.parse(ipaURL: url)
-            }).value else {
+            guard let metadata = IPAParser.parse(ipaURL: url) else {
                 log.log("ERROR: Failed to parse IPA metadata")
+                DispatchQueue.main.async { self.isImporting = false }
                 return
             }
 
@@ -177,20 +174,19 @@ final class ImportedAppsManager: ObservableObject {
             let ipaName = "\(appId.uuidString).ipa"
             let iconName = metadata.iconData != nil ? "\(appId.uuidString).png" : nil
 
-            // Copy IPA to app storage
             let accessing = url.startAccessingSecurityScopedResource()
-            defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-
             let destIPA = Self.appsDirectory.appendingPathComponent(ipaName)
             do {
                 try FileManager.default.copyItem(at: url, to: destIPA)
                 log.log("Copied IPA to storage")
             } catch {
                 log.log("ERROR: Failed to copy IPA: \(error)")
+                if accessing { url.stopAccessingSecurityScopedResource() }
+                DispatchQueue.main.async { self.isImporting = false }
                 return
             }
+            if accessing { url.stopAccessingSecurityScopedResource() }
 
-            // Save extracted icon
             if let iconData = metadata.iconData, let iconName {
                 let destIcon = Self.appsDirectory.appendingPathComponent(iconName)
                 try? iconData.write(to: destIcon)
@@ -209,9 +205,12 @@ final class ImportedAppsManager: ObservableObject {
                 ipaFileName: ipaName
             )
 
-            self.apps.insert(app, at: 0)
-            self.saveApps()
-            log.log("Import complete: \(metadata.appName)")
+            DispatchQueue.main.async {
+                self.apps.insert(app, at: 0)
+                self.saveApps()
+                self.isImporting = false
+                log.log("Import complete: \(metadata.appName)")
+            }
         }
     }
 

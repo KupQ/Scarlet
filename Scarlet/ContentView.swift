@@ -15,6 +15,7 @@ struct ContentView: View {
     @ObservedObject private var certService = CertificateService.shared
     @ObservedObject private var repoService = RepoService.shared
     @ObservedObject private var downloadManager = DownloadManager.shared
+    @ObservedObject private var appsManager = ImportedAppsManager.shared
     @ObservedObject private var langManager = LanguageManager.shared
     @State private var selectedTab: Tab = .home
     @State private var isSearching = false
@@ -97,7 +98,7 @@ struct ContentView: View {
             }
 
             // Global import overlay — visible on any tab
-            if ImportedAppsManager.shared.isImporting {
+            if appsManager.isImporting {
                 importOverlay
                     .transition(.move(edge: .top).combined(with: .opacity))
                     .zIndex(75)
@@ -1481,7 +1482,7 @@ struct ContentView: View {
                         Text(L("Importing..."))
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.white)
-                        Text(ImportedAppsManager.shared.importingFileName)
+                        Text(appsManager.importingFileName)
                             .font(.system(size: 11, weight: .medium, design: .monospaced))
                             .foregroundColor(.white.opacity(0.3))
                             .lineLimit(1)
