@@ -1,0 +1,153 @@
+/* ============================================
+   Scarlet — English (Base Localization)
+   
+   SwiftUI Text("key") automatically looks up
+   strings here. Keys match the exact string
+   literals used in code.
+   ============================================ */
+
+// ─── General / Buttons ───
+"OK" = "OK";
+"Cancel" = "Cancel";
+"Delete" = "Delete";
+"Add" = "Add";
+"Done" = "Done";
+"Open" = "Open";
+"Sign" = "Sign";
+"Import" = "Import";
+
+// ─── Home View ───
+"Scarlet" = "Scarlet";
+"iOS App Signing" = "iOS App Signing";
+"Sign & Install" = "Sign & Install";
+"Powered by zsign" = "Powered by zsign";
+"Start Signing" = "Start Signing";
+"Import IPA & sign with certificate" = "Import IPA & sign with certificate";
+"REPOSITORIES" = "REPOSITORIES";
+
+// ─── Home — Context Menu ───
+"Add Repo" = "Add Repo";
+"Add Multiple" = "Add Multiple";
+"Add from Clipboard" = "Add from Clipboard";
+
+// ─── Home — Alerts ───
+"Add Repository" = "Add Repository";
+"Enter the repo JSON URL" = "Enter the repo JSON URL";
+"Add Multiple Repos" = "Add Multiple Repos";
+"One URL per line" = "One URL per line";
+"Enter repo URLs, one per line" = "Enter repo URLs, one per line";
+"Add All" = "Add All";
+"Repo Error" = "Repo Error";
+
+// ─── Library / Signing View ───
+"Library" = "Library";
+"Imported Apps" = "Imported Apps";
+"Importing..." = "Importing...";
+"Extracting metadata and icon" = "Extracting metadata and icon";
+"No Apps Imported" = "No Apps Imported";
+"Tap + to import an IPA file" = "Tap + to import an IPA file";
+"Import IPA" = "Import IPA";
+"Downloading" = "Downloading";
+"All Apps" = "All Apps";
+
+// ─── Repo Detail ───
+"GET" = "GET";
+
+// ─── Certificates ───
+"Certificates" = "Certificates";
+"Loading certificates..." = "Loading certificates...";
+"No Certificates Yet" = "No Certificates Yet";
+"Import a P12 certificate to get started" = "Import a P12 certificate to get started";
+"Import Certificate" = "Import Certificate";
+"ACTIVE" = "ACTIVE";
+"Local Certificate" = "Local Certificate";
+"Delete Certificate" = "Delete Certificate";
+"Certificate Password" = "Certificate Password";
+"Password" = "Password";
+
+// ─── Certificate Chips ───
+"Development" = "Development";
+"Distribution" = "Distribution";
+"PPQ" = "PPQ";
+"PPQless" = "PPQless";
+"Expired" = "Expired";
+
+// ─── Settings ───
+"Settings" = "Settings";
+"Imported · P12" = "Imported · P12";
+"Certificate Password" = "Certificate Password";
+"Enter password" = "Enter password";
+"Imported · mobileprovision" = "Imported · mobileprovision";
+"Signing Options" = "Signing Options";
+"Bundle ID" = "Bundle ID";
+"Display Name" = "Display Name";
+"Version" = "Version";
+"Keep original" = "Keep original";
+"Zip Compression" = "Zip Compression";
+"0 (Store)" = "0 (Store)";
+"1 (Fast)" = "1 (Fast)";
+"3 (Normal)" = "3 (Normal)";
+"6 (Good)" = "6 (Good)";
+"9 (Best)" = "9 (Best)";
+"Remove Plugins" = "Remove Plugins";
+"Strip app extensions" = "Strip app extensions";
+"About" = "About";
+"Language" = "Language";
+"About Scarlet" = "About Scarlet";
+
+// ─── Signing Sheet ───
+"Compression" = "Compression";
+"Certificate" = "Certificate";
+"Tap to select" = "Tap to select";
+"Local" = "Local";
+"No certificates available" = "No certificates available";
+"Signing Failed" = "Signing Failed";
+
+// ─── Result ───
+"Signed Successfully" = "Signed Successfully";
+"Your IPA has been re-signed" = "Your IPA has been re-signed";
+"Share Signed IPA" = "Share Signed IPA";
+
+// ─── Install Flow ───
+"Install" = "Install";
+"Installing" = "Installing";
+"Sending Manifest..." = "Sending Manifest...";
+"Sending Payload..." = "Sending Payload...";
+"Installed ✓" = "Installed ✓";
+
+// ─── Search ───
+"Search apps..." = "Search apps...";
+
+// ─── Certificate Status Labels ───
+"Checking…" = "Checking…";
+"Valid" = "Valid";
+"Revoked" = "Revoked";
+"Error" = "Error";
+
+// ─── Dynamic Strings (format) ───
+"Certificate imported: %@" = "Certificate imported: %@";
+"Profile imported: %@" = "Profile imported: %@";
+"Import failed: %@" = "Import failed: %@";
+"Replace Certificate" = "Replace Certificate";
+"Import Certificate (.p12)" = "Import Certificate (.p12)";
+"Replace Profile" = "Replace Profile";
+"Import Profile (.mobileprovision)" = "Import Profile (.mobileprovision)";
+
+// ─── Compression Labels ───
+"Fastest" = "Fastest";
+"Fast" = "Fast";
+"Normal" = "Normal";
+"Smallest" = "Smallest";
+"Store" = "Store";
+
+// ─── Settings About ───
+"Engine" = "Engine";
+"OpenSSL" = "OpenSSL";
+"Bundled" = "Bundled";
+
+// ─── Splash ───
+"Scarlet" = "Scarlet";
+
+// ─── Misc ───
+"•" = "•";
+"·" = "·";

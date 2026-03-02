@@ -282,7 +282,7 @@ struct SigningView: View {
 
     // MARK: - Section Header
 
-    private func sectionHeader(title: String, count: Int) -> some View {
+    private func sectionHeader(title: LocalizedStringKey, count: Int) -> some View {
         HStack {
             Text(title)
                 .font(.system(size: 13, weight: .semibold))

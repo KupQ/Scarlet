@@ -50,10 +50,10 @@ struct SettingsView: View {
             DocumentPicker(contentTypes: [.p12, .data]) { url in
                 do {
                     try settings.importCertificate(from: url)
-                    importMessage = "Certificate imported: \(url.lastPathComponent)"
+                    importMessage = String(format: NSLocalizedString("Certificate imported: %@", comment: ""), url.lastPathComponent)
                     showImportSuccess = true
                 } catch {
-                    importMessage = "Import failed: \(error.localizedDescription)"
+                    importMessage = String(format: NSLocalizedString("Import failed: %@", comment: ""), error.localizedDescription)
                     showImportSuccess = true
                 }
             }
@@ -62,10 +62,10 @@ struct SettingsView: View {
             DocumentPicker(contentTypes: [.mobileprovision, .data]) { url in
                 do {
                     try settings.importProfile(from: url)
-                    importMessage = "Profile imported: \(url.lastPathComponent)"
+                    importMessage = String(format: NSLocalizedString("Profile imported: %@", comment: ""), url.lastPathComponent)
                     showImportSuccess = true
                 } catch {
-                    importMessage = "Import failed: \(error.localizedDescription)"
+                    importMessage = String(format: NSLocalizedString("Import failed: %@", comment: ""), error.localizedDescription)
                     showImportSuccess = true
                 }
             }
@@ -128,7 +128,7 @@ struct SettingsView: View {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 20))
                         .foregroundColor(.scarletRed)
-                    Text(settings.hasCertificate ? "Replace Certificate" : "Import Certificate (.p12)")
+                    Text(settings.hasCertificate ? NSLocalizedString("Replace Certificate", comment: "") : NSLocalizedString("Import Certificate (.p12)", comment: ""))
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
                     Spacer()
@@ -208,7 +208,7 @@ struct SettingsView: View {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 20))
                         .foregroundColor(.blue)
-                    Text(settings.hasProfile ? "Replace Profile" : "Import Profile (.mobileprovision)")
+                    Text(settings.hasProfile ? NSLocalizedString("Replace Profile", comment: "") : NSLocalizedString("Import Profile (.mobileprovision)", comment: ""))
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
                     Spacer()
@@ -340,7 +340,7 @@ struct SettingsView: View {
 
     // MARK: - Components
 
-    private func sectionHeader(icon: String, title: String, color: Color) -> some View {
+    private func sectionHeader(icon: String, title: LocalizedStringKey, color: Color) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.system(size: 16))
@@ -353,8 +353,8 @@ struct SettingsView: View {
 
     private func settingsTextField(
         icon: String,
-        title: String,
-        placeholder: String,
+        title: LocalizedStringKey,
+        placeholder: LocalizedStringKey,
         text: Binding<String>
     ) -> some View {
         HStack(spacing: 14) {
@@ -392,7 +392,7 @@ struct SettingsView: View {
         .glassCard(cornerRadius: 18)
     }
 
-    private func aboutRow(label: String, value: String) -> some View {
+    private func aboutRow(label: LocalizedStringKey, value: String) -> some View {
         HStack {
             Text(label)
                 .font(.system(size: 14, weight: .medium))
@@ -408,11 +408,11 @@ struct SettingsView: View {
 
     private var compressionLabel: String {
         switch settings.zipCompression {
-        case 0: return "Fastest"
-        case 1...3: return "Fast"
-        case 4...6: return "Normal"
-        case 7...9: return "Smallest"
-        default: return "Store"
+        case 0: return NSLocalizedString("Fastest", comment: "")
+        case 1...3: return NSLocalizedString("Fast", comment: "")
+        case 4...6: return NSLocalizedString("Normal", comment: "")
+        case 7...9: return NSLocalizedString("Smallest", comment: "")
+        default: return NSLocalizedString("Store", comment: "")
         }
     }
 }
