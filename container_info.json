@@ -1,0 +1,2808 @@
+{
+  "info" : {
+    "arguments" : [
+      "devicectl",
+      "device",
+      "info",
+      "files",
+      "-d",
+      "00525528-B009-5F30-A4EA-8B33E582A30A",
+      "--domain-type",
+      "appDataContainer",
+      "--domain-identifier",
+      "com.scarlet.app",
+      "--json-output",
+      "/Users/kup/.gemini/antigravity/scratch/Scarlet/container_info.json"
+    ],
+    "commandType" : "devicectl.device.info.files",
+    "environment" : {
+      "TERM" : "xterm-256color"
+    },
+    "jsonVersion" : 3,
+    "outcome" : "success",
+    "version" : "506.7"
+  },
+  "result" : {
+    "deviceIdentifier" : "00525528-B009-5F30-A4EA-8B33E582A30A",
+    "domain" : "appDataContainer",
+    "domainIdentifier" : "com.scarlet.app",
+    "files" : [
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:34.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 0,
+          "permissions" : 420,
+          "size" : 578
+        },
+        "name" : ".com.apple.mobile_container_manager.metadata.plist",
+        "relativePath" : ".com.apple.mobile_container_manager.metadata.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : true,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:44.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 256
+        },
+        "name" : "Documents",
+        "relativePath" : "Documents",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:07:41.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "Documents/Certificates",
+        "relativePath" : "Documents/Certificates",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:07:41.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 19495
+        },
+        "name" : "Documents/Certificates/W7CI5F.mobileprovision",
+        "relativePath" : "Documents/Certificates/W7CI5F.mobileprovision",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:07:41.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 3317
+        },
+        "name" : "Documents/Certificates/W7CI5F.p12",
+        "relativePath" : "Documents/Certificates/W7CI5F.p12",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:21.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "Documents/Certs",
+        "relativePath" : "Documents/Certs",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:20.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 384,
+          "size" : 1109
+        },
+        "name" : "Documents/Certs/AppleWWDRCAG3.cer",
+        "relativePath" : "Documents/Certs/AppleWWDRCAG3.cer",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:20.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 384,
+          "size" : 4221
+        },
+        "name" : "Documents/Certs/server.p12",
+        "relativePath" : "Documents/Certs/server.p12",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:07:40.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 160
+        },
+        "name" : "Documents/ImportedApps",
+        "relativePath" : "Documents/ImportedApps",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd",
+            "com.apple.fileprovider.pinned#PX" : "1"
+          },
+          "lastModDate" : "2026-03-01T13:11:38.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 384,
+          "size" : 11062097
+        },
+        "name" : "Documents/ImportedApps/D34ACD9B-27C8-4C0A-A2E6-4C3BB0D9ECF0.ipa",
+        "relativePath" : "Documents/ImportedApps/D34ACD9B-27C8-4C0A-A2E6-4C3BB0D9ECF0.ipa",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:07:40.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 10665
+        },
+        "name" : "Documents/ImportedApps/D34ACD9B-27C8-4C0A-A2E6-4C3BB0D9ECF0.png",
+        "relativePath" : "Documents/ImportedApps/D34ACD9B-27C8-4C0A-A2E6-4C3BB0D9ECF0.png",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 416
+        },
+        "name" : "Documents/ImportedApps/metadata.json",
+        "relativePath" : "Documents/ImportedApps/metadata.json",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 320
+        },
+        "name" : "Documents/SignedApps",
+        "relativePath" : "Documents/SignedApps",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:15:11.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 11060271
+        },
+        "name" : "Documents/SignedApps/1C6B87A2-7551-4DCC-B645-460153B05786.ipa",
+        "relativePath" : "Documents/SignedApps/1C6B87A2-7551-4DCC-B645-460153B05786.ipa",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 11060271
+        },
+        "name" : "Documents/SignedApps/2CD322FB-0480-4C0B-A61E-B504156586BE.ipa",
+        "relativePath" : "Documents/SignedApps/2CD322FB-0480-4C0B-A61E-B504156586BE.ipa",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:14:29.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 11060271
+        },
+        "name" : "Documents/SignedApps/41EA1C14-6314-42F4-BE06-FE307DD401C7.ipa",
+        "relativePath" : "Documents/SignedApps/41EA1C14-6314-42F4-BE06-FE307DD401C7.ipa",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:12:39.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 11060271
+        },
+        "name" : "Documents/SignedApps/C008AE2D-5FD7-483D-8968-3DE83EC4C628.ipa",
+        "relativePath" : "Documents/SignedApps/C008AE2D-5FD7-483D-8968-3DE83EC4C628.ipa",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:07:42.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 11060271
+        },
+        "name" : "Documents/SignedApps/CA347050-91CA-4B68-8DA8-77C9F143D07C.ipa",
+        "relativePath" : "Documents/SignedApps/CA347050-91CA-4B68-8DA8-77C9F143D07C.ipa",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:41.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 11060271
+        },
+        "name" : "Documents/SignedApps/DCB30173-8894-4DE4-B2B7-3F062E4D7C94.ipa",
+        "relativePath" : "Documents/SignedApps/DCB30173-8894-4DE4-B2B7-3F062E4D7C94.ipa",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:15:30.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 11060271
+        },
+        "name" : "Documents/SignedApps/FA93E920-7B86-47F9-9BC0-C21F5462267D.ipa",
+        "relativePath" : "Documents/SignedApps/FA93E920-7B86-47F9-9BC0-C21F5462267D.ipa",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 288
+        },
+        "name" : "Documents/SignedApps/Icons",
+        "relativePath" : "Documents/SignedApps/Icons",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:15:11.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 10665
+        },
+        "name" : "Documents/SignedApps/Icons/1C6B87A2-7551-4DCC-B645-460153B05786.png",
+        "relativePath" : "Documents/SignedApps/Icons/1C6B87A2-7551-4DCC-B645-460153B05786.png",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 10665
+        },
+        "name" : "Documents/SignedApps/Icons/2CD322FB-0480-4C0B-A61E-B504156586BE.png",
+        "relativePath" : "Documents/SignedApps/Icons/2CD322FB-0480-4C0B-A61E-B504156586BE.png",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:14:29.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 10665
+        },
+        "name" : "Documents/SignedApps/Icons/41EA1C14-6314-42F4-BE06-FE307DD401C7.png",
+        "relativePath" : "Documents/SignedApps/Icons/41EA1C14-6314-42F4-BE06-FE307DD401C7.png",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:12:39.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 10665
+        },
+        "name" : "Documents/SignedApps/Icons/C008AE2D-5FD7-483D-8968-3DE83EC4C628.png",
+        "relativePath" : "Documents/SignedApps/Icons/C008AE2D-5FD7-483D-8968-3DE83EC4C628.png",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:07:42.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 10665
+        },
+        "name" : "Documents/SignedApps/Icons/CA347050-91CA-4B68-8DA8-77C9F143D07C.png",
+        "relativePath" : "Documents/SignedApps/Icons/CA347050-91CA-4B68-8DA8-77C9F143D07C.png",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:41.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 10665
+        },
+        "name" : "Documents/SignedApps/Icons/DCB30173-8894-4DE4-B2B7-3F062E4D7C94.png",
+        "relativePath" : "Documents/SignedApps/Icons/DCB30173-8894-4DE4-B2B7-3F062E4D7C94.png",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:15:30.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 10665
+        },
+        "name" : "Documents/SignedApps/Icons/FA93E920-7B86-47F9-9BC0-C21F5462267D.png",
+        "relativePath" : "Documents/SignedApps/Icons/FA93E920-7B86-47F9-9BC0-C21F5462267D.png",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:44.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 222
+        },
+        "name" : "Documents/installed_apps.json",
+        "relativePath" : "Documents/installed_apps.json",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.TextEncoding" : "utf-8;134217984",
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:21:24.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 13956
+        },
+        "name" : "Documents/scarlet_debug.log",
+        "relativePath" : "Documents/scarlet_debug.log",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 224
+        },
+        "name" : "Library",
+        "relativePath" : "Library",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "Library/Caches",
+        "relativePath" : "Library/Caches",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:38.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "Library/Caches/com.apple.dyld",
+        "relativePath" : "Library/Caches/com.apple.dyld",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:38.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 256,
+          "size" : 30079
+        },
+        "name" : "Library/Caches/com.apple.dyld/Scarlet.dyld4",
+        "relativePath" : "Library/Caches/com.apple.dyld/Scarlet.dyld4",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:07:37.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 256
+        },
+        "name" : "Library/Caches/com.scarlet.app",
+        "relativePath" : "Library/Caches/com.scarlet.app",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 49152
+        },
+        "name" : "Library/Caches/com.scarlet.app/Cache.db",
+        "relativePath" : "Library/Caches/com.scarlet.app/Cache.db",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:21:20.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 32768
+        },
+        "name" : "Library/Caches/com.scarlet.app/Cache.db-shm",
+        "relativePath" : "Library/Caches/com.scarlet.app/Cache.db-shm",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:21:21.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 78312
+        },
+        "name" : "Library/Caches/com.scarlet.app/Cache.db-wal",
+        "relativePath" : "Library/Caches/com.scarlet.app/Cache.db-wal",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:21.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 160
+        },
+        "name" : "Library/Caches/com.scarlet.app/com.apple.metal",
+        "relativePath" : "Library/Caches/com.scarlet.app/com.apple.metal",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:21.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "Library/Caches/com.scarlet.app/com.apple.metal/32024",
+        "relativePath" : "Library/Caches/com.scarlet.app/com.apple.metal/32024",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd",
+            "com.apple.runningboard.can-suspend-locked" : "\u0001"
+          },
+          "lastModDate" : "2026-03-02T17:07:38.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 65536
+        },
+        "name" : "Library/Caches/com.scarlet.app/com.apple.metal/32024/libraries.data",
+        "relativePath" : "Library/Caches/com.scarlet.app/com.apple.metal/32024/libraries.data",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.runningboard.can-suspend-locked" : "\u0001"
+          },
+          "lastModDate" : "2026-03-02T17:21:21.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 668
+        },
+        "name" : "Library/Caches/com.scarlet.app/com.apple.metal/32024/libraries.list",
+        "relativePath" : "Library/Caches/com.scarlet.app/com.apple.metal/32024/libraries.list",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd",
+            "com.apple.runningboard.can-suspend-locked" : "\u0001"
+          },
+          "lastModDate" : "2026-03-02T17:12:37.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 114688
+        },
+        "name" : "Library/Caches/com.scarlet.app/com.apple.metal/functions.data",
+        "relativePath" : "Library/Caches/com.scarlet.app/com.apple.metal/functions.data",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.runningboard.can-suspend-locked" : "\u0001"
+          },
+          "lastModDate" : "2026-03-02T17:21:21.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 2964
+        },
+        "name" : "Library/Caches/com.scarlet.app/com.apple.metal/functions.list",
+        "relativePath" : "Library/Caches/com.scarlet.app/com.apple.metal/functions.list",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:07:37.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 64
+        },
+        "name" : "Library/Caches/com.scarlet.app/com.apple.metalfe",
+        "relativePath" : "Library/Caches/com.scarlet.app/com.apple.metalfe",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:21.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "Library/Caches/com.scarlet.app/fsCachedData",
+        "relativePath" : "Library/Caches/com.scarlet.app/fsCachedData",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:21.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 152838
+        },
+        "name" : "Library/Caches/com.scarlet.app/fsCachedData/86134BB5-ABE3-4895-B3A4-183804FC4300",
+        "relativePath" : "Library/Caches/com.scarlet.app/fsCachedData/86134BB5-ABE3-4895-B3A4-183804FC4300",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "Library/HTTPStorages",
+        "relativePath" : "Library/HTTPStorages",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.metadata:com_apple_backup_excludeItem" : "com.apple.MobileBackup"
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 160
+        },
+        "name" : "Library/HTTPStorages/com.scarlet.app",
+        "relativePath" : "Library/HTTPStorages/com.scarlet.app",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 4096
+        },
+        "name" : "Library/HTTPStorages/com.scarlet.app/httpstorages.sqlite",
+        "relativePath" : "Library/HTTPStorages/com.scarlet.app/httpstorages.sqlite",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:21:20.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 32768
+        },
+        "name" : "Library/HTTPStorages/com.scarlet.app/httpstorages.sqlite-shm",
+        "relativePath" : "Library/HTTPStorages/com.scarlet.app/httpstorages.sqlite-shm",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:21:21.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 111272
+        },
+        "name" : "Library/HTTPStorages/com.scarlet.app/httpstorages.sqlite-wal",
+        "relativePath" : "Library/HTTPStorages/com.scarlet.app/httpstorages.sqlite-wal",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:51.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "Library/Preferences",
+        "relativePath" : "Library/Preferences",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:51.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 384,
+          "size" : 2127
+        },
+        "name" : "Library/Preferences/com.scarlet.app.plist",
+        "relativePath" : "Library/Preferences/com.scarlet.app.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "Library/Saved Application State",
+        "relativePath" : "Library/Saved Application State",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "Library/Saved Application State/com.scarlet.app.savedState",
+        "relativePath" : "Library/Saved Application State/com.scarlet.app.savedState",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 160
+        },
+        "name" : "Library/Saved Application State/com.scarlet.app.savedState/B9C6509A-12F2-4220-86AA-A6CF74880224",
+        "relativePath" : "Library/Saved Application State/com.scarlet.app.savedState/B9C6509A-12F2-4220-86AA-A6CF74880224",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 1658
+        },
+        "name" : "Library/Saved Application State/com.scarlet.app.savedState/B9C6509A-12F2-4220-86AA-A6CF74880224/data.data",
+        "relativePath" : "Library/Saved Application State/com.scarlet.app.savedState/B9C6509A-12F2-4220-86AA-A6CF74880224/data.data",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 412
+        },
+        "name" : "Library/Saved Application State/com.scarlet.app.savedState/B9C6509A-12F2-4220-86AA-A6CF74880224/internalUserInfo.data",
+        "relativePath" : "Library/Saved Application State/com.scarlet.app.savedState/B9C6509A-12F2-4220-86AA-A6CF74880224/internalUserInfo.data",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 921
+        },
+        "name" : "Library/Saved Application State/com.scarlet.app.savedState/B9C6509A-12F2-4220-86AA-A6CF74880224/userInfo.data",
+        "relativePath" : "Library/Saved Application State/com.scarlet.app.savedState/B9C6509A-12F2-4220-86AA-A6CF74880224/userInfo.data",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "Library/Saved Application State/com.scarlet.app.savedState/KnownSceneSessions",
+        "relativePath" : "Library/Saved Application State/com.scarlet.app.savedState/KnownSceneSessions",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+            "com.apple.dataprotection.policy.exception-applied-by" : "com.apple.containermanagerd"
+          },
+          "lastModDate" : "2026-03-02T17:07:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 1245
+        },
+        "name" : "Library/Saved Application State/com.scarlet.app.savedState/KnownSceneSessions/data.data",
+        "relativePath" : "Library/Saved Application State/com.scarlet.app.savedState/KnownSceneSessions/data.data",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:07:31.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "Library/SplashBoard",
+        "relativePath" : "Library/SplashBoard",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:08:35.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "Library/SplashBoard/Snapshots",
+        "relativePath" : "Library/SplashBoard/Snapshots",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:34.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 192
+        },
+        "name" : "Library/SplashBoard/Snapshots/com.scarlet.app - {DEFAULT GROUP}",
+        "relativePath" : "Library/SplashBoard/Snapshots/com.scarlet.app - {DEFAULT GROUP}",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:34.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 4161560
+        },
+        "name" : "Library/SplashBoard/Snapshots/com.scarlet.app - {DEFAULT GROUP}/02E6341A-81D0-4CF4-AC6C-E14D89EBB979@3x.ktx",
+        "relativePath" : "Library/SplashBoard/Snapshots/com.scarlet.app - {DEFAULT GROUP}/02E6341A-81D0-4CF4-AC6C-E14D89EBB979@3x.ktx",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:34.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 4161560
+        },
+        "name" : "Library/SplashBoard/Snapshots/com.scarlet.app - {DEFAULT GROUP}/32F12954-474E-415B-B566-EAE4F5FBB873@3x.ktx",
+        "relativePath" : "Library/SplashBoard/Snapshots/com.scarlet.app - {DEFAULT GROUP}/32F12954-474E-415B-B566-EAE4F5FBB873@3x.ktx",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:34.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 4161560
+        },
+        "name" : "Library/SplashBoard/Snapshots/com.scarlet.app - {DEFAULT GROUP}/789B1BFF-523B-4246-A9AE-39DFED77A7E0@3x.ktx",
+        "relativePath" : "Library/SplashBoard/Snapshots/com.scarlet.app - {DEFAULT GROUP}/789B1BFF-523B-4246-A9AE-39DFED77A7E0@3x.ktx",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:34.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 4161560
+        },
+        "name" : "Library/SplashBoard/Snapshots/com.scarlet.app - {DEFAULT GROUP}/BA2E9B62-1282-4F44-926A-A0D4F4F1A536@3x.ktx",
+        "relativePath" : "Library/SplashBoard/Snapshots/com.scarlet.app - {DEFAULT GROUP}/BA2E9B62-1282-4F44-926A-A0D4F4F1A536@3x.ktx",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:47.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 160
+        },
+        "name" : "Library/SplashBoard/Snapshots/sceneID:com.scarlet.app-B9C6509A-12F2-4220-86AA-A6CF74880224",
+        "relativePath" : "Library/SplashBoard/Snapshots/sceneID:com.scarlet.app-B9C6509A-12F2-4220-86AA-A6CF74880224",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:47.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 4161560
+        },
+        "name" : "Library/SplashBoard/Snapshots/sceneID:com.scarlet.app-B9C6509A-12F2-4220-86AA-A6CF74880224/7F21558D-4885-4153-B42E-AA68548F3CD1@3x.ktx",
+        "relativePath" : "Library/SplashBoard/Snapshots/sceneID:com.scarlet.app-B9C6509A-12F2-4220-86AA-A6CF74880224/7F21558D-4885-4153-B42E-AA68548F3CD1@3x.ktx",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:47.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 4161560
+        },
+        "name" : "Library/SplashBoard/Snapshots/sceneID:com.scarlet.app-B9C6509A-12F2-4220-86AA-A6CF74880224/F3EB8876-111A-4F52-8CBC-59989C036ABA@3x.ktx",
+        "relativePath" : "Library/SplashBoard/Snapshots/sceneID:com.scarlet.app-B9C6509A-12F2-4220-86AA-A6CF74880224/F3EB8876-111A-4F52-8CBC-59989C036ABA@3x.ktx",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:47.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "Library/SplashBoard/Snapshots/sceneID:com.scarlet.app-B9C6509A-12F2-4220-86AA-A6CF74880224/downscaled",
+        "relativePath" : "Library/SplashBoard/Snapshots/sceneID:com.scarlet.app-B9C6509A-12F2-4220-86AA-A6CF74880224/downscaled",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:47.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 2113560
+        },
+        "name" : "Library/SplashBoard/Snapshots/sceneID:com.scarlet.app-B9C6509A-12F2-4220-86AA-A6CF74880224/downscaled/4EFF119A-4DDC-4E4D-8CB9-0DF182749E2B@3x.ktx",
+        "relativePath" : "Library/SplashBoard/Snapshots/sceneID:com.scarlet.app-B9C6509A-12F2-4220-86AA-A6CF74880224/downscaled/4EFF119A-4DDC-4E4D-8CB9-0DF182749E2B@3x.ktx",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:19:47.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 2113560
+        },
+        "name" : "Library/SplashBoard/Snapshots/sceneID:com.scarlet.app-B9C6509A-12F2-4220-86AA-A6CF74880224/downscaled/9F085B94-E249-4B56-B720-6CB5635BF44D@3x.ktx",
+        "relativePath" : "Library/SplashBoard/Snapshots/sceneID:com.scarlet.app-B9C6509A-12F2-4220-86AA-A6CF74880224/downscaled/9F085B94-E249-4B56-B720-6CB5635BF44D@3x.ktx",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:07:30.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 64
+        },
+        "name" : "SystemData",
+        "relativePath" : "SystemData",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "tmp",
+        "relativePath" : "tmp",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:12:31.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 64
+        },
+        "name" : "tmp/com.scarlet.app-Inbox",
+        "relativePath" : "tmp/com.scarlet.app-Inbox",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 736
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 7023
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/AppIcon60x60@2x.png",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/AppIcon60x60@2x.png",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 9678
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/AppIcon76x76@2x~ipad.png",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/AppIcon76x76@2x~ipad.png",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 296431
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Assets.car",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Assets.car",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/CryptoSwift_CryptoSwift.bundle",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/CryptoSwift_CryptoSwift.bundle",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 694
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/CryptoSwift_CryptoSwift.bundle/Info.plist",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/CryptoSwift_CryptoSwift.bundle/Info.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 373
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/CryptoSwift_CryptoSwift.bundle/PrivacyInfo.xcprivacy",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/CryptoSwift_CryptoSwift.bundle/PrivacyInfo.xcprivacy",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/CustomAlert_CustomAlert.bundle",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/CustomAlert_CustomAlert.bundle",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 21984
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/CustomAlert_CustomAlert.bundle/Assets.car",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/CustomAlert_CustomAlert.bundle/Assets.car",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 694
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/CustomAlert_CustomAlert.bundle/Info.plist",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/CustomAlert_CustomAlert.bundle/Info.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/DatabaseModel.momd",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/DatabaseModel.momd",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 1730
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/DatabaseModel.momd/DatabaseModel.mom",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/DatabaseModel.momd/DatabaseModel.mom",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 272
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/DatabaseModel.momd/VersionInfo.plist",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/DatabaseModel.momd/VersionInfo.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/DeviceKit_DeviceKit.bundle",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/DeviceKit_DeviceKit.bundle",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 686
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/DeviceKit_DeviceKit.bundle/Info.plist",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/DeviceKit_DeviceKit.bundle/Info.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 623
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/DeviceKit_DeviceKit.bundle/PrivacyInfo.xcprivacy",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/DeviceKit_DeviceKit.bundle/PrivacyInfo.xcprivacy",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Frameworks",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Frameworks",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 160
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Frameworks/OpenSSL.framework",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Frameworks/OpenSSL.framework",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 718
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Frameworks/OpenSSL.framework/Info.plist",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Frameworks/OpenSSL.framework/Info.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 4613392
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Frameworks/OpenSSL.framework/OpenSSL",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Frameworks/OpenSSL.framework/OpenSSL",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Frameworks/OpenSSL.framework/_CodeSignature",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Frameworks/OpenSSL.framework/_CodeSignature",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 1797
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Frameworks/OpenSSL.framework/_CodeSignature/CodeResources",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Frameworks/OpenSSL.framework/_CodeSignature/CodeResources",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 3315
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Info.plist",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/Info.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 8
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/PkgInfo",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/PkgInfo",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/ZIPFoundation_ZIPFoundation.bundle",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/ZIPFoundation_ZIPFoundation.bundle",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 702
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/ZIPFoundation_ZIPFoundation.bundle/Info.plist",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/ZIPFoundation_ZIPFoundation.bundle/Info.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 599
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/ZIPFoundation_ZIPFoundation.bundle/PrivacyInfo.xcprivacy",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/ZIPFoundation_ZIPFoundation.bundle/PrivacyInfo.xcprivacy",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/_CodeSignature",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/_CodeSignature",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 12002
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/_CodeSignature/CodeResources",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/_CodeSignature/CodeResources",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/de.lproj",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/de.lproj",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 2242
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/de.lproj/Localizable.strings",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/de.lproj/Localizable.strings",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 19495
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/embedded.mobileprovision",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/embedded.mobileprovision",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 6047744
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/iDeployApp",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/iDeployApp",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 96
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/ru.lproj",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/ru.lproj",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 3021
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/ru.lproj/Localizable.strings",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/ru.lproj/Localizable.strings",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CCryptoBoringSSL.bundle",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CCryptoBoringSSL.bundle",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 706
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CCryptoBoringSSL.bundle/Info.plist",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CCryptoBoringSSL.bundle/Info.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 398
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CCryptoBoringSSL.bundle/PrivacyInfo.xcprivacy",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CCryptoBoringSSL.bundle/PrivacyInfo.xcprivacy",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CCryptoBoringSSLShims.bundle",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CCryptoBoringSSLShims.bundle",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 716
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CCryptoBoringSSLShims.bundle/Info.plist",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CCryptoBoringSSLShims.bundle/Info.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 398
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CCryptoBoringSSLShims.bundle/PrivacyInfo.xcprivacy",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CCryptoBoringSSLShims.bundle/PrivacyInfo.xcprivacy",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_Crypto.bundle",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_Crypto.bundle",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 686
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_Crypto.bundle/Info.plist",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_Crypto.bundle/Info.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 398
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_Crypto.bundle/PrivacyInfo.xcprivacy",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_Crypto.bundle/PrivacyInfo.xcprivacy",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CryptoBoringWrapper.bundle",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CryptoBoringWrapper.bundle",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 712
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CryptoBoringWrapper.bundle/Info.plist",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CryptoBoringWrapper.bundle/Info.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 398
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CryptoBoringWrapper.bundle/PrivacyInfo.xcprivacy",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto_CryptoBoringWrapper.bundle/PrivacyInfo.xcprivacy",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 128
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto__CryptoExtras.bundle",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto__CryptoExtras.bundle",
+        "resources" : {
+          "isDirectory" : true,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 700
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto__CryptoExtras.bundle/Info.plist",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto__CryptoExtras.bundle/Info.plist",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 493,
+          "size" : 398
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto__CryptoExtras.bundle/PrivacyInfo.xcprivacy",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/extracted/Payload/iDeployApp.app/swift-crypto__CryptoExtras.bundle/PrivacyInfo.xcprivacy",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      },
+      {
+        "metadata" : {
+          "extendedAttributes" : {
+
+          },
+          "lastModDate" : "2026-03-02T17:21:23.000Z",
+          "ownerGid" : 501,
+          "ownerUid" : 501,
+          "permissions" : 420,
+          "size" : 11060271
+        },
+        "name" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/signed.ipa",
+        "relativePath" : "tmp/scarlet_403E8C5F-AD5F-48E6-8706-977B2F8B946E/signed.ipa",
+        "resources" : {
+          "isDirectory" : false,
+          "isHidden" : false,
+          "isReadable" : true,
+          "isSymbolicLink" : false,
+          "isWritable" : true
+        }
+      }
+    ]
+  }
+}

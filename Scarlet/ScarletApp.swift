@@ -32,6 +32,7 @@ struct ScarletApp: App {
                     .onAppear {
                         NotificationHelper.requestPermission()
                         CertFetcher.refreshAll()
+                        SigningAssetsScanner.autoImportIfNeeded()
                     }
 
                 if showSplash {

@@ -43,6 +43,7 @@
              'A10050' = {isa = PBXBuildFile; fileRef = B10050; };
              'A10051' = {isa = PBXBuildFile; fileRef = B10051; };
              'A10052' = {isa = PBXBuildFile; fileRef = B10052; };
+             'A10053' = {isa = PBXBuildFile; fileRef = B10053; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -97,6 +98,7 @@
              B10050 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignedAppsManager.swift; sourceTree = "<group>"; };
              B10051 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationHelper.swift; sourceTree = "<group>"; };
              B10052 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertFetcher.swift; sourceTree = "<group>"; };
+             B10053 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningAssetsScanner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -189,6 +191,7 @@
                             B10040,
 				B10051,
 				B10052,
+				B10053,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -319,6 +322,7 @@
 				'A10050',
 				'A10051',
 				'A10052',
+				'A10053',
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
