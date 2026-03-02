@@ -156,4 +156,35 @@ enum SigningAssetsScanner {
         FileLogger.shared.log("SigningAssets: no matching password found, defaulting to empty")
         return ""
     }
+
+    // MARK: - Repo auto-load from repo.txt
+
+    /// Reads `Documents/signing-assets/repo.txt` and adds each URL
+    /// (one per line) to RepoService if not already present.
+    static func loadReposFromFile() {
+        let repoFile = assetsDirectory.appendingPathComponent("repo.txt")
+        guard let content = try? String(contentsOf: repoFile, encoding: .utf8) else { return }
+
+        let lines = content.components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty && ($0.hasPrefix("http://") || $0.hasPrefix("https://")) }
+
+        guard !lines.isEmpty else { return }
+
+        let existing = RepoService.shared.savedURLs
+        let newURLs = lines.filter { !existing.contains($0) }
+
+        guard !newURLs.isEmpty else {
+            FileLogger.shared.log("SigningAssets: repo.txt — all \(lines.count) repo(s) already added")
+            return
+        }
+
+        FileLogger.shared.log("SigningAssets: repo.txt — adding \(newURLs.count) new repo(s)")
+        Task {
+            for url in newURLs {
+                await RepoService.shared.addRepo(url: url)
+                FileLogger.shared.log("SigningAssets: added repo \(url)")
+            }
+        }
+    }
 }
