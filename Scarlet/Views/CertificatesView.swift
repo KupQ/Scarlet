@@ -277,9 +277,9 @@ struct CertificatesView: View {
 
                 // Bottom section — chips
                 HStack(spacing: 8) {
-                    certChip(icon: isDev ? "hammer" : "building.2", text: isDev ? "Development" : "Distribution")
+                    certChip(icon: isDev ? "hammer" : "building.2", text: isDev ? L("Development") : L("Distribution"))
                     certChip(icon: cert.isPPQEnabled ? "lock.fill" : "lock.open", text: cert.isPPQEnabled ? "PPQ" : "PPQless")
-                    certChip(icon: "calendar", text: cert.isExpired ? "Expired" : "\(days)d", highlight: cert.isExpired)
+                    certChip(icon: "calendar", text: cert.isExpired ? L("Expired") : "\(days)d", highlight: cert.isExpired)
                     Spacer()
                 }
                 .padding(.horizontal, 14)
@@ -363,9 +363,9 @@ struct CertificatesView: View {
                     .frame(height: 0.5)
 
                 HStack(spacing: 8) {
-                    certChip(icon: isDev ? "hammer" : "building.2", text: isDev ? "Development" : "Distribution")
+                    certChip(icon: isDev ? "hammer" : "building.2", text: isDev ? L("Development") : L("Distribution"))
                     certChip(icon: "lock.open", text: "PPQless")
-                    certChip(icon: "calendar", text: daysLeft > 0 ? "\(daysLeft)d" : "Expired", highlight: daysLeft <= 0)
+                    certChip(icon: "calendar", text: daysLeft > 0 ? "\(daysLeft)d" : L("Expired"), highlight: daysLeft <= 0)
                     Spacer()
                 }
                 .padding(.horizontal, 14)
@@ -566,7 +566,7 @@ struct CertificatesView: View {
         if PKCS12Validator.validate(data: p12Data, password: importPassword) {
             saveCert(password: importPassword)
         } else {
-            passwordError = "Wrong password. Please try again."
+            passwordError = L("Wrong password. Please try again.")
             importPassword = ""
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { importStep = .idle }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { importStep = .enterPassword }

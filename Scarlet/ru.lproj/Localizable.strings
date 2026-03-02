@@ -163,3 +163,10 @@
 "Signed Successfully!" = "Успешно подписано!";
 "No apps found" = "Приложения не найдены";
 " · Local" = " · Локальный";
+"App Name" = "Имя приложения";
+"App Documents" = "Документы приложения";
+"Location" = "Расположение";
+"Signing..." = "Подпись...";
+"Unknown" = "Неизвестно";
+"Unknown error" = "Неизвестная ошибка";
+"Wrong password. Please try again." = "Неверный пароль. Попробуйте ещё раз.";

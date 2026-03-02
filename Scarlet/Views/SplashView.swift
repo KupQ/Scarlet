@@ -148,7 +148,7 @@ struct SplashView: View {
             let deviceUDID = CertificateService.shared.deviceUDID
                 ?? CertificateService.getDeviceUDID()
             withAnimation(.easeOut(duration: 0.3)) {
-                udid = deviceUDID ?? "Unknown"
+                udid = deviceUDID ?? L("Unknown")
             }
 
             // Phase 2: Fetch certificates

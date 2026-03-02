@@ -168,7 +168,7 @@ struct HomeView: View {
         )) {
             Button(L("OK")) { repoService.lastError = nil }
         } message: {
-            Text(repoService.lastError ?? "Unknown error")
+            Text(repoService.lastError ?? L("Unknown error"))
         }
     }
 

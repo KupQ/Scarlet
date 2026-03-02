@@ -277,7 +277,7 @@ struct SettingsView: View {
                     Spacer()
                 }
 
-                Picker("Compression", selection: $settings.zipCompression) {
+                Picker(L("Compression"), selection: $settings.zipCompression) {
                     Text(L("0 (Store)")).tag(0)
                     Text(L("1 (Fast)")).tag(1)
                     Text(L("3 (Normal)")).tag(3)

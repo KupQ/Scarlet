@@ -169,3 +169,10 @@
 "Signed Successfully!" = "Signed Successfully!";
 "No apps found" = "No apps found";
 " · Local" = " · Local";
+"App Name" = "App Name";
+"App Documents" = "App Documents";
+"Location" = "Location";
+"Signing..." = "Signing...";
+"Unknown" = "Unknown";
+"Unknown error" = "Unknown error";
+"Wrong password. Please try again." = "Wrong password. Please try again.";

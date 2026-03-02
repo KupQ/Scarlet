@@ -107,7 +107,7 @@ struct ResultView: View {
                     Divider().background(Color.glassBorder).padding(.horizontal, 16)
                     infoRow(icon: "internaldrive", label: "Size", value: fileSize)
                     Divider().background(Color.glassBorder).padding(.horizontal, 16)
-                    infoRow(icon: "folder.fill", label: "Location", value: "App Documents")
+                    infoRow(icon: "folder.fill", label: L("Location"), value: L("App Documents"))
                 }
                 .glassCard(cornerRadius: 20)
                 .padding(.horizontal, 20)

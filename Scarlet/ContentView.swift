@@ -536,7 +536,7 @@ struct ContentView: View {
             }
 
             // Editable fields
-            configField(icon: "textformat", label: "App Name", text: $signDisplayName)
+            configField(icon: "textformat", label: L("App Name"), text: $signDisplayName)
             configField(icon: "app.badge", label: L("Bundle ID"), text: $signBundleId)
             configField(icon: "number", label: L("Version"), text: $signVersion)
 
@@ -820,7 +820,7 @@ struct ContentView: View {
         if let savedName = SigningSettings.shared.savedCertName,
            let matchingCert = certService.certificates.first(where: { "\($0.id).p12" == savedName }) {
             let typeStr = certTypeLabel(matchingCert.cert_type)
-            return Text(matchingCert.name) + Text(" · \(typeStr)").foregroundColor(typeStr == "Development" ? .blue.opacity(0.6) : .orange.opacity(0.6))
+            return Text(matchingCert.name) + Text(" · \(typeStr)").foregroundColor(typeStr == L("Development") ? .blue.opacity(0.6) : .orange.opacity(0.6))
         }
         // Local cert
         if let savedName = SigningSettings.shared.savedCertName {
@@ -893,7 +893,7 @@ struct ContentView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(selectedApp?.appName ?? "Signing...")
+                    Text(selectedApp?.appName ?? L("Signing..."))
                         .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.white)
                         .lineLimit(1)
@@ -978,7 +978,7 @@ struct ContentView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(selectedApp?.appName ?? "Done")
+                    Text(selectedApp?.appName ?? L("Done"))
                         .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.white)
                         .lineLimit(1)
