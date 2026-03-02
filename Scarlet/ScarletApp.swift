@@ -11,7 +11,7 @@ import SwiftUI
 /// Scarlet — iOS IPA Signing App
 @main
 struct ScarletApp: App {
-    @State private var showSplash = true
+    @State private var showSplash = !UserDefaults.standard.bool(forKey: "splashShown")
 
     var body: some Scene {
         WindowGroup {
