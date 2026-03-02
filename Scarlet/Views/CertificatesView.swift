@@ -37,20 +37,24 @@ struct CertificatesView: View {
         ZStack {
             Color.bgPrimary.ignoresSafeArea()
 
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    headerSection
-                    if certService.isLoading && certService.certificates.isEmpty {
-                        loadingSection
-                    } else if certService.certificates.isEmpty {
-                        emptySection
-                    } else {
-                        certContent
+            VStack(spacing: 0) {
+                headerSection
+                    .background(Color.bgPrimary)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        if certService.isLoading && certService.certificates.isEmpty {
+                            loadingSection
+                        } else if certService.certificates.isEmpty {
+                            emptySection
+                        } else {
+                            certContent
+                        }
                     }
                 }
-            }
-            .refreshable {
-                await certService.fetchCertificates()
+                .refreshable {
+                    await certService.fetchCertificates()
+                }
             }
         }
         .task { await certService.fetchCertificates() }

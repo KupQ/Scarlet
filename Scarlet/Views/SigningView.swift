@@ -35,23 +35,26 @@ struct SigningView: View {
             }
             .ignoresSafeArea()
 
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 0) {
-                    headerSection.padding(.top, 8)
+            VStack(spacing: 0) {
+                headerSection.padding(.top, 8)
+                    .background(Color.bgPrimary)
 
-                    if appsManager.isImporting {
-                        importingIndicator
-                            .padding(.top, 16)
-                            .padding(.horizontal, 20)
-                    }
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        if appsManager.isImporting {
+                            importingIndicator
+                                .padding(.top, 16)
+                                .padding(.horizontal, 20)
+                        }
 
-                    if appsManager.apps.isEmpty && !appsManager.isImporting {
-                        emptyState.padding(.top, 60)
-                    } else {
-                        appsList.padding(.top, 20)
+                        if appsManager.apps.isEmpty && !appsManager.isImporting {
+                            emptyState.padding(.top, 60)
+                        } else {
+                            appsList.padding(.top, 20)
+                        }
                     }
+                    .padding(.bottom, 80)
                 }
-                .padding(.bottom, 80)
             }
         }
         .sheet(isPresented: $showIPAImportPicker) {
