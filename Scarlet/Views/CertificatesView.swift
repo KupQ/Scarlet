@@ -82,11 +82,10 @@ struct CertificatesView: View {
 
     var body: some View {
         ZStack {
-            Color.bgPrimary.ignoresSafeArea()
+            Color.clear
 
             VStack(spacing: 0) {
                 headerSection
-                    .background(Color.bgPrimary)
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {

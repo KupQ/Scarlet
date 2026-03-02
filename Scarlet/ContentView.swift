@@ -99,11 +99,11 @@ struct ContentView: View {
                     }
             }
 
-            // Floating settings popup — icon-only bubbles
+            // Floating settings popup — liquid glass drops
             if showSettingsCard {
                 VStack {
                     Spacer()
-                    HStack(spacing: 12) {
+                    HStack(spacing: 14) {
                         settingsIconButton(icon: "checkmark.shield") {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 showSettingsCard = false
@@ -113,20 +113,21 @@ struct ContentView: View {
                         settingsIconButton(icon: "globe") {}
                         settingsIconButton(icon: "info.circle") {}
                     }
-                    .padding(8)
+                    .padding(10)
                     .background(
                         Capsule()
                             .fill(.ultraThinMaterial)
                             .environment(\.colorScheme, .dark)
                             .overlay(
                                 Capsule()
-                                    .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
+                                    .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
                             )
+                            .shadow(color: .scarletRed.opacity(0.15), radius: 16, y: -4)
                             .shadow(color: .black.opacity(0.3), radius: 12, y: -4)
                     )
-                    .padding(.bottom, 100)
+                    .padding(.bottom, 116)
                 }
-                .transition(.scale(scale: 0.5, anchor: .bottom).combined(with: .opacity))
+                .transition(.scale(scale: 0.4, anchor: .bottom).combined(with: .opacity))
                 .zIndex(92)
             }
 
@@ -1161,12 +1162,18 @@ struct ContentView: View {
     private func settingsIconButton(icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 20, weight: .light))
-                .foregroundColor(.white.opacity(0.7))
-                .frame(width: 44, height: 44)
+                .font(.system(size: 22, weight: .light))
+                .foregroundColor(.white.opacity(0.85))
+                .frame(width: 48, height: 48)
                 .background(
                     Circle()
-                        .fill(Color.white.opacity(0.06))
+                        .fill(.ultraThinMaterial)
+                        .environment(\.colorScheme, .dark)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
+                        )
+                        .shadow(color: .scarletRed.opacity(0.1), radius: 8)
                 )
         }
         .buttonStyle(.plain)
