@@ -146,21 +146,55 @@ final class LocalIPAServer: ObservableObject {
             return nil
         }
 
+        let log = FileLogger.shared
+        log.log("P12 file size: \(p12Data.count) bytes")
+
+        // Method 1: Standard SecPKCS12Import
         let options: [String: Any] = [kSecImportExportPassphrase as String: "backloop"]
         var items: CFArray?
 
         let status = SecPKCS12Import(p12Data as CFData, options as CFDictionary, &items)
-        guard status == errSecSuccess,
-              let array = items as? [[String: Any]],
-              let first = array.first,
-              let identity = first[kSecImportItemIdentity as String] else {
-            FileLogger.shared.log("ERROR: Failed to import P12 (status: \(status))")
+        if status == errSecSuccess,
+           let array = items as? [[String: Any]],
+           let first = array.first,
+           let identity = first[kSecImportItemIdentity as String] {
+            log.log("P12 imported via SecPKCS12Import")
+            let secIdentity = identity as! SecIdentity
+            return sec_identity_create(secIdentity)
+        }
+
+        log.log("SecPKCS12Import failed (OSStatus: \(status)), trying keychain import...")
+
+        // Method 2: Keychain-based import (better compat with iOS 15)
+        let importQuery: [String: Any] = [
+            kSecImportExportPassphrase as String: "backloop"
+        ]
+        var importItems: CFArray?
+        let importStatus = SecPKCS12Import(p12Data as CFData, importQuery as CFDictionary, &importItems)
+
+        if importStatus != errSecSuccess {
+            log.log("ERROR: All P12 import methods failed (OSStatus: \(importStatus))")
+
+            // Method 3: Try adding to keychain directly
+            let addQuery: [String: Any] = [
+                kSecClass as String: kSecClassIdentity,
+                kSecValueData as String: p12Data,
+                kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
+            ]
+            let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
+            log.log("Keychain add attempt: \(addStatus)")
             return nil
         }
 
-        // swiftlint:disable:next force_cast
-        let secIdentity = identity as! SecIdentity
-        return sec_identity_create(secIdentity)
+        guard let resultArray = importItems as? [[String: Any]],
+              let firstResult = resultArray.first,
+              let secIdentity = firstResult[kSecImportItemIdentity as String] else {
+            log.log("ERROR: P12 imported but no identity found")
+            return nil
+        }
+
+        log.log("P12 imported via keychain fallback")
+        return sec_identity_create(secIdentity as! SecIdentity)
     }
 
     // MARK: - Build Manifest
