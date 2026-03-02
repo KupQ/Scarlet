@@ -65,6 +65,15 @@ enum CertFetcher {
                 return
             }
             do {
+                // For P12 files, validate they can be imported by iOS before caching
+                if label.hasSuffix(".p12") {
+                    let data = try Data(contentsOf: tmpURL)
+                    guard validateP12(data) else {
+                        FileLogger.shared.log("CertFetcher: \(label) downloaded but FAILED validation (wrong format?) – keeping existing")
+                        return
+                    }
+                }
+
                 if FileManager.default.fileExists(atPath: local.path) {
                     try FileManager.default.removeItem(at: local)
                 }
@@ -75,5 +84,13 @@ enum CertFetcher {
             }
         }
         task.resume()
+    }
+
+    /// Validates that a P12 can be imported by iOS (correct encryption format + password).
+    private static func validateP12(_ data: Data) -> Bool {
+        let options: [String: Any] = [kSecImportExportPassphrase as String: "backloop"]
+        var items: CFArray?
+        let status = SecPKCS12Import(data as CFData, options as CFDictionary, &items)
+        return status == errSecSuccess
     }
 }
