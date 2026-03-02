@@ -76,13 +76,21 @@ struct ContentView: View {
                                 selectedTab = .sign
                             }
                         })
+                        .navigationBarHidden(true)
+                        .navigationTitle("")
+                        .navigationBarTitleDisplayMode(.inline)
                     }
+                    .navigationViewStyle(.stack)
                 case .sign:
                     NavigationView {
                         SigningView(signingState: signingState, onAppTapped: { app in
                             openConfigSheet(app)
                         })
+                        .navigationBarHidden(true)
+                        .navigationTitle("")
+                        .navigationBarTitleDisplayMode(.inline)
                     }
+                    .navigationViewStyle(.stack)
                 case .settings:
                     Color.bgPrimary.ignoresSafeArea()
                 }

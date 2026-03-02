@@ -76,6 +76,8 @@ struct SigningView: View {
                 }
             }
             .navigationBarHidden(true)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
         }
         .sheet(isPresented: $showIPAImportPicker) {
             DocumentPicker(contentTypes: [.ipa]) { url in
