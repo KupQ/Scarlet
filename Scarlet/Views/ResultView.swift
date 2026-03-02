@@ -88,11 +88,11 @@ struct ResultView: View {
                 }
 
                 VStack(spacing: 8) {
-                    Text("Signed Successfully")
+                    Text(L("Signed Successfully"))
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
 
-                    Text("Your IPA has been re-signed")
+                    Text(L("Your IPA has been re-signed"))
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(.gray)
                 }
@@ -122,7 +122,7 @@ struct ResultView: View {
                         HStack(spacing: 10) {
                             Image(systemName: "square.and.arrow.up")
                                 .font(.system(size: 18, weight: .semibold))
-                            Text("Share Signed IPA")
+                            Text(L("Share Signed IPA"))
                                 .font(.system(size: 17, weight: .bold, design: .rounded))
                         }
                         .foregroundColor(.white)
@@ -139,7 +139,7 @@ struct ResultView: View {
                     Button {
                         onDismiss()
                     } label: {
-                        Text("Done")
+                        Text(L("Done"))
                             .font(.system(size: 17, weight: .semibold, design: .rounded))
                             .foregroundColor(.scarletRed)
                             .frame(maxWidth: .infinity)

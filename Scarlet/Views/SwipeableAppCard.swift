@@ -55,7 +55,7 @@ struct SwipeableAppCard<Content: View>: View {
                 VStack(spacing: 6) {
                     Image(systemName: "trash.fill")
                         .font(.system(size: 18, weight: .semibold))
-                    Text("Delete")
+                    Text(L("Delete"))
                         .font(.system(size: 10, weight: .semibold))
                 }
                 .foregroundColor(.scarletRed.opacity(0.8))

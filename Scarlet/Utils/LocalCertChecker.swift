@@ -27,11 +27,11 @@ struct LocalCertInfo {
 
         var label: String {
             switch self {
-            case .checking: return NSLocalizedString("Checking…", comment: "Cert status")
-            case .valid: return NSLocalizedString("Valid", comment: "Cert status")
-            case .revoked: return NSLocalizedString("Revoked", comment: "Cert status")
-            case .expired: return NSLocalizedString("Expired", comment: "Cert status")
-            case .error: return NSLocalizedString("Error", comment: "Cert status")
+            case .checking: return L("Checking…")
+            case .valid: return L("Valid")
+            case .revoked: return L("Revoked")
+            case .expired: return L("Expired")
+            case .error: return L("Error")
             }
         }
 

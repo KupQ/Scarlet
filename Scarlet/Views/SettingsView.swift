@@ -26,7 +26,7 @@ struct SettingsView: View {
                 VStack(spacing: 24) {
                     // Header
                     HStack {
-                        Text("Settings")
+                        Text(L("Settings"))
                             .font(.system(size: 32, weight: .bold, design: .rounded))
                             .foregroundColor(.white)
                         Spacer()
@@ -50,10 +50,10 @@ struct SettingsView: View {
             DocumentPicker(contentTypes: [.p12, .data]) { url in
                 do {
                     try settings.importCertificate(from: url)
-                    importMessage = String(format: NSLocalizedString("Certificate imported: %@", comment: ""), url.lastPathComponent)
+                    importMessage = String(format: L("Certificate imported: %@"), url.lastPathComponent)
                     showImportSuccess = true
                 } catch {
-                    importMessage = String(format: NSLocalizedString("Import failed: %@", comment: ""), error.localizedDescription)
+                    importMessage = String(format: L("Import failed: %@"), error.localizedDescription)
                     showImportSuccess = true
                 }
             }
@@ -62,16 +62,16 @@ struct SettingsView: View {
             DocumentPicker(contentTypes: [.mobileprovision, .data]) { url in
                 do {
                     try settings.importProfile(from: url)
-                    importMessage = String(format: NSLocalizedString("Profile imported: %@", comment: ""), url.lastPathComponent)
+                    importMessage = String(format: L("Profile imported: %@"), url.lastPathComponent)
                     showImportSuccess = true
                 } catch {
-                    importMessage = String(format: NSLocalizedString("Import failed: %@", comment: ""), error.localizedDescription)
+                    importMessage = String(format: L("Import failed: %@"), error.localizedDescription)
                     showImportSuccess = true
                 }
             }
         }
-        .alert("Import", isPresented: $showImportSuccess) {
-            Button("OK") {}
+        .alert(L("Import"), isPresented: $showImportSuccess) {
+            Button(L("OK")) {}
         } message: {
             Text(importMessage)
         }
@@ -101,7 +101,7 @@ struct SettingsView: View {
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(.white)
                             .lineLimit(1)
-                        Text("Imported · P12")
+                        Text(L("Imported · P12"))
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(.successGreen)
                     }
@@ -128,7 +128,7 @@ struct SettingsView: View {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 20))
                         .foregroundColor(.scarletRed)
-                    Text(settings.hasCertificate ? NSLocalizedString("Replace Certificate", comment: "") : NSLocalizedString("Import Certificate (.p12)", comment: ""))
+                    Text(settings.hasCertificate ? L("Replace Certificate") : L("Import Certificate (.p12)"))
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
                     Spacer()
@@ -153,10 +153,10 @@ struct SettingsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Certificate Password")
+                    Text(L("Certificate Password"))
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.white)
-                    SecureField("Enter password", text: $settings.savedCertPassword)
+                    SecureField(L("Enter password"), text: $settings.savedCertPassword)
                         .font(.system(size: 14))
                         .foregroundColor(.white)
                         .textContentType(.password)
@@ -182,7 +182,7 @@ struct SettingsView: View {
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(.white)
                             .lineLimit(1)
-                        Text("Imported · mobileprovision")
+                        Text(L("Imported · mobileprovision"))
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(.successGreen)
                     }
@@ -208,7 +208,7 @@ struct SettingsView: View {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 20))
                         .foregroundColor(.blue)
-                    Text(settings.hasProfile ? NSLocalizedString("Replace Profile", comment: "") : NSLocalizedString("Import Profile (.mobileprovision)", comment: ""))
+                    Text(settings.hasProfile ? L("Replace Profile") : L("Import Profile (.mobileprovision)"))
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
                     Spacer()
@@ -266,7 +266,7 @@ struct SettingsView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Zip Compression")
+                        Text(L("Zip Compression"))
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(.white)
                         Text("Level \(settings.zipCompression) — \(compressionLabel)")
@@ -278,11 +278,11 @@ struct SettingsView: View {
                 }
 
                 Picker("Compression", selection: $settings.zipCompression) {
-                    Text("0 (Store)").tag(0)
-                    Text("1 (Fast)").tag(1)
-                    Text("3 (Normal)").tag(3)
-                    Text("6 (Good)").tag(6)
-                    Text("9 (Best)").tag(9)
+                    Text(L("0 (Store)")).tag(0)
+                    Text(L("1 (Fast)")).tag(1)
+                    Text(L("3 (Normal)")).tag(3)
+                    Text(L("6 (Good)")).tag(6)
+                    Text(L("9 (Best)")).tag(9)
                 }
                 .pickerStyle(.segmented)
                 .tint(.scarletRed)
@@ -302,10 +302,10 @@ struct SettingsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Remove Plugins")
+                    Text(L("Remove Plugins"))
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
-                    Text("Strip app extensions")
+                    Text(L("Strip app extensions"))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.gray)
                 }
@@ -340,7 +340,7 @@ struct SettingsView: View {
 
     // MARK: - Components
 
-    private func sectionHeader(icon: String, title: LocalizedStringKey, color: Color) -> some View {
+    private func sectionHeader(icon: String, title: String, color: Color) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.system(size: 16))
@@ -353,8 +353,8 @@ struct SettingsView: View {
 
     private func settingsTextField(
         icon: String,
-        title: LocalizedStringKey,
-        placeholder: LocalizedStringKey,
+        title: String,
+        placeholder: String,
         text: Binding<String>
     ) -> some View {
         HStack(spacing: 14) {
@@ -392,7 +392,7 @@ struct SettingsView: View {
         .glassCard(cornerRadius: 18)
     }
 
-    private func aboutRow(label: LocalizedStringKey, value: String) -> some View {
+    private func aboutRow(label: String, value: String) -> some View {
         HStack {
             Text(label)
                 .font(.system(size: 14, weight: .medium))
@@ -408,11 +408,11 @@ struct SettingsView: View {
 
     private var compressionLabel: String {
         switch settings.zipCompression {
-        case 0: return NSLocalizedString("Fastest", comment: "")
-        case 1...3: return NSLocalizedString("Fast", comment: "")
-        case 4...6: return NSLocalizedString("Normal", comment: "")
-        case 7...9: return NSLocalizedString("Smallest", comment: "")
-        default: return NSLocalizedString("Store", comment: "")
+        case 0: return L("Fastest")
+        case 1...3: return L("Fast")
+        case 4...6: return L("Normal")
+        case 7...9: return L("Smallest")
+        default: return L("Store")
         }
     }
 }

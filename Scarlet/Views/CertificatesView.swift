@@ -119,19 +119,19 @@ struct CertificatesView: View {
                 DocumentPicker(contentTypes: [.mobileprovision]) { handleProfilePicked($0) }
             }
         }
-        .alert("Certificate Password", isPresented: Binding(
+        .alert(L("Certificate Password"), isPresented: Binding(
             get: { importStep == .enterPassword },
             set: { if !$0 { importStep = .idle } }
         )) {
-            SecureField("Password", text: $importPassword)
-            Button("Cancel", role: .cancel) { importStep = .idle; importPassword = "" }
-            Button("Import") { validateAndImport() }
+            SecureField(L("Password"), text: $importPassword)
+            Button(L("Cancel"), role: .cancel) { importStep = .idle; importPassword = "" }
+            Button(L("Import")) { validateAndImport() }
         } message: {
             Text(passwordError ?? "Enter the password for \(importedP12Name)")
         }
-        .alert("Delete Certificate", isPresented: $showDeleteConfirm) {
-            Button("Cancel", role: .cancel) { certToDelete = nil }
-            Button("Delete", role: .destructive) {
+        .alert(L("Delete Certificate"), isPresented: $showDeleteConfirm) {
+            Button(L("Cancel"), role: .cancel) { certToDelete = nil }
+            Button(L("Delete"), role: .destructive) {
                 if let cert = certToDelete {
                     deleteLocalCert(cert)
                     certToDelete = nil
@@ -153,7 +153,7 @@ struct CertificatesView: View {
     private var headerSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Certificates")
+                Text(L("Certificates"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.white)
                 if let udid = certService.deviceUDID {
@@ -199,7 +199,7 @@ struct CertificatesView: View {
                                 certToDelete = cert
                                 showDeleteConfirm = true
                             } label: {
-                                Label("Delete Certificate", systemImage: "trash")
+                                Label(L("Delete Certificate"), systemImage: "trash")
                             }
                         }
                         .padding(.horizontal, 20)
@@ -261,7 +261,7 @@ struct CertificatesView: View {
                                 .foregroundColor(statusClr)
                         }
                         if isActive {
-                            Text("ACTIVE")
+                            Text(L("ACTIVE"))
                                 .font(.system(size: 8, weight: .heavy))
                                 .foregroundColor(.white.opacity(0.4))
                                 .tracking(1.5)
@@ -332,7 +332,7 @@ struct CertificatesView: View {
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.white)
                             .lineLimit(1)
-                        Text("Local Certificate")
+                        Text(L("Local Certificate"))
                             .font(.system(size: 10, weight: .medium))
                             .foregroundColor(.white.opacity(0.2))
                     }
@@ -349,7 +349,7 @@ struct CertificatesView: View {
                                 .foregroundColor(statusClr)
                         }
                         if isActive {
-                            Text("ACTIVE")
+                            Text(L("ACTIVE"))
                                 .font(.system(size: 8, weight: .heavy))
                                 .foregroundColor(.white.opacity(0.4))
                                 .tracking(1.5)
@@ -464,7 +464,7 @@ struct CertificatesView: View {
     private var loadingSection: some View {
         VStack(spacing: 16) {
             ProgressView().tint(.scarletRed).scaleEffect(1.2)
-            Text("Loading certificates...")
+            Text(L("Loading certificates..."))
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.white.opacity(0.25))
         }
@@ -486,10 +486,10 @@ struct CertificatesView: View {
                     )
             }
             VStack(spacing: 8) {
-                Text("No Certificates Yet")
+                Text(L("No Certificates Yet"))
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white.opacity(0.7))
-                Text("Import a P12 certificate to get started")
+                Text(L("Import a P12 certificate to get started"))
                     .font(.system(size: 14))
                     .foregroundColor(.white.opacity(0.3))
             }
@@ -501,7 +501,7 @@ struct CertificatesView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "plus")
                         .font(.system(size: 14, weight: .bold))
-                    Text("Import Certificate")
+                    Text(L("Import Certificate"))
                         .font(.system(size: 14, weight: .semibold))
                 }
                 .foregroundColor(.white)

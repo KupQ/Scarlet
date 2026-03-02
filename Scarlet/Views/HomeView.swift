@@ -54,10 +54,10 @@ struct HomeView: View {
                 // Pinned header
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Scarlet")
+                        Text(L("Scarlet"))
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.white)
-                        Text("iOS App Signing")
+                        Text(L("iOS App Signing"))
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(.white.opacity(0.3))
                     }
@@ -79,10 +79,10 @@ struct HomeView: View {
                     .buttonStyle(.plain)
                     .contextMenu {
                         Button { showAddRepo = true } label: {
-                            Label("Add Repo", systemImage: "plus.app")
+                            Label(L("Add Repo"), systemImage: "plus.app")
                         }
                         Button { showBulkAdd = true } label: {
-                            Label("Add Multiple", systemImage: "list.bullet.rectangle")
+                            Label(L("Add Multiple"), systemImage: "list.bullet.rectangle")
                         }
                         Button {
                             if let clip = UIPasteboard.general.string, !clip.isEmpty {
@@ -97,7 +97,7 @@ struct HomeView: View {
                                 }
                             }
                         } label: {
-                            Label("Add from Clipboard", systemImage: "doc.on.clipboard")
+                            Label(L("Add from Clipboard"), systemImage: "doc.on.clipboard")
                         }
                     }
                 }
@@ -135,23 +135,23 @@ struct HomeView: View {
             animateGlow = true
             animatePulse = true
         }
-        .alert("Add Repository", isPresented: $showAddRepo) {
-            TextField("https://example.com/repo.json", text: $repoURLInput)
+        .alert(L("Add Repository"), isPresented: $showAddRepo) {
+            TextField(L("https://example.com/repo.json"), text: $repoURLInput)
                 .autocapitalization(.none)
-            Button("Cancel", role: .cancel) { repoURLInput = "" }
-            Button("Add") {
+            Button(L("Cancel"), role: .cancel) { repoURLInput = "" }
+            Button(L("Add")) {
                 let url = repoURLInput
                 repoURLInput = ""
                 repoService.addRepo(url: url)
             }
         } message: {
-            Text("Enter the repo JSON URL")
+            Text(L("Enter the repo JSON URL"))
         }
-        .alert("Add Multiple Repos", isPresented: $showBulkAdd) {
-            TextField("One URL per line", text: $bulkRepoInput)
+        .alert(L("Add Multiple Repos"), isPresented: $showBulkAdd) {
+            TextField(L("One URL per line"), text: $bulkRepoInput)
                 .autocapitalization(.none)
-            Button("Cancel", role: .cancel) { bulkRepoInput = "" }
-            Button("Add All") {
+            Button(L("Cancel"), role: .cancel) { bulkRepoInput = "" }
+            Button(L("Add All")) {
                 let urls = bulkRepoInput
                     .components(separatedBy: .newlines)
                     .map { $0.trimmingCharacters(in: .whitespaces) }
@@ -160,13 +160,13 @@ struct HomeView: View {
                 for url in urls { repoService.addRepo(url: url) }
             }
         } message: {
-            Text("Enter repo URLs, one per line")
+            Text(L("Enter repo URLs, one per line"))
         }
-        .alert("Repo Error", isPresented: Binding(
+        .alert(L("Repo Error"), isPresented: Binding(
             get: { repoService.lastError != nil },
             set: { if !$0 { repoService.lastError = nil } }
         )) {
-            Button("OK") { repoService.lastError = nil }
+            Button(L("OK")) { repoService.lastError = nil }
         } message: {
             Text(repoService.lastError ?? "Unknown error")
         }
@@ -210,10 +210,10 @@ struct HomeView: View {
                     .foregroundStyle(
                         LinearGradient(colors: [.white, .scarletPink], startPoint: .top, endPoint: .bottom)
                     )
-                Text("Sign & Install")
+                Text(L("Sign & Install"))
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
-                Text("Powered by zsign")
+                Text(L("Powered by zsign"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.white.opacity(0.4))
             }
@@ -250,10 +250,10 @@ struct HomeView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Start Signing")
+                    Text(L("Start Signing"))
                         .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.white)
-                    Text("Import IPA & sign with certificate")
+                    Text(L("Import IPA & sign with certificate"))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.white.opacity(0.3))
                 }
@@ -282,7 +282,7 @@ struct HomeView: View {
     private var repoAppsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("REPOSITORIES")
+                Text(L("REPOSITORIES"))
                     .font(.system(size: 10, weight: .heavy))
                     .tracking(1.5)
                     .foregroundColor(.white.opacity(0.25))

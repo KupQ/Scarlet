@@ -248,9 +248,6 @@ struct ContentView: View {
                                     }
                                 } label: {
                                     HStack(spacing: 16) {
-                                        Text(lang.flag)
-                                            .font(.system(size: 36))
-
                                         VStack(alignment: .leading, spacing: 3) {
                                             Text(lang.name)
                                                 .font(.system(size: 17, weight: .semibold))
@@ -377,8 +374,8 @@ struct ContentView: View {
             default: break
             }
         }
-        .alert("Signing Failed", isPresented: $showErrorAlert) {
-            Button("OK") { signingState.phase = .selectingFiles }
+        .alert(L("Signing Failed"), isPresented: $showErrorAlert) {
+            Button(L("OK")) { signingState.phase = .selectingFiles }
         } message: { Text(errorMessage) }
         .sheet(isPresented: $showShareSheet) {
             if let url = signingOutputURL { ShareSheet(items: [url]) }
@@ -517,7 +514,7 @@ struct ContentView: View {
                     Button {
                         startSigning()
                     } label: {
-                        Text("Sign")
+                        Text(L("Sign"))
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.white.opacity(0.6))
                             .padding(.horizontal, 16)
@@ -549,7 +546,7 @@ struct ContentView: View {
                     .font(.system(size: 14))
                     .foregroundColor(.scarletRed)
                     .frame(width: 20)
-                Text("Compression")
+                Text(L("Compression"))
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.white.opacity(0.7))
                 Spacer()
@@ -579,7 +576,7 @@ struct ContentView: View {
                             .foregroundColor(.scarletRed)
                             .frame(width: 20)
                         VStack(alignment: .leading, spacing: 1) {
-                            Text("Certificate")
+                            Text(L("Certificate"))
                                 .font(.system(size: 10, weight: .medium))
                                 .foregroundColor(.gray)
                             certDisplayText
@@ -702,7 +699,7 @@ struct ContentView: View {
                                         HStack(spacing: 3) {
                                             Image(systemName: "externaldrive")
                                                 .font(.system(size: 8, weight: .bold))
-                                            Text("Local")
+                                            Text(L("Local"))
                                                 .font(.system(size: 9, weight: .bold))
                                         }
                                         .foregroundColor(.white.opacity(0.3))
@@ -719,7 +716,7 @@ struct ContentView: View {
                         }
 
                         if certService.certificates.isEmpty && localCerts.isEmpty {
-                            Text("No certificates available")
+                            Text(L("No certificates available"))
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundColor(.white.opacity(0.3))
                                 .padding(.vertical, 8)
@@ -763,7 +760,7 @@ struct ContentView: View {
             }
 
             VStack(alignment: .leading, spacing: 1) {
-                Text("Certificate")
+                Text(L("Certificate"))
                     .font(.system(size: 10, weight: .medium))
                     .foregroundColor(.white.opacity(0.3))
                 certDisplayText
@@ -818,7 +815,7 @@ struct ContentView: View {
     // Certificate display text showing actual cert name + type
     private var certDisplayText: Text {
         guard SigningSettings.shared.hasCertificate else {
-            return Text("Tap to select")
+            return Text(L("Tap to select"))
         }
         if let savedName = SigningSettings.shared.savedCertName,
            let matchingCert = certService.certificates.first(where: { "\($0.id).p12" == savedName }) {
@@ -829,12 +826,12 @@ struct ContentView: View {
         if let savedName = SigningSettings.shared.savedCertName {
             let localChecker = LocalCertChecker.shared
             if let info = localChecker.localCertInfos[savedName] {
-                return Text(info.commonName) + Text(" · Local").foregroundColor(.white.opacity(0.3))
+                return Text(info.commonName) + Text(L(" · Local")).foregroundColor(.white.opacity(0.3))
             }
             let cleanName = savedName.replacingOccurrences(of: ".p12", with: "").replacingOccurrences(of: "local_", with: "")
-            return Text(cleanName) + Text(" · Local").foregroundColor(.white.opacity(0.3))
+            return Text(cleanName) + Text(L(" · Local")).foregroundColor(.white.opacity(0.3))
         }
-        return Text("Tap to select")
+        return Text(L("Tap to select"))
     }
 
     private func certTypeLabel(_ type: String?) -> String {
@@ -1008,7 +1005,7 @@ struct ContentView: View {
                     Button {
                         InstallProgressPoller.openApp(bundleId: signingState.installingBundleId)
                     } label: {
-                        Text("Open")
+                        Text(L("Open"))
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(.white.opacity(0.6))
                             .padding(.horizontal, 12)
@@ -1027,7 +1024,7 @@ struct ContentView: View {
                 } else if signingState.isUploading {
                     VStack(spacing: 3) {
                         ProgressView().tint(.scarletRed).scaleEffect(0.8)
-                        Text("Installing")
+                        Text(L("Installing"))
                             .font(.system(size: 9, weight: .semibold))
                             .foregroundColor(.white.opacity(0.3))
                     }
@@ -1040,7 +1037,7 @@ struct ContentView: View {
                             Image(systemName: "arrow.down.to.line")
                                 .font(.system(size: 18, weight: .medium))
                                 .foregroundColor(.scarletRed)
-                            Text("Install")
+                            Text(L("Install"))
                                 .font(.system(size: 9, weight: .semibold))
                                 .foregroundColor(.white.opacity(0.3))
                         }
@@ -1085,11 +1082,11 @@ struct ContentView: View {
     private var installStatusText: some View {
         switch signingState.installStatus {
         case .sendingManifest:
-            Text("Sending Manifest...")
+            Text(L("Sending Manifest..."))
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.white.opacity(0.5))
         case .sendingPayload:
-            Text("Sending Payload...")
+            Text(L("Sending Payload..."))
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.white.opacity(0.5))
         case .installing(let progress):
@@ -1097,7 +1094,7 @@ struct ContentView: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.scarletRed)
         case .completed:
-            Text("Installed ✓")
+            Text(L("Installed ✓"))
                 .font(.system(size: 13, weight: .bold))
                 .foregroundColor(.scarletRed)
         case .failed(let msg):
@@ -1105,7 +1102,7 @@ struct ContentView: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.red)
         default:
-            Text("Signed Successfully!")
+            Text(L("Signed Successfully!"))
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.white.opacity(0.5))
         }
@@ -1206,7 +1203,7 @@ struct ContentView: View {
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.white.opacity(0.4))
 
-                    TextField("Search apps...", text: $searchText)
+                    TextField(L("Search apps..."), text: $searchText)
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(.white)
                         .tint(.scarletRed)
@@ -1315,7 +1312,7 @@ struct ContentView: View {
                         searchResultRow(app)
                     }
                     if filtered.isEmpty {
-                        Text("No apps found")
+                        Text(L("No apps found"))
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(.white.opacity(0.3))
                             .padding(.top, 30)
@@ -1366,7 +1363,7 @@ struct ContentView: View {
                     .frame(width: 50)
             } else {
                 Button { downloadFromSearch(app) } label: {
-                    Text("GET")
+                    Text(L("GET"))
                         .font(.system(size: 11, weight: .heavy))
                         .foregroundColor(.scarletRed)
                         .padding(.horizontal, 14)

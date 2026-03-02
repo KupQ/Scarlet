@@ -184,7 +184,7 @@ struct RepoDetailView: View {
                     .frame(width: 50)
             } else {
                 Button { downloadApp(app) } label: {
-                    Text("GET")
+                    Text(L("GET"))
                         .font(.system(size: 11, weight: .heavy))
                         .foregroundColor(.scarletRed)
                         .padding(.horizontal, 14)

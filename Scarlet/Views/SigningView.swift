@@ -70,10 +70,10 @@ struct SigningView: View {
     private var headerSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Library")
+                Text(L("Library"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.white)
-                Text("Imported Apps")
+                Text(L("Imported Apps"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.white.opacity(0.3))
             }
@@ -104,10 +104,10 @@ struct SigningView: View {
         HStack(spacing: 14) {
             ProgressView().tint(.scarletRed)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Importing...")
+                Text(L("Importing..."))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.white)
-                Text("Extracting metadata and icon")
+                Text(L("Extracting metadata and icon"))
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.white.opacity(0.3))
             }
@@ -137,10 +137,10 @@ struct SigningView: View {
                     .foregroundColor(.white.opacity(0.2))
             }
             VStack(spacing: 6) {
-                Text("No Apps Imported")
+                Text(L("No Apps Imported"))
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white.opacity(0.8))
-                Text("Tap + to import an IPA file")
+                Text(L("Tap + to import an IPA file"))
                     .font(.system(size: 13))
                     .foregroundColor(.white.opacity(0.3))
             }
@@ -148,7 +148,7 @@ struct SigningView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "plus")
                         .font(.system(size: 14, weight: .bold))
-                    Text("Import IPA")
+                    Text(L("Import IPA"))
                         .font(.system(size: 14, weight: .semibold))
                 }
                 .foregroundColor(.white.opacity(0.6))
@@ -282,7 +282,7 @@ struct SigningView: View {
 
     // MARK: - Section Header
 
-    private func sectionHeader(title: LocalizedStringKey, count: Int) -> some View {
+    private func sectionHeader(title: String, count: Int) -> some View {
         HStack {
             Text(title)
                 .font(.system(size: 13, weight: .semibold))
@@ -316,7 +316,7 @@ struct SigningView: View {
                     .foregroundColor(.white.opacity(0.25))
                     .lineLimit(1)
                 HStack(spacing: 6) {
-                    Label("v\(app.version)", systemImage: "number")
+                    Label(L("v\(app.version)"), systemImage: "number")
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.white.opacity(0.35))
                     Text("·").foregroundColor(.white.opacity(0.15))
@@ -340,7 +340,7 @@ struct SigningView: View {
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.scarletRed.opacity(0.8))
                 }
-                Text("Open")
+                Text(L("Open"))
                     .font(.system(size: 9, weight: .semibold))
                     .foregroundColor(.white.opacity(0.3))
             }
@@ -396,7 +396,7 @@ struct SigningView: View {
                     .foregroundColor(.white.opacity(0.25))
                     .lineLimit(1)
                 HStack(spacing: 6) {
-                    Label("v\(app.version)", systemImage: "number")
+                    Label(L("v\(app.version)"), systemImage: "number")
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.white.opacity(0.35))
                     Text("·").foregroundColor(.white.opacity(0.15))
@@ -407,7 +407,7 @@ struct SigningView: View {
             }
             Spacer()
 
-            Text("Sign")
+            Text(L("Sign"))
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundColor(.white.opacity(0.6))
                 .padding(.horizontal, 12)
