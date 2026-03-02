@@ -1312,6 +1312,7 @@ struct ContentView: View {
                 Button {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         isSearching = true
+                        showSettingsCard = false
                     }
                 } label: {
                     VStack(spacing: 6) {
@@ -1386,7 +1387,7 @@ struct ContentView: View {
             }
         }
         .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0.3)
+             LongPressGesture(minimumDuration: 0.1)
                 .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .global))
                 .onChanged { value in
                     switch value {
