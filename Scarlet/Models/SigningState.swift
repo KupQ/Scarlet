@@ -126,6 +126,14 @@ final class SigningState: ObservableObject {
         let compressionLevel = settings.zipCompression
 
         Task.detached { [weak self] in
+            // Request extra background execution time so signing
+            // completes even if the user switches away.
+            var bgTaskId: UIBackgroundTaskIdentifier = .invalid
+            bgTaskId = await UIApplication.shared.beginBackgroundTask(withName: "Signing") {
+                UIApplication.shared.endBackgroundTask(bgTaskId)
+                bgTaskId = .invalid
+            }
+
             let result = SigningBridge.signIPA(
                 ipaURL: ipa.url,
                 certURL: certURL,
@@ -144,6 +152,10 @@ final class SigningState: ObservableObject {
                 case .failure(let error):
                     self.phase = .failure(message: error.localizedDescription)
                 }
+            }
+
+            if bgTaskId != .invalid {
+                await UIApplication.shared.endBackgroundTask(bgTaskId)
             }
         }
     }
