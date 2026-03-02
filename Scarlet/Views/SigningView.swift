@@ -18,6 +18,7 @@ struct SigningView: View {
     @State private var signIconPulse = false
     @State private var libraryTab: Int = 0  // 0 = Unsigned, 1 = Signed
     @State private var installServer: LocalIPAServer?
+    @State private var installingAppId: String?
 
     var body: some View {
         ZStack {
@@ -370,24 +371,45 @@ struct SigningView: View {
             Spacer()
 
             // Install button (same style as Sign button)
-            Button {
-                installSignedApp(app)
-            } label: {
-                Text(L("Install"))
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.6))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.white.opacity(0.04))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
-                            )
-                    )
+            if installingAppId == app.id {
+                HStack(spacing: 6) {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                        .tint(.white.opacity(0.5))
+                    Text(L("Installing..."))
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.4))
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.white.opacity(0.04))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                        )
+                )
+            } else {
+                Button {
+                    installSignedApp(app)
+                } label: {
+                    Text(L("Install"))
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.6))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.white.opacity(0.04))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                                )
+                        )
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .padding(12)
         .background(
@@ -403,7 +425,7 @@ struct SigningView: View {
     // MARK: - Install via ITMS
 
     private func installSignedApp(_ app: SignedApp) {
-        // Stop any existing server
+        installingAppId = app.id
         installServer?.stop()
 
         let server = LocalIPAServer()
@@ -411,7 +433,6 @@ struct SigningView: View {
 
         let ipaURL = signedManager.ipaURL(for: app)
 
-        // Load icon data if available
         var iconData: Data? = nil
         if let iconURL = signedManager.iconURL(for: app) {
             iconData = try? Data(contentsOf: iconURL)
@@ -426,14 +447,19 @@ struct SigningView: View {
                 iconData: iconData
             )
 
-            // Wait for server to be ready, then open itms
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 if let link = server.iTunesLink {
                     UIApplication.shared.open(link)
                 }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        self.installingAppId = nil
+                    }
+                }
             }
         } catch {
             FileLogger.shared.log("Install server error: \(error)")
+            installingAppId = nil
         }
     }
 

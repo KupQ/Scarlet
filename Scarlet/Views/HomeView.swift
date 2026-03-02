@@ -32,6 +32,7 @@ struct HomeView: View {
     @State private var repoURLInput = ""
     @State private var bulkRepoInput = ""
     @State private var currentSlide = 0
+    @State private var animateCardGlow = false
     private let slideTimer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -205,19 +206,14 @@ struct HomeView: View {
     }
 
     private func appShowcaseCard(_ app: RepoApp) -> some View {
-        let seed = Double(abs(app.displayName.hashValue % 100)) / 100.0
-        let hue = (0.98 + seed * 0.04).truncatingRemainder(dividingBy: 1.0)
-        let sat = 0.65 + seed * 0.2
-        let bri = 0.30 + seed * 0.12
-
         return ZStack {
             RoundedRectangle(cornerRadius: 22)
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color(hue: hue, saturation: sat, brightness: bri),
-                            Color(hue: 0.0, saturation: 0.5, brightness: 0.15),
-                            Color(white: 0.06)
+                            Color(hue: 0.98, saturation: 0.7, brightness: 0.28),
+                            Color(hue: 0.0, saturation: 0.5, brightness: 0.12),
+                            Color(white: 0.05)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -227,24 +223,39 @@ struct HomeView: View {
                     RoundedRectangle(cornerRadius: 22)
                         .stroke(
                             LinearGradient(
-                                colors: [Color.scarletRed.opacity(0.3), Color.white.opacity(0.05)],
+                                colors: [Color.scarletRed.opacity(0.25), Color.white.opacity(0.04)],
                                 startPoint: .topLeading, endPoint: .bottomTrailing
                             ),
                             lineWidth: 1
                         )
                 )
 
+            // Animated drifting glow orb 1
             Circle()
-                .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.3), .clear], center: .center, startRadius: 5, endRadius: 90))
-                .frame(width: 180, height: 180)
-                .offset(x: 90, y: -50)
-                .blur(radius: 25)
+                .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.35), .clear], center: .center, startRadius: 5, endRadius: 80))
+                .frame(width: 160, height: 160)
+                .offset(x: animateCardGlow ? 80 : 50, y: animateCardGlow ? -60 : -30)
+                .blur(radius: 30)
+                .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: animateCardGlow)
 
+            // Animated drifting glow orb 2
             Circle()
-                .fill(RadialGradient(colors: [Color(hue: 0.0, saturation: 0.7, brightness: 0.3).opacity(0.2), .clear], center: .center, startRadius: 5, endRadius: 70))
-                .frame(width: 140, height: 140)
-                .offset(x: -70, y: 40)
-                .blur(radius: 20)
+                .fill(RadialGradient(colors: [Color(hue: 0.95, saturation: 0.8, brightness: 0.4).opacity(0.2), .clear], center: .center, startRadius: 5, endRadius: 60))
+                .frame(width: 120, height: 120)
+                .offset(x: animateCardGlow ? -60 : -30, y: animateCardGlow ? 30 : 50)
+                .blur(radius: 25)
+                .animation(.easeInOut(duration: 5).repeatForever(autoreverses: true), value: animateCardGlow)
+
+            // Animated shimmer streak
+            RoundedRectangle(cornerRadius: 22)
+                .fill(
+                    LinearGradient(
+                        colors: [.clear, Color.scarletRed.opacity(0.08), .clear],
+                        startPoint: animateCardGlow ? .leading : .trailing,
+                        endPoint: animateCardGlow ? .trailing : .leading
+                    )
+                )
+                .animation(.easeInOut(duration: 3).repeatForever(autoreverses: true), value: animateCardGlow)
 
             HStack(spacing: 16) {
                 ZStack {
@@ -294,6 +305,7 @@ struct HomeView: View {
 
                 Spacer()
 
+                // Flat elegant GET button (matches Sign button design)
                 Button {
                     guard let urlStr = app.resolvedDownloadURL, let url = URL(string: urlStr) else { return }
                     DownloadManager.shared.download(id: app.id, url: url, appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString) { fileURL in
@@ -302,14 +314,17 @@ struct HomeView: View {
                     switchToLibrary()
                 } label: {
                     Text("GET")
-                        .font(.system(size: 14, weight: .heavy))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 9)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.6))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 7)
                         .background(
-                            Capsule()
-                                .fill(LinearGradient(colors: [.scarletRed, .scarletDark], startPoint: .top, endPoint: .bottom))
-                                .shadow(color: .scarletRed.opacity(0.4), radius: 6, y: 2)
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.white.opacity(0.06))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
+                                )
                         )
                 }
                 .buttonStyle(.plain)
@@ -317,6 +332,7 @@ struct HomeView: View {
             .padding(.horizontal, 22)
         }
         .frame(height: 180)
+        .onAppear { animateCardGlow = true }
     }
 
     private var fallbackBanner: some View {
