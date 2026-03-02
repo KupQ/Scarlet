@@ -45,22 +45,26 @@ struct HomeView: View {
             }
             .ignoresSafeArea()
 
+            VStack(spacing: 0) {
+                // Pinned header
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Scarlet")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(.white)
+                        Text("iOS App Signing")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.3))
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
+                .background(Color.bgPrimary)
+
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
-                    // Header
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Scarlet")
-                                .font(.system(size: 28, weight: .bold))
-                                .foregroundColor(.white)
-                            Text("iOS App Signing")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.white.opacity(0.3))
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
 
                     // Hero banner
                     heroBanner
@@ -102,6 +106,7 @@ struct HomeView: View {
                     }
                     .padding(.bottom, 80)
                 }
+            }
             }
         }
         .navigationTitle("")

@@ -86,17 +86,36 @@ struct CertificatesView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("Certificates")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundColor(.white)
-            if let udid = certService.deviceUDID {
-                Text(udid)
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
-                    .foregroundColor(.white.opacity(0.2))
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Certificates")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.white)
+                if let udid = certService.deviceUDID {
+                    Text(udid)
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .foregroundColor(.white.opacity(0.2))
+                }
+            }
+            Spacer()
+            Button {
+                filePickerType = .p12
+                showFilePicker = true
+            } label: {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white.opacity(0.03))
+                        .frame(width: 40, height: 40)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                        )
+                    Image(systemName: "plus")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.scarletRed.opacity(0.8))
+                }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
         .padding(.top, 12)
         .padding(.bottom, 20)
@@ -136,29 +155,6 @@ struct CertificatesView: View {
                     .padding(.horizontal, 20)
                 }
             }
-
-            // Import card
-            Button {
-                filePickerType = .p12
-                showFilePicker = true
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "plus.circle")
-                        .font(.system(size: 16))
-                    Text("Import Certificate")
-                        .font(.system(size: 13, weight: .semibold))
-                }
-                .foregroundColor(.white.opacity(0.25))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 18)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(style: StrokeStyle(lineWidth: 1, dash: [6, 4]))
-                        .foregroundColor(.white.opacity(0.08))
-                )
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 40)
         }
     }
 
