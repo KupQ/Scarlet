@@ -170,3 +170,21 @@
 "Unknown" = "Неизвестно";
 "Unknown error" = "Неизвестная ошибка";
 "Wrong password. Please try again." = "Неверный пароль. Попробуйте ещё раз.";
+
+// ─── Вкладки библиотеки ───
+"Unsigned" = "Неподписанные";
+"Signed" = "Подписанные";
+"No Signed Apps" = "Нет подписанных приложений";
+"Signed apps will appear here" = "Подписанные приложения появятся здесь";
+
+// ─── Настройки ───
+"Preferences" = "Настройки";
+"Notifications" = "Уведомления";
+"Cache" = "Кэш";
+"Clear Cache" = "Очистить кэш";
+
+// ─── Уведомления ───
+"Signing Complete" = "Подпись завершена";
+"%@ has been signed successfully" = "%@ успешно подписано";
+"Download Complete" = "Загрузка завершена";
+"%@ has been downloaded" = "%@ загружено";

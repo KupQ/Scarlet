@@ -22,8 +22,10 @@ struct ContentView: View {
     @State private var showSettingsCard = false
     @State private var showCertsCard = false
     @State private var showLangCard = false
+    @State private var showPrefsCard = false
     @State private var certsDragOffset: CGFloat = 0
     @State private var langDragOffset: CGFloat = 0
+    @State private var prefsDragOffset: CGFloat = 0
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -119,7 +121,12 @@ struct ContentView: View {
                                 showLangCard = true
                             }
                         }
-                        settingsIconButton(icon: "slider.horizontal.3") {}
+                        settingsIconButton(icon: "slider.horizontal.3") {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                showSettingsCard = false
+                                showPrefsCard = true
+                            }
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 14)
@@ -330,6 +337,39 @@ struct ContentView: View {
                 .zIndex(99)
             }
 
+            // Preferences card overlay
+            if showPrefsCard {
+                VStack {
+                    Spacer()
+                    preferencesCard
+                        .offset(y: prefsDragOffset)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    if value.translation.height > 0 {
+                                        prefsDragOffset = value.translation.height
+                                    }
+                                }
+                                .onEnded { value in
+                                    if value.translation.height > 120 {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                            showPrefsCard = false
+                                            prefsDragOffset = 0
+                                        }
+                                    } else {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                            prefsDragOffset = 0
+                                        }
+                                    }
+                                }
+                        )
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 8)
+                }
+                .transition(.move(edge: .bottom))
+                .zIndex(99)
+            }
+
             // Dimmed backdrop
             if sheetVisible {
                 Color.black.opacity(0.4)
@@ -357,11 +397,28 @@ struct ContentView: View {
             case .success(let url):
                 signingOutputURL = url
                 if let app = selectedApp {
+                    // Save signed IPA to SignedAppsManager
+                    let settings = SigningSettings.shared
+                    SignedAppsManager.shared.saveSignedIPA(
+                        sourceURL: url,
+                        appName: settings.displayName.isEmpty ? app.appName : settings.displayName,
+                        bundleId: settings.bundleId.isEmpty ? app.bundleIdentifier : settings.bundleId,
+                        version: settings.version.isEmpty ? app.version : settings.version,
+                        iconURL: app.iconURL
+                    )
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                         ImportedAppsManager.shared.markAsSigned(app)
                     }
                     // Start local server for OTA Install button
                     signingState.prepareInstall(app: app, outputURL: url)
+
+                    // Send notification if backgrounded
+                    if UIApplication.shared.applicationState != .active {
+                        NotificationHelper.send(
+                            title: L("Signing Complete"),
+                            body: String(format: L("%@ has been signed successfully"), app.appName)
+                        )
+                    }
                 }
                 withAnimation(.easeInOut(duration: 0.3)) {
                     signingProgress = 1.0
@@ -1296,6 +1353,127 @@ struct ContentView: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Preferences Card
+
+    @State private var notificationsEnabled = NotificationHelper.isEnabled
+
+    private var preferencesCard: some View {
+        VStack(spacing: 0) {
+            // Drag handle
+            RoundedRectangle(cornerRadius: 3)
+                .fill(Color.white.opacity(0.15))
+                .frame(width: 36, height: 5)
+                .padding(.top, 10)
+                .padding(.bottom, 14)
+
+            Text(L("Preferences"))
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(.white)
+                .padding(.bottom, 16)
+
+            VStack(spacing: 12) {
+                // Notifications toggle
+                HStack(spacing: 12) {
+                    Image(systemName: "bell.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(.scarletRed)
+                        .frame(width: 20)
+                    Text(L("Notifications"))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.white)
+                    Spacer()
+                    Toggle("", isOn: $notificationsEnabled)
+                        .labelsHidden()
+                        .tint(.scarletRed)
+                        .onChange(of: notificationsEnabled) { value in
+                            NotificationHelper.isEnabled = value
+                        }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.white.opacity(0.03))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                        )
+                )
+
+                // Cache section
+                VStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "internaldrive")
+                            .font(.system(size: 16))
+                            .foregroundColor(.scarletRed)
+                            .frame(width: 20)
+                        Text(L("Cache"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                        Spacer()
+                        Text(cacheSizeFormatted)
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .foregroundColor(.white.opacity(0.4))
+                    }
+
+                    Rectangle()
+                        .fill(Color.white.opacity(0.04))
+                        .frame(height: 0.5)
+
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            ImportedAppsManager.shared.clearAll()
+                            SignedAppsManager.shared.clearAll()
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "trash")
+                                .font(.system(size: 13, weight: .medium))
+                            Text(L("Clear Cache"))
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.red.opacity(0.08))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.white.opacity(0.03))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                        )
+                )
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 20)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 24)
+                .fill(.ultraThinMaterial)
+                .environment(\.colorScheme, .dark)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                )
+        )
+    }
+
+    /// Total cache: unsigned apps + signed apps
+    private var cacheSizeFormatted: String {
+        let signedSize = SignedAppsManager.shared.totalCacheSize
+        let unsignedSize = ImportedAppsManager.shared.totalCacheSize
+        return ByteCountFormatter.string(fromByteCount: signedSize + unsignedSize, countStyle: .file)
     }
 
     // MARK: - Settings Icon Button

@@ -13,8 +13,10 @@ struct SigningView: View {
     var onAppTapped: (ImportedApp) -> Void
 
     @StateObject private var appsManager = ImportedAppsManager.shared
+    @StateObject private var signedManager = SignedAppsManager.shared
     @State private var showIPAImportPicker = false
     @State private var signIconPulse = false
+    @State private var libraryTab: Int = 0  // 0 = Unsigned, 1 = Signed
 
     var body: some View {
         ZStack {
@@ -40,18 +42,33 @@ struct SigningView: View {
                 headerSection
                     .background(Color.bgPrimary)
 
+                // Unsigned / Signed picker
+                libraryPicker
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 8)
+
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 0) {
-                        if appsManager.isImporting {
-                            importingIndicator
-                                .padding(.top, 16)
-                                .padding(.horizontal, 20)
-                        }
+                        if libraryTab == 0 {
+                            // Unsigned tab
+                            if appsManager.isImporting {
+                                importingIndicator
+                                    .padding(.top, 16)
+                                    .padding(.horizontal, 20)
+                            }
 
-                        if appsManager.apps.isEmpty && !appsManager.isImporting && downloadManager.pendingDownloads.isEmpty {
-                            emptyState.padding(.top, 60)
+                            if appsManager.apps.isEmpty && !appsManager.isImporting && downloadManager.pendingDownloads.isEmpty {
+                                emptyState.padding(.top, 60)
+                            } else {
+                                appsList.padding(.top, 20)
+                            }
                         } else {
-                            appsList.padding(.top, 20)
+                            // Signed tab
+                            if signedManager.signedApps.isEmpty {
+                                signedEmptyState.padding(.top, 60)
+                            } else {
+                                signedAppsList.padding(.top, 20)
+                            }
                         }
                     }
                     .padding(.bottom, 80)
@@ -96,6 +113,53 @@ struct SigningView: View {
         .padding(.horizontal, 20)
         .padding(.top, 12)
         .padding(.bottom, 16)
+    }
+
+    // MARK: - Library Picker
+
+    private var libraryPicker: some View {
+        HStack(spacing: 0) {
+            pickerButton(title: L("Unsigned"), count: appsManager.apps.count, isActive: libraryTab == 0) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { libraryTab = 0 }
+            }
+            pickerButton(title: L("Signed"), count: signedManager.signedApps.count, isActive: libraryTab == 1) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { libraryTab = 1 }
+            }
+        }
+        .padding(3)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.03))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                )
+        )
+    }
+
+    private func pickerButton(title: String, count: Int, isActive: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Text(title)
+                    .font(.system(size: 13, weight: .semibold))
+                Text("\(count)")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(
+                        Capsule()
+                            .fill(isActive ? Color.scarletRed.opacity(0.3) : Color.white.opacity(0.06))
+                    )
+            }
+            .foregroundColor(isActive ? .white : .white.opacity(0.3))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isActive ? Color.white.opacity(0.06) : Color.clear)
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Importing
@@ -212,6 +276,132 @@ struct SigningView: View {
             }
         }
         .padding(.horizontal, 20)
+    }
+
+    // MARK: - Signed Empty State
+
+    private var signedEmptyState: some View {
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(Color.white.opacity(0.03))
+                    .frame(width: 80, height: 80)
+                Image(systemName: "checkmark.seal")
+                    .font(.system(size: 30))
+                    .foregroundColor(.white.opacity(0.2))
+            }
+            VStack(spacing: 6) {
+                Text(L("No Signed Apps"))
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.white.opacity(0.8))
+                Text(L("Signed apps will appear here"))
+                    .font(.system(size: 13))
+                    .foregroundColor(.white.opacity(0.3))
+            }
+        }
+        .padding(.horizontal, 40)
+    }
+
+    // MARK: - Signed Apps List
+
+    private var signedAppsList: some View {
+        VStack(spacing: 10) {
+            ForEach(signedManager.signedApps) { app in
+                signedAppCard(app)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .top).combined(with: .opacity),
+                        removal: .move(edge: .trailing).combined(with: .opacity)
+                    ))
+            }
+        }
+        .padding(.horizontal, 20)
+    }
+
+    private func signedAppCard(_ app: SignedApp) -> some View {
+        HStack(spacing: 14) {
+            // Icon
+            if let iconURL = signedManager.iconURL(for: app),
+               let data = try? Data(contentsOf: iconURL),
+               let uiImage = UIImage(data: data) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .frame(width: 52, height: 52)
+                    .clipShape(RoundedRectangle(cornerRadius: 13))
+            } else {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 13)
+                        .fill(LinearGradient(colors: [.scarletRed.opacity(0.3), .scarletDark.opacity(0.3)],
+                                             startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 52, height: 52)
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.scarletRed)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(app.appName)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                HStack(spacing: 8) {
+                    Text(app.bundleId)
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .foregroundColor(.white.opacity(0.2))
+                        .lineLimit(1)
+                }
+                HStack(spacing: 8) {
+                    Text(app.formattedSize)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.white.opacity(0.25))
+                    Text("·")
+                        .foregroundColor(.white.opacity(0.15))
+                    Text(app.formattedDate)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.white.opacity(0.25))
+                }
+            }
+
+            Spacer()
+
+            // Share button
+            Button {
+                let url = signedManager.ipaURL(for: app)
+                let ac = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let root = scene.windows.first?.rootViewController {
+                    root.present(ac, animated: true)
+                }
+            } label: {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.white.opacity(0.4))
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.plain)
+
+            // Delete
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    signedManager.removeApp(app)
+                }
+            } label: {
+                Image(systemName: "trash")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.scarletRed.opacity(0.6))
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color.white.opacity(0.03))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
+                )
+        )
     }
 
     // MARK: - Downloading Card

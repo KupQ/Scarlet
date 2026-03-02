@@ -176,3 +176,21 @@
 "Unknown" = "Unknown";
 "Unknown error" = "Unknown error";
 "Wrong password. Please try again." = "Wrong password. Please try again.";
+
+// ─── Library Tabs ───
+"Unsigned" = "Unsigned";
+"Signed" = "Signed";
+"No Signed Apps" = "No Signed Apps";
+"Signed apps will appear here" = "Signed apps will appear here";
+
+// ─── Preferences ───
+"Preferences" = "Preferences";
+"Notifications" = "Notifications";
+"Cache" = "Cache";
+"Clear Cache" = "Clear Cache";
+
+// ─── Notifications ───
+"Signing Complete" = "Signing Complete";
+"%@ has been signed successfully" = "%@ has been signed successfully";
+"Download Complete" = "Download Complete";
+"%@ has been downloaded" = "%@ has been downloaded";

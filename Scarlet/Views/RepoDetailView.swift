@@ -61,6 +61,7 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask,
                     didFinishDownloadingTo location: URL) {
         guard let id = tasks[downloadTask] else { return }
+        let appName = pendingDownloads.first(where: { $0.id == id })?.appName ?? "App"
         let tmp = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".ipa")
         try? FileManager.default.moveItem(at: location, to: tmp)
         tasks.removeValue(forKey: downloadTask)
@@ -68,6 +69,14 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
         completions.removeValue(forKey: id)
         activeDownloads.removeValue(forKey: id)
         pendingDownloads.removeAll { $0.id == id }
+
+        // Notify if backgrounded
+        if UIApplication.shared.applicationState != .active {
+            NotificationHelper.send(
+                title: L("Download Complete"),
+                body: String(format: L("%@ has been downloaded"), appName)
+            )
+        }
     }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {

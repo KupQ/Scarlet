@@ -29,6 +29,7 @@ struct ScarletApp: App {
             ZStack {
                 ContentView()
                     .opacity(showSplash ? 0 : 1)
+                    .onAppear { NotificationHelper.requestPermission() }
 
                 if showSplash {
                     SplashView {

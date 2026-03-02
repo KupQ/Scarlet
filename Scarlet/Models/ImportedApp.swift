@@ -267,6 +267,29 @@ final class ImportedAppsManager: ObservableObject {
         return signed + unsigned
     }
 
+    // MARK: - Cache
+
+    /// Total storage used by imported apps (IPAs + icons).
+    var totalCacheSize: Int64 {
+        var total: Int64 = 0
+        if let enumerator = FileManager.default.enumerator(at: Self.appsDirectory, includingPropertiesForKeys: [.fileSizeKey]) {
+            for case let url as URL in enumerator {
+                if let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                    total += Int64(size)
+                }
+            }
+        }
+        return total
+    }
+
+    /// Deletes all imported apps and their files.
+    func clearAll() {
+        try? FileManager.default.removeItem(at: Self.appsDirectory)
+        try? FileManager.default.createDirectory(at: Self.appsDirectory, withIntermediateDirectories: true)
+        apps.removeAll()
+        saveApps()
+    }
+
     // MARK: - Persistence
 
     private func loadApps() {
