@@ -14,7 +14,7 @@ enum CertFetcher {
     // MARK: - Remote URLs
 
     private static let p12RemoteURL  = URL(string: "https://nekoo.eu.org/scarlet/server.p12")!
-    private static let wwdrRemoteURL = URL(string: "https://nekoo.eu.org/scarlet/AppleWWDRCAG3.cer")!
+    private static let wwdrRemoteURL = URL(string: "https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer")!
 
     // MARK: - Local cache paths (Documents/Certs/)
 
