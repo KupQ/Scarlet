@@ -1653,11 +1653,10 @@ struct ContentView: View {
                 .foregroundColor(hoveredSettingsOption == index ? .white : .white.opacity(0.7))
                 .frame(width: 44, height: 44)
                 .background(
-                    Circle()
+                    RoundedRectangle(cornerRadius: 12)
                         .fill(hoveredSettingsOption == index ? Color.scarletRed.opacity(0.4) : .clear)
-                        .scaleEffect(hoveredSettingsOption == index ? 1.2 : 0.8)
                         .shadow(color: hoveredSettingsOption == index ? .scarletRed.opacity(0.6) : .clear, radius: 10)
-                        .animation(.easeOut(duration: 0.15), value: hoveredSettingsOption)
+                        .animation(.easeOut(duration: 0.08), value: hoveredSettingsOption)
                 )
         }
         .buttonStyle(.plain)
