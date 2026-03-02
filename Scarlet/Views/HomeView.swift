@@ -7,12 +7,24 @@
 
 import SwiftUI
 
+/// Simple seeded RNG for deterministic shuffling
+private struct SeededRNG: RandomNumberGenerator {
+    private var state: UInt64
+    init(seed: UInt64) { state = seed }
+    mutating func next() -> UInt64 {
+        state &+= 0x9E3779B97F4A7C15
+        var z = state
+        z = (z ^ (z >> 30)) &* 0xBF58476D1CE4E5B9
+        z = (z ^ (z >> 27)) &* 0x94D049BB133111EB
+        return z ^ (z >> 31)
+    }
+}
+
 struct HomeView: View {
     @ObservedObject var signingState: SigningState
     var switchToLibrary: () -> Void
 
     @ObservedObject private var repoService = RepoService.shared
-    @ObservedObject private var bannerService = BannerService.shared
     @State private var animatePulse = false
     @State private var animateGlow = false
     @State private var showAddRepo = false
@@ -143,119 +155,199 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Hero Banner
+    // MARK: - App Showcase Banner
+
+    private var showcaseApps: [RepoApp] {
+        let apps = repoService.allApps
+        guard !apps.isEmpty else { return [] }
+        let seed = Calendar.current.component(.hour, from: Date())
+        var rng = SeededRNG(seed: UInt64(seed))
+        return Array(apps.shuffled(using: &rng).prefix(8))
+    }
 
     private var heroBanner: some View {
-        VStack(spacing: 8) {
-            TabView(selection: $currentSlide) {
-                ForEach(Array(bannerService.slides.enumerated()), id: \.element.safeId) { index, slide in
-                    bannerSlideView(slide)
-                        .tag(index)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: 180)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .animation(.easeInOut(duration: 0.4), value: currentSlide)
-            .onReceive(slideTimer) { _ in
-                guard bannerService.slides.count > 1 else { return }
-                withAnimation {
-                    currentSlide = (currentSlide + 1) % bannerService.slides.count
-                }
-            }
+        let apps = showcaseApps
+        return Group {
+            if apps.isEmpty {
+                fallbackBanner
+            } else {
+                VStack(spacing: 8) {
+                    TabView(selection: $currentSlide) {
+                        ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
+                            appShowcaseCard(app)
+                                .tag(index)
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .frame(height: 180)
+                    .clipShape(RoundedRectangle(cornerRadius: 22))
+                    .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentSlide)
+                    .onReceive(slideTimer) { _ in
+                        guard apps.count > 1 else { return }
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.75)) {
+                            currentSlide = (currentSlide + 1) % apps.count
+                        }
+                    }
 
-            // Page dots
-            if bannerService.slides.count > 1 {
-                HStack(spacing: 6) {
-                    ForEach(0..<bannerService.slides.count, id: \.self) { i in
-                        Circle()
-                            .fill(i == currentSlide ? Color.scarletRed : Color.white.opacity(0.2))
-                            .frame(width: 6, height: 6)
-                            .animation(.easeInOut(duration: 0.2), value: currentSlide)
+                    if apps.count > 1 {
+                        HStack(spacing: 5) {
+                            ForEach(0..<apps.count, id: \.self) { i in
+                                Capsule()
+                                    .fill(i == currentSlide ? Color.scarletRed : Color.white.opacity(0.15))
+                                    .frame(width: i == currentSlide ? 18 : 5, height: 5)
+                                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentSlide)
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
-    private func bannerSlideView(_ slide: BannerSlide) -> some View {
-        ZStack(alignment: .bottomLeading) {
-            // Background: remote image or gradient
-            if let imgKey = slide.imageURL, let img = bannerService.imageCache[imgKey] {
-                Image(uiImage: img)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(height: 180)
-                    .clipped()
-                    .overlay(
-                        LinearGradient(
-                            colors: [.black.opacity(0.6), .clear, .black.opacity(0.3)],
-                            startPoint: .bottom,
-                            endPoint: .top
+    private func appShowcaseCard(_ app: RepoApp) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 22)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(hue: Double(abs(app.displayName.hashValue % 360)) / 360, saturation: 0.4, brightness: 0.15),
+                            Color(white: 0.06)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.1), Color.white.opacity(0.03)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 0.5
                         )
-                    )
-            } else {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.scarletRed.opacity(0.30),
-                                Color.scarletDark.opacity(0.20),
-                                Color(white: 0.08)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(height: 180)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
-                    )
-                // Watermark
-                HStack {
-                    Spacer()
-                    Image(systemName: "signature")
-                        .font(.system(size: 70, weight: .ultraLight))
-                        .foregroundColor(.white.opacity(0.06))
-                        .rotationEffect(.degrees(-10))
-                        .offset(x: -20, y: -20)
-                }
-            }
+                )
 
-            // Content
-            HStack {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(slide.title)
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
-                    if let subtitle = slide.subtitle, !subtitle.isEmpty {
-                        Text(subtitle)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.5))
-                    }
-                }
-                Spacer()
-                // Red CTA button
-                if let btnText = slide.buttonText, !btnText.isEmpty {
-                    Button {
-                        if let urlStr = slide.buttonURL, let url = URL(string: urlStr) {
-                            UIApplication.shared.open(url)
-                        }
-                    } label: {
-                        Text(btnText)
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(
-                                Capsule()
-                                    .fill(Color.scarletRed)
-                                    .shadow(color: .scarletRed.opacity(0.4), radius: 6, y: 2)
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color(hue: Double(abs(app.displayName.hashValue % 360)) / 360, saturation: 0.5, brightness: 0.3).opacity(0.3),
+                            Color.clear
+                        ],
+                        center: .center,
+                        startRadius: 10,
+                        endRadius: 100
+                    )
+                )
+                .frame(width: 200, height: 200)
+                .offset(x: 80, y: -30)
+                .blur(radius: 30)
+
+            HStack(spacing: 16) {
+                AsyncImage(url: URL(string: app.resolvedIconURL ?? "")) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 72, height: 72)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: .black.opacity(0.4), radius: 8, y: 4)
+                    default:
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.white.opacity(0.06))
+                            .frame(width: 72, height: 72)
+                            .overlay(
+                                Image(systemName: "app.fill")
+                                    .font(.system(size: 28))
+                                    .foregroundColor(.white.opacity(0.15))
                             )
                     }
-                    .buttonStyle(.plain)
                 }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(app.displayName)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+
+                    HStack(spacing: 8) {
+                        Label(app.version ?? "1.0", systemImage: "tag.fill")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.5))
+
+                        if app.size != nil {
+                            Text("•")
+                                .foregroundColor(.white.opacity(0.2))
+                            Text(app.sizeString)
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.5))
+                        }
+                    }
+
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [.scarletRed.opacity(0.4), .scarletPink.opacity(0.2), .scarletRed.opacity(0.4)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: 60, height: 3)
+                        .padding(.top, 2)
+                }
+
+                Spacer()
+
+                Text("GET")
+                    .font(.system(size: 13, weight: .heavy))
+                    .foregroundColor(.scarletRed)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 7)
+                    .background(
+                        Capsule()
+                            .fill(Color.white.opacity(0.08))
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.scarletRed.opacity(0.3), lineWidth: 0.5)
+                            )
+                    )
+            }
+            .padding(.horizontal, 22)
+        }
+        .frame(height: 180)
+    }
+
+    private var fallbackBanner: some View {
+        ZStack(alignment: .bottomLeading) {
+            RoundedRectangle(cornerRadius: 22)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.scarletRed.opacity(0.20), Color(white: 0.06)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(height: 180)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22)
+                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                )
+
+            VStack(alignment: .leading, spacing: 6) {
+                Image(systemName: "shield.checkered")
+                    .font(.system(size: 24))
+                    .foregroundStyle(
+                        LinearGradient(colors: [.white, .scarletPink], startPoint: .top, endPoint: .bottom)
+                    )
+                Text(L("Sign & Install"))
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.white)
+                Text(L("Add a repo to see apps here"))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white.opacity(0.4))
             }
             .padding(22)
         }
