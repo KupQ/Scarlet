@@ -48,7 +48,7 @@ struct SigningView: View {
                                 .padding(.horizontal, 20)
                         }
 
-                        if appsManager.apps.isEmpty && !appsManager.isImporting {
+                        if appsManager.apps.isEmpty && !appsManager.isImporting && downloadManager.pendingDownloads.isEmpty {
                             emptyState.padding(.top, 60)
                         } else {
                             appsList.padding(.top, 20)
