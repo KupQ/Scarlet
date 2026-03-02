@@ -359,6 +359,7 @@ struct HomeView: View {
                     ) { fileURL in
                         ImportedAppsManager.shared.importIPA(from: fileURL)
                     }
+                    switchToLibrary()
                 } label: {
                     Text("GET")
                         .font(.system(size: 14, weight: .heavy))
