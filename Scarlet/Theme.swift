@@ -25,14 +25,14 @@ extension Color {
 
     // MARK: Surfaces
 
-    /// Primary background color (near-black).
-    static let bgPrimary         = Color(red: 0.06, green: 0.06, blue: 0.08)
+    /// Primary background color (soft charcoal).
+    static let bgPrimary         = Color(red: 0.11, green: 0.11, blue: 0.13)
     /// Secondary background for elevated surfaces.
-    static let bgSecondary       = Color(red: 0.10, green: 0.10, blue: 0.13)
+    static let bgSecondary       = Color(red: 0.14, green: 0.14, blue: 0.17)
     /// Card background.
-    static let cardBackground    = Color(red: 0.13, green: 0.13, blue: 0.16)
+    static let cardBackground    = Color(red: 0.17, green: 0.17, blue: 0.20)
     /// Surface background alias.
-    static let surfaceBackground = Color(red: 0.06, green: 0.06, blue: 0.08)
+    static let surfaceBackground = Color(red: 0.11, green: 0.11, blue: 0.13)
 
     // MARK: Glass
 

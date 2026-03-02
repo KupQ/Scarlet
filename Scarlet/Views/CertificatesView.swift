@@ -35,7 +35,7 @@ struct CertificatesView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.04, green: 0.04, blue: 0.05).ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
@@ -585,7 +585,7 @@ struct HeroCard: View {
                     .fill(LinearGradient(
                         colors: [Color.scarletRed.opacity(0.08),
                                  Color(red: 0.08, green: 0.08, blue: 0.1),
-                                 Color(red: 0.06, green: 0.06, blue: 0.07)],
+                                 Color(red: 0.11, green: 0.11, blue: 0.13)],
                         startPoint: .topLeading, endPoint: .bottomTrailing))
                 RoundedRectangle(cornerRadius: 18)
                     .stroke(LinearGradient(
