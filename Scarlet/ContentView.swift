@@ -1406,19 +1406,17 @@ struct ContentView: View {
                         let y = drag.location.y
                         let x = drag.location.x
                         let screenW = UIScreen.main.bounds.width
-                        // Options are centered, ~3 buttons, each ~60pt wide, spaced by 20pt
-                        // Total HStack width ≈ 3*44 + 2*20 = 172pt, centered
-                        let centerX = screenW / 2
-                        let startX = centerX - 86
-                        // Only detect if finger is above the tab bar (y < screen height - 160ish)
                         let screenH = UIScreen.main.bounds.height
-                        if y < screenH - 100 && y > screenH - 250 {
+                        // Wider detection zone
+                        let centerX = screenW / 2
+                        let startX = centerX - 105
+                        if y < screenH - 60 && y > screenH - 300 {
                             let relX = x - startX
-                            if relX < 57 {
+                            if relX >= 0 && relX < 70 {
                                 hoveredSettingsOption = 0
-                            } else if relX < 114 {
+                            } else if relX >= 70 && relX < 140 {
                                 hoveredSettingsOption = 1
-                            } else if relX < 172 {
+                            } else if relX >= 140 && relX < 210 {
                                 hoveredSettingsOption = 2
                             } else {
                                 hoveredSettingsOption = nil
