@@ -45,7 +45,7 @@ struct ContentView: View {
             switch self {
             case .home: return "house"
             case .sign: return "square.and.arrow.down"
-            case .certs: return "magnifyingglass"
+            case .certs: return "checkmark.shield"
             }
         }
     }
