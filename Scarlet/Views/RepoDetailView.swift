@@ -37,6 +37,16 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
         task.resume()
     }
 
+    func cancelDownload(id: String) {
+        if let entry = tasks.first(where: { $0.value == id }) {
+            entry.key.cancel()
+            tasks.removeValue(forKey: entry.key)
+        }
+        completions.removeValue(forKey: id)
+        activeDownloads.removeValue(forKey: id)
+        pendingDownloads.removeAll { $0.id == id }
+    }
+
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask,
                     didWriteData bytesWritten: Int64, totalBytesWritten: Int64,
                     totalBytesExpectedToWrite: Int64) {

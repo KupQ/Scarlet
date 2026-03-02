@@ -406,6 +406,18 @@ struct ContentView: View {
         signingOutputURL = nil
         sheetPhase = .configure
 
+        // Auto-select the first certificate if none is selected
+        if SigningSettings.shared.savedCertName == nil {
+            let json = UserDefaults.standard.string(forKey: "local_imported_certs_json") ?? "[]"
+            if let data = json.data(using: .utf8),
+               let locals = try? JSONDecoder().decode([LocalImportedCert].self, from: data),
+               let first = locals.first {
+                SigningSettings.shared.savedCertName = first.filename
+            } else if let firstAPI = certService.certificates.first {
+                certService.useCertificate(firstAPI)
+            }
+        }
+
         sheetVisible = true
         sheetOffset = 500
         withAnimation(.easeOut(duration: 0.45)) {

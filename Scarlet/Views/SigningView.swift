@@ -268,6 +268,27 @@ struct SigningView: View {
                 }
                 .frame(height: 5)
             }
+
+            // Cancel button
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    downloadManager.cancelDownload(id: dl.id)
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.white.opacity(0.7))
+                    .frame(width: 28, height: 28)
+                    .background(
+                        Circle()
+                            .fill(Color.scarletRed.opacity(0.25))
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.scarletRed.opacity(0.3), lineWidth: 0.5)
+                            )
+                    )
+            }
+            .buttonStyle(.plain)
         }
         .padding(12)
         .background(
