@@ -49,6 +49,9 @@ struct CertificatesView: View {
                     }
                 }
             }
+            .refreshable {
+                await certService.fetchCertificates()
+            }
         }
         .task { await certService.fetchCertificates() }
         .sheet(isPresented: $showFilePicker) {
@@ -499,14 +502,14 @@ struct HeroCard: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(Color.scarletRed)
-                            .frame(width: 8, height: 8)
-                        Text("SCARLET")
-                            .font(.system(size: 9, weight: .heavy))
+                    HStack(spacing: 5) {
+                        Image(systemName: "shield.checkered")
+                            .font(.system(size: 8, weight: .semibold))
+                            .foregroundColor(.scarletRed.opacity(0.5))
+                        Text("CERTIFICATE")
+                            .font(.system(size: 8, weight: .heavy))
                             .tracking(2)
-                            .foregroundColor(.scarletRed.opacity(0.7))
+                            .foregroundColor(.white.opacity(0.2))
                     }
                     Text(cert.name)
                         .font(.system(size: 18, weight: .bold))
