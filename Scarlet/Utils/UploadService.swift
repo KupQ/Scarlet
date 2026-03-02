@@ -2,8 +2,8 @@
 //  UploadService.swift
 //  Scarlet
 //
-//  Local HTTPS server for OTA app installation using backloop.dev certs.
-//  *.backloop.dev resolves to 127.0.0.1 with a valid Let's Encrypt SSL cert.
+//  Local HTTPS server for OTA app installation using ipawind.eu.org certs.
+//  *.ipawind.eu.org resolves to 127.0.0.1 with a valid Let's Encrypt SSL cert.
 //  This allows itms-services:// to work without uploading the IPA anywhere.
 //
 
@@ -45,8 +45,8 @@ final class LocalIPAServer: ObservableObject {
     private let uuid = UUID().uuidString
     private(set) var port: UInt16 = 0
 
-    /// The backloop.dev hostname for this server.
-    private let hostname = "scarlet.backloop.dev"
+    /// The ipawind.eu.org hostname for this server.
+    private let hostname = "scarlet.ipawind.eu.org"
 
     /// Current installation status, observed by the UI.
     @Published var status: InstallStatus = .idle
@@ -63,7 +63,7 @@ final class LocalIPAServer: ObservableObject {
 
     // MARK: - Start
 
-    /// Starts the local HTTPS server with backloop.dev TLS certificates.
+    /// Starts the local HTTPS server with ipawind.eu.org TLS certificates.
     func start(
         servingIPA ipaURL: URL,
         bundleId: String,
@@ -138,7 +138,7 @@ final class LocalIPAServer: ObservableObject {
 
     // MARK: - TLS Identity
 
-    /// Loads the backloop.dev PKCS12 identity (cached remote → bundled fallback).
+    /// Loads the ipawind.eu.org PKCS12 identity (cached remote → bundled fallback).
     private func loadIdentity() -> sec_identity_t? {
         guard let p12URL = CertFetcher.p12URL,
               let p12Data = try? Data(contentsOf: p12URL) else {
