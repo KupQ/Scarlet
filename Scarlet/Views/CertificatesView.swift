@@ -32,6 +32,11 @@ struct CertificatesView: View {
     private var otherCerts: [RemoteCertificate] {
         certService.certificates.filter { settings.savedCertName != "\($0.id).p12" }
     }
+    /// True when a manually‑imported P12 is active but not in the API list
+    private var hasLocalCert: Bool {
+        guard let name = settings.savedCertName else { return false }
+        return activeCert == nil && settings.savedCertURL != nil
+    }
 
     var body: some View {
         ZStack {
@@ -43,9 +48,9 @@ struct CertificatesView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
-                        if certService.isLoading && certService.certificates.isEmpty {
+                        if certService.isLoading && certService.certificates.isEmpty && !hasLocalCert {
                             loadingSection
-                        } else if certService.certificates.isEmpty {
+                        } else if certService.certificates.isEmpty && !hasLocalCert {
                             emptySection
                         } else {
                             certContent
@@ -125,6 +130,7 @@ struct CertificatesView: View {
 
     private var certContent: some View {
         VStack(spacing: 24) {
+            // Active API certificate
             if let cert = activeCert {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("ACTIVE CERTIFICATE")
@@ -134,6 +140,20 @@ struct CertificatesView: View {
                         .padding(.horizontal, 20)
 
                     HeroCard(cert: cert)
+                        .padding(.horizontal, 20)
+                }
+            }
+
+            // Active LOCAL certificate (manually imported)
+            if hasLocalCert {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("ACTIVE CERTIFICATE")
+                        .font(.system(size: 10, weight: .heavy))
+                        .tracking(1.5)
+                        .foregroundColor(.scarletRed.opacity(0.6))
+                        .padding(.horizontal, 20)
+
+                    localCertCard
                         .padding(.horizontal, 20)
                 }
             }
@@ -156,6 +176,86 @@ struct CertificatesView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Local Certificate Card
+
+    private var localCertCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 5) {
+                        Image(systemName: "shield.checkered")
+                            .font(.system(size: 8, weight: .semibold))
+                            .foregroundColor(.scarletRed.opacity(0.5))
+                        Text("LOCAL")
+                            .font(.system(size: 8, weight: .heavy))
+                            .tracking(2)
+                            .foregroundColor(.white.opacity(0.2))
+                    }
+                    Text(settings.savedCertName?.replacingOccurrences(of: ".p12", with: "") ?? "Certificate")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(2)
+                }
+                Spacer()
+                // Checkmark badge
+                ZStack {
+                    Circle()
+                        .fill(Color.scarletRed.opacity(0.15))
+                        .frame(width: 40, height: 40)
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.scarletRed)
+                }
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 18)
+            .padding(.bottom, 14)
+
+            Rectangle()
+                .fill(LinearGradient(colors: [.clear, Color.scarletRed.opacity(0.2), .clear],
+                                     startPoint: .leading, endPoint: .trailing))
+                .frame(height: 0.5)
+
+            HStack {
+                HStack(spacing: 4) {
+                    Image(systemName: "externaldrive.fill")
+                        .font(.system(size: 9))
+                    Text("Imported")
+                        .font(.system(size: 10, weight: .semibold))
+                }
+                .foregroundColor(.white.opacity(0.45))
+
+                Spacer()
+
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(Color(red: 0.2, green: 0.65, blue: 0.3).opacity(0.7))
+                        .frame(width: 5, height: 5)
+                    Text("Active")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.4))
+                }
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 12)
+        }
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(LinearGradient(
+                        colors: [Color.scarletRed.opacity(0.08),
+                                 Color(red: 0.08, green: 0.08, blue: 0.1),
+                                 Color(red: 0.11, green: 0.11, blue: 0.13)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing))
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(LinearGradient(
+                        colors: [Color.scarletRed.opacity(0.3), Color.scarletRed.opacity(0.05)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1)
+            }
+        )
+        .shadow(color: Color.scarletRed.opacity(0.08), radius: 20, y: 8)
     }
 
     // MARK: - Selection
