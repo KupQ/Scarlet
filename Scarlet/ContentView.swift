@@ -21,6 +21,8 @@ struct ContentView: View {
     @State private var isSearching = false
     @State private var searchText = ""
     @State private var showSettingsCard = false
+    @AppStorage("settings_guide_dismissed") private var settingsGuideDismissed = false
+    @State private var settingsGuidePulse = false
     @State private var showCertsCard = false
     @State private var showLangCard = false
     @State private var showPrefsCard = false
@@ -1370,19 +1372,53 @@ struct ContentView: View {
 
     private var settingsTabButton: some View {
         VStack(spacing: 6) {
-            Image(systemName: Tab.settings.icon)
-                .font(.system(size: 32, weight: showSettingsCard ? .light : .thin))
-                .foregroundColor(showSettingsCard ? .scarletRed : .gray.opacity(0.6))
-            Capsule()
-                .fill(showSettingsCard ? Color.white : .clear)
-                .frame(width: 14, height: 2.5)
+            ZStack {
+                // Pulsing guide ring — only until first tap
+                if !settingsGuideDismissed && !showSettingsCard {
+                    Circle()
+                        .stroke(Color.scarletRed.opacity(0.4), lineWidth: 1.5)
+                        .frame(width: 42, height: 42)
+                        .scaleEffect(settingsGuidePulse ? 1.3 : 0.9)
+                        .opacity(settingsGuidePulse ? 0 : 0.8)
+                        .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false), value: settingsGuidePulse)
+
+                    Circle()
+                        .stroke(Color.scarletRed.opacity(0.2), lineWidth: 1)
+                        .frame(width: 42, height: 42)
+                        .scaleEffect(settingsGuidePulse ? 1.6 : 0.9)
+                        .opacity(settingsGuidePulse ? 0 : 0.5)
+                        .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false).delay(0.3), value: settingsGuidePulse)
+                }
+
+                Image(systemName: Tab.settings.icon)
+                    .font(.system(size: 32, weight: showSettingsCard ? .light : .thin))
+                    .foregroundColor(showSettingsCard ? .scarletRed : (!settingsGuideDismissed ? .scarletRed.opacity(0.6) : .gray.opacity(0.6)))
+            }
+
+            // Floating label guide
+            if !settingsGuideDismissed && !showSettingsCard {
+                Text(L("Setup"))
+                    .font(.system(size: 8, weight: .heavy))
+                    .foregroundColor(.scarletRed.opacity(0.5))
+                    .tracking(1.5)
+                    .offset(y: -2)
+                    .transition(.opacity)
+            } else {
+                Capsule()
+                    .fill(showSettingsCard ? Color.white : .clear)
+                    .frame(width: 14, height: 2.5)
+            }
         }
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
+        .onAppear { settingsGuidePulse = true }
         .onTapGesture {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 showSettingsCard.toggle()
                 hoveredSettingsOption = nil
+                if !settingsGuideDismissed {
+                    settingsGuideDismissed = true
+                }
             }
         }
         .simultaneousGesture(
