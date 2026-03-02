@@ -84,6 +84,23 @@ class RepoService: ObservableObject {
     }
 
     private init() {
+        // On first launch, load default repo URLs from bundled repo.txt
+        if !UserDefaults.standard.bool(forKey: "repos_seeded") {
+            if let bundledURL = Bundle.main.url(forResource: "repo", withExtension: "txt"),
+               let content = try? String(contentsOf: bundledURL, encoding: .utf8) {
+                let urls = content.components(separatedBy: .newlines)
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                    .filter { !$0.isEmpty && $0.hasPrefix("http") }
+                if !urls.isEmpty {
+                    var current = savedURLs
+                    for url in urls where !current.contains(url) {
+                        current.append(url)
+                    }
+                    savedURLs = current
+                }
+            }
+            UserDefaults.standard.set(true, forKey: "repos_seeded")
+        }
         let urls = savedURLs
         if !urls.isEmpty {
             Task { await fetchRepos(urls) }
