@@ -177,34 +177,6 @@ struct SigningView: View {
 
     private var appsList: some View {
         VStack(spacing: 16) {
-            // ── Installed Apps (from separate store) ──
-            if !installedManager.sorted.isEmpty {
-                sectionHeader(title: "Installed Apps", count: installedManager.sorted.count)
-                VStack(spacing: 10) {
-                    ForEach(installedManager.sorted) { app in
-                        Button {
-                            InstallProgressPoller.openApp(bundleId: app.bundleIdentifier)
-                        } label: {
-                            installedCardContent(app)
-                        }
-                        .buttonStyle(.plain)
-                        .contextMenu {
-                            Button(role: .destructive) {
-                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                    installedManager.remove(app)
-                                }
-                            } label: {
-                                Label("Remove from Installed", systemImage: "trash")
-                            }
-                        }
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .top).combined(with: .opacity),
-                            removal: .move(edge: .trailing).combined(with: .opacity)
-                        ))
-                    }
-                }
-            }
-
             // ── All Apps (sign / re-sign) ──
             sectionHeader(title: "All Apps", count: allAppsSorted.count)
             VStack(spacing: 10) {
@@ -356,11 +328,11 @@ struct SigningView: View {
             VStack(spacing: 3) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.scarletRed.opacity(0.10))
+                        .fill(Color.white.opacity(0.03))
                         .frame(width: 34, height: 34)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
+                                .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
                         )
                     Image(systemName: "signature")
                         .font(.system(size: 13, weight: .bold))
@@ -368,7 +340,7 @@ struct SigningView: View {
                 }
                 Text("Sign")
                     .font(.system(size: 9, weight: .semibold))
-                    .foregroundColor(.scarletRed.opacity(0.5))
+                    .foregroundColor(.white.opacity(0.3))
             }
         }
         .padding(12)
