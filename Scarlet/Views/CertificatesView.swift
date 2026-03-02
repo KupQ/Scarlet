@@ -230,54 +230,82 @@ struct CertificatesView: View {
         return Button {
             selectCert(cert)
         } label: {
-            HStack(spacing: 0) {
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(statusClr)
-                    .frame(width: 3)
-                    .padding(.vertical, 6)
+            VStack(spacing: 0) {
+                // Top section — shield + name + status
+                HStack(spacing: 14) {
+                    // Shield icon with glow
+                    ZStack {
+                        Circle()
+                            .fill(statusClr.opacity(0.08))
+                            .frame(width: 48, height: 48)
+                        Circle()
+                            .stroke(statusClr.opacity(0.2), lineWidth: 1)
+                            .frame(width: 48, height: 48)
+                        Image(systemName: statusIconName(ocspStatus))
+                            .font(.system(size: 20, weight: .light))
+                            .foregroundColor(statusClr)
+                    }
 
-                VStack(alignment: .leading, spacing: 6) {
-                    // Name row
-                    HStack {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text(cert.name)
-                            .font(.system(size: 13, weight: .bold))
+                            .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.white)
                             .lineLimit(1)
-                        Spacer()
-                        HStack(spacing: 3) {
-                            Image(systemName: statusIconName(ocspStatus))
-                                .font(.system(size: 8))
-                            Text(ocspStatus.label)
-                                .font(.system(size: 9, weight: .bold))
-                        }
-                        .foregroundColor(statusClr)
-                    }
-                    // Info row
-                    HStack(spacing: 6) {
-                        chipView(icon: isDev ? "hammer" : "building.2", text: isDev ? "Development" : "Distribution")
-                        chipView(icon: cert.isPPQEnabled ? "lock.fill" : "lock.open", text: cert.isPPQEnabled ? "PPQ" : "PPQless")
-                        chipView(icon: "calendar", text: cert.isExpired ? "Expired" : "\(days)d", color: cert.isExpired ? .orange : nil)
-                        if isActive {
-                            chipView(icon: "checkmark.circle.fill", text: "Active", color: .white.opacity(0.5))
-                        }
-                        Spacer(minLength: 0)
                         Text(cert.pname)
-                            .font(.system(size: 9))
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
                             .foregroundColor(.white.opacity(0.2))
                             .lineLimit(1)
                     }
+
+                    Spacer()
+
+                    // Status badge
+                    VStack(spacing: 3) {
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(statusClr)
+                                .frame(width: 6, height: 6)
+                            Text(ocspStatus.label)
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(statusClr)
+                        }
+                        if isActive {
+                            Text("ACTIVE")
+                                .font(.system(size: 8, weight: .heavy))
+                                .foregroundColor(.white.opacity(0.4))
+                                .tracking(1.5)
+                        }
+                    }
                 }
-                .padding(.leading, 10)
-                .padding(.trailing, 12)
+                .padding(14)
+
+                // Divider
+                Rectangle()
+                    .fill(Color.white.opacity(0.04))
+                    .frame(height: 0.5)
+
+                // Bottom section — chips
+                HStack(spacing: 8) {
+                    certChip(icon: isDev ? "hammer" : "building.2", text: isDev ? "Development" : "Distribution")
+                    certChip(icon: cert.isPPQEnabled ? "lock.fill" : "lock.open", text: cert.isPPQEnabled ? "PPQ" : "PPQless")
+                    certChip(icon: "calendar", text: cert.isExpired ? "Expired" : "\(days)d", highlight: cert.isExpired)
+                    Spacer()
+                }
+                .padding(.horizontal, 14)
                 .padding(.vertical, 10)
             }
             .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.white.opacity(isActive ? 0.05 : 0.025))
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(.ultraThinMaterial)
+                    .environment(\.colorScheme, .dark)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(statusClr.opacity(isActive ? 0.15 : 0.06), lineWidth: 0.5)
+                        RoundedRectangle(cornerRadius: 18)
+                            .stroke(
+                                isActive ? statusClr.opacity(0.25) : Color.white.opacity(0.06),
+                                lineWidth: isActive ? 1 : 0.5
+                            )
                     )
+                    .shadow(color: isActive ? statusClr.opacity(0.1) : .clear, radius: 12)
             )
         }
         .buttonStyle(.plain)
@@ -301,50 +329,77 @@ struct CertificatesView: View {
                 settings.objectWillChange.send()
             }
         } label: {
-            HStack(spacing: 0) {
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(statusClr)
-                    .frame(width: 3)
-                    .padding(.vertical, 6)
+            VStack(spacing: 0) {
+                // Top section — shield + name + status
+                HStack(spacing: 14) {
+                    ZStack {
+                        Circle()
+                            .fill(statusClr.opacity(0.08))
+                            .frame(width: 48, height: 48)
+                        Circle()
+                            .stroke(statusClr.opacity(0.2), lineWidth: 1)
+                            .frame(width: 48, height: 48)
+                        Image(systemName: statusIconName(ocspStatus))
+                            .font(.system(size: 20, weight: .light))
+                            .foregroundColor(statusClr)
+                    }
 
-                VStack(alignment: .leading, spacing: 6) {
-                    // Name row
-                    HStack {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text(certName)
-                            .font(.system(size: 13, weight: .bold))
+                            .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.white)
                             .lineLimit(1)
-                        Spacer()
-                        HStack(spacing: 3) {
-                            Image(systemName: statusIconName(ocspStatus))
-                                .font(.system(size: 8))
-                            Text(ocspStatus.label)
-                                .font(.system(size: 9, weight: .bold))
-                        }
-                        .foregroundColor(statusClr)
+                        Text("Local Certificate")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(.white.opacity(0.2))
                     }
-                    // Info row
-                    HStack(spacing: 6) {
-                        chipView(icon: isDev ? "hammer" : "building.2", text: isDev ? "Development" : "Distribution")
-                        chipView(icon: "lock.open", text: "PPQless")
-                        chipView(icon: "calendar", text: daysLeft > 0 ? "\(daysLeft)d" : "Expired", color: daysLeft > 0 ? nil : .orange)
-                        if isActive {
-                            chipView(icon: "checkmark.circle.fill", text: "Active", color: .white.opacity(0.5))
+
+                    Spacer()
+
+                    VStack(spacing: 3) {
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(statusClr)
+                                .frame(width: 6, height: 6)
+                            Text(ocspStatus.label)
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(statusClr)
                         }
-                        Spacer(minLength: 0)
+                        if isActive {
+                            Text("ACTIVE")
+                                .font(.system(size: 8, weight: .heavy))
+                                .foregroundColor(.white.opacity(0.4))
+                                .tracking(1.5)
+                        }
                     }
                 }
-                .padding(.leading, 10)
-                .padding(.trailing, 12)
+                .padding(14)
+
+                Rectangle()
+                    .fill(Color.white.opacity(0.04))
+                    .frame(height: 0.5)
+
+                HStack(spacing: 8) {
+                    certChip(icon: isDev ? "hammer" : "building.2", text: isDev ? "Development" : "Distribution")
+                    certChip(icon: "lock.open", text: "PPQless")
+                    certChip(icon: "calendar", text: daysLeft > 0 ? "\(daysLeft)d" : "Expired", highlight: daysLeft <= 0)
+                    Spacer()
+                }
+                .padding(.horizontal, 14)
                 .padding(.vertical, 10)
             }
             .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.white.opacity(isActive ? 0.05 : 0.025))
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(.ultraThinMaterial)
+                    .environment(\.colorScheme, .dark)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(statusClr.opacity(isActive ? 0.15 : 0.06), lineWidth: 0.5)
+                        RoundedRectangle(cornerRadius: 18)
+                            .stroke(
+                                isActive ? statusClr.opacity(0.25) : Color.white.opacity(0.06),
+                                lineWidth: isActive ? 1 : 0.5
+                            )
                     )
+                    .shadow(color: isActive ? statusClr.opacity(0.1) : .clear, radius: 12)
             )
         }
         .buttonStyle(.plain)
@@ -360,6 +415,26 @@ struct CertificatesView: View {
                 .font(.system(size: 9, weight: .bold))
         }
         .foregroundColor(color ?? .white.opacity(0.3))
+    }
+
+    private func certChip(icon: String, text: String, highlight: Bool = false) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 9, weight: .semibold))
+            Text(text)
+                .font(.system(size: 10, weight: .semibold))
+        }
+        .foregroundColor(highlight ? .orange : .white.opacity(0.45))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(
+            Capsule()
+                .fill(highlight ? Color.orange.opacity(0.08) : Color.white.opacity(0.04))
+                .overlay(
+                    Capsule()
+                        .stroke(highlight ? Color.orange.opacity(0.15) : Color.white.opacity(0.06), lineWidth: 0.5)
+                )
+        )
     }
 
     private func statusIconAndColor(_ status: LocalCertInfo.CertStatus) -> (String, Color) {
