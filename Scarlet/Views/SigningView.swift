@@ -17,6 +17,7 @@ struct SigningView: View {
     @State private var showIPAImportPicker = false
     @State private var signIconPulse = false
     @State private var libraryTab: Int = 0  // 0 = Unsigned, 1 = Signed
+    @State private var installServer: LocalIPAServer?
 
     var body: some View {
         ZStack {
@@ -368,28 +369,22 @@ struct SigningView: View {
 
             Spacer()
 
+            // Install button (same style as Sign button)
             Button {
-                let url = signedManager.ipaURL(for: app)
-                let ac = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let root = scene.windows.first?.rootViewController {
-                    root.present(ac, animated: true)
-                }
+                installSignedApp(app)
             } label: {
                 Text(L("Install"))
-                    .font(.system(size: 12, weight: .heavy))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 7)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.6))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
                     .background(
-                        Capsule()
-                            .fill(
-                                LinearGradient(
-                                    colors: [.scarletRed, .scarletDark],
-                                    startPoint: .top, endPoint: .bottom
-                                )
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.white.opacity(0.04))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
                             )
-                            .shadow(color: .scarletRed.opacity(0.3), radius: 4, y: 2)
                     )
             }
             .buttonStyle(.plain)
@@ -403,6 +398,43 @@ struct SigningView: View {
                         .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
                 )
         )
+    }
+
+    // MARK: - Install via ITMS
+
+    private func installSignedApp(_ app: SignedApp) {
+        // Stop any existing server
+        installServer?.stop()
+
+        let server = LocalIPAServer()
+        installServer = server
+
+        let ipaURL = signedManager.ipaURL(for: app)
+
+        // Load icon data if available
+        var iconData: Data? = nil
+        if let iconURL = signedManager.iconURL(for: app) {
+            iconData = try? Data(contentsOf: iconURL)
+        }
+
+        do {
+            try server.start(
+                servingIPA: ipaURL,
+                bundleId: app.bundleId,
+                version: app.version,
+                appName: app.appName,
+                iconData: iconData
+            )
+
+            // Wait for server to be ready, then open itms
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                if let link = server.iTunesLink {
+                    UIApplication.shared.open(link)
+                }
+            }
+        } catch {
+            FileLogger.shared.log("Install server error: \(error)")
+        }
     }
 
     // MARK: - Downloading Card
