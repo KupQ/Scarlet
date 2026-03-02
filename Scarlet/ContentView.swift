@@ -99,30 +99,30 @@ struct ContentView: View {
                     }
             }
 
-            // Floating settings popup — liquid glass drops
+            // Floating settings popup — glass drop-up
             if showSettingsCard {
                 VStack {
                     Spacer()
-                    HStack(spacing: 14) {
-                        settingsIconButton(icon: "checkmark.shield") {
+                    HStack(spacing: 20) {
+                        settingsIconButton(icon: "shield") {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 showSettingsCard = false
                                 showCertsCard = true
                             }
                         }
-                        settingsIconButton(icon: "globe") {}
-                        settingsIconButton(icon: "info.circle") {}
+                        settingsIconButton(icon: "character.book.closed") {}
+                        settingsIconButton(icon: "slider.horizontal.3") {}
                     }
-                    .padding(10)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 14)
                     .background(
-                        Capsule()
+                        RoundedRectangle(cornerRadius: 20)
                             .fill(.ultraThinMaterial)
                             .environment(\.colorScheme, .dark)
                             .overlay(
-                                Capsule()
-                                    .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
                             )
-                            .shadow(color: .scarletRed.opacity(0.15), radius: 16, y: -4)
                             .shadow(color: .black.opacity(0.3), radius: 12, y: -4)
                     )
                     .padding(.bottom, 116)
@@ -157,10 +157,8 @@ struct ContentView: View {
                             .padding(.bottom, 4)
 
                         // Embedded CertificatesView
-                        NavigationStack {
-                            CertificatesView()
-                        }
-                        .frame(height: UIScreen.main.bounds.height * 0.65)
+                        CertificatesView()
+                            .frame(height: UIScreen.main.bounds.height * 0.65)
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 28)
@@ -1162,19 +1160,9 @@ struct ContentView: View {
     private func settingsIconButton(icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 22, weight: .light))
-                .foregroundColor(.white.opacity(0.85))
-                .frame(width: 48, height: 48)
-                .background(
-                    Circle()
-                        .fill(.ultraThinMaterial)
-                        .environment(\.colorScheme, .dark)
-                        .overlay(
-                            Circle()
-                                .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
-                        )
-                        .shadow(color: .scarletRed.opacity(0.1), radius: 8)
-                )
+                .font(.system(size: 28, weight: .thin))
+                .foregroundColor(.white.opacity(0.7))
+                .frame(width: 44, height: 44)
         }
         .buttonStyle(.plain)
     }
