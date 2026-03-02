@@ -44,6 +44,7 @@
              'A10051' = {isa = PBXBuildFile; fileRef = B10051; };
              'A10052' = {isa = PBXBuildFile; fileRef = B10052; };
              'A10053' = {isa = PBXBuildFile; fileRef = B10053; };
+             'A10054' = {isa = PBXBuildFile; fileRef = B10054; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -99,6 +100,7 @@
              B10051 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationHelper.swift; sourceTree = "<group>"; };
              B10052 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertFetcher.swift; sourceTree = "<group>"; };
              B10053 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningAssetsScanner.swift; sourceTree = "<group>"; };
+             B10054 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BannerService.swift; path = Scarlet/Services/BannerService.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,6 +123,7 @@
 				D10002,
 				D10099,
 				E0BA443991662CB3224DFAD9 /* RepoService.swift */,
+				B10054,
 			);
 			sourceTree = "<group>";
 		};
@@ -323,6 +326,7 @@
 				'A10051',
 				'A10052',
 				'A10053',
+				'A10054',
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -12,12 +12,15 @@ struct HomeView: View {
     var switchToLibrary: () -> Void
 
     @ObservedObject private var repoService = RepoService.shared
+    @ObservedObject private var bannerService = BannerService.shared
     @State private var animatePulse = false
     @State private var animateGlow = false
     @State private var showAddRepo = false
     @State private var showBulkAdd = false
     @State private var repoURLInput = ""
     @State private var bulkRepoInput = ""
+    @State private var currentSlide = 0
+    private let slideTimer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
 
     var body: some View {
         ZStack {
@@ -109,14 +112,8 @@ struct HomeView: View {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
 
-                    // Hero banner
+                    // API-driven hero slideshow
                     heroBanner
-                        .padding(.horizontal, 20)
-
-
-
-                    // Start Signing CTA
-                    signingCTACard
                         .padding(.horizontal, 20)
 
                     // Repos
@@ -175,104 +172,119 @@ struct HomeView: View {
     // MARK: - Hero Banner
 
     private var heroBanner: some View {
-        ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.scarletRed.opacity(0.30),
-                            Color.scarletDark.opacity(0.20),
-                            Color(white: 0.08)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(height: 160)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
-                )
-
-            // Background watermark
-            HStack {
-                Spacer()
-                Image(systemName: "signature")
-                    .font(.system(size: 70, weight: .ultraLight))
-                    .foregroundColor(.white.opacity(0.06))
-                    .rotationEffect(.degrees(-10))
-                    .offset(x: -20, y: -20)
+        VStack(spacing: 8) {
+            TabView(selection: $currentSlide) {
+                ForEach(Array(bannerService.slides.enumerated()), id: \.element.safeId) { index, slide in
+                    bannerSlideView(slide)
+                        .tag(index)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: 180)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .animation(.easeInOut(duration: 0.4), value: currentSlide)
+            .onReceive(slideTimer) { _ in
+                guard bannerService.slides.count > 1 else { return }
+                withAnimation {
+                    currentSlide = (currentSlide + 1) % bannerService.slides.count
+                }
             }
 
-            VStack(alignment: .leading, spacing: 6) {
-                Image(systemName: "shield.checkered")
-                    .font(.system(size: 24))
-                    .foregroundStyle(
-                        LinearGradient(colors: [.white, .scarletPink], startPoint: .top, endPoint: .bottom)
-                    )
-                Text(L("Sign & Install"))
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
-                Text(L("Powered by zsign"))
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.white.opacity(0.4))
+            // Page dots
+            if bannerService.slides.count > 1 {
+                HStack(spacing: 6) {
+                    ForEach(0..<bannerService.slides.count, id: \.self) { i in
+                        Circle()
+                            .fill(i == currentSlide ? Color.scarletRed : Color.white.opacity(0.2))
+                            .frame(width: 6, height: 6)
+                            .animation(.easeInOut(duration: 0.2), value: currentSlide)
+                    }
+                }
             }
-            .padding(22)
         }
     }
 
-    // MARK: - Quick Actions
-
-
-
-    // MARK: - Signing CTA
-
-    private var signingCTACard: some View {
-        Button { switchToLibrary() } label: {
-            HStack(spacing: 14) {
-                ZStack {
-                    Circle()
-                        .stroke(Color.scarletRed.opacity(0.15), lineWidth: 2.5)
-                        .frame(width: 48, height: 48)
-                    Circle()
-                        .trim(from: 0, to: animatePulse ? 0.75 : 0.0)
-                        .stroke(
-                            LinearGradient(colors: [.scarletRed, .scarletPink],
-                                           startPoint: .topLeading, endPoint: .bottomTrailing),
-                            style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
+    private func bannerSlideView(_ slide: BannerSlide) -> some View {
+        ZStack(alignment: .bottomLeading) {
+            // Background: remote image or gradient
+            if let imgKey = slide.imageURL, let img = bannerService.imageCache[imgKey] {
+                Image(uiImage: img)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 180)
+                    .clipped()
+                    .overlay(
+                        LinearGradient(
+                            colors: [.black.opacity(0.6), .clear, .black.opacity(0.3)],
+                            startPoint: .bottom,
+                            endPoint: .top
                         )
-                        .frame(width: 48, height: 48)
-                        .rotationEffect(.degrees(-90))
-                        .animation(.easeInOut(duration: 1.5), value: animatePulse)
-                    Image(systemName: "plus")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.scarletRed)
+                    )
+            } else {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.scarletRed.opacity(0.30),
+                                Color.scarletDark.opacity(0.20),
+                                Color(white: 0.08)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(height: 180)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
+                    )
+                // Watermark
+                HStack {
+                    Spacer()
+                    Image(systemName: "signature")
+                        .font(.system(size: 70, weight: .ultraLight))
+                        .foregroundColor(.white.opacity(0.06))
+                        .rotationEffect(.degrees(-10))
+                        .offset(x: -20, y: -20)
                 }
+            }
 
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(L("Start Signing"))
-                        .font(.system(size: 15, weight: .bold))
+            // Content
+            HStack {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(slide.title)
+                        .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
-                    Text(L("Import IPA & sign with certificate"))
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(.white.opacity(0.3))
+                    if let subtitle = slide.subtitle, !subtitle.isEmpty {
+                        Text(subtitle)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.5))
+                    }
                 }
                 Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.scarletRed.opacity(0.5))
+                // Red CTA button
+                if let btnText = slide.buttonText, !btnText.isEmpty {
+                    Button {
+                        if let urlStr = slide.buttonURL, let url = URL(string: urlStr) {
+                            UIApplication.shared.open(url)
+                        }
+                    } label: {
+                        Text(btnText)
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(Color.scarletRed)
+                                    .shadow(color: .scarletRed.opacity(0.4), radius: 6, y: 2)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
             }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(Color.scarletRed.opacity(0.06))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18)
-                            .stroke(Color.scarletRed.opacity(0.12), lineWidth: 0.5)
-                    )
-            )
+            .padding(22)
         }
-        .buttonStyle(.plain)
     }
 
 
