@@ -42,6 +42,7 @@
              'A10042' = {isa = PBXBuildFile; fileRef = B10042; };
              'A10050' = {isa = PBXBuildFile; fileRef = B10050; };
              'A10051' = {isa = PBXBuildFile; fileRef = B10051; };
+             'A10052' = {isa = PBXBuildFile; fileRef = B10052; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -95,6 +96,7 @@
              B10042 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
              B10050 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignedAppsManager.swift; sourceTree = "<group>"; };
              B10051 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationHelper.swift; sourceTree = "<group>"; };
+             B10052 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertFetcher.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -186,6 +188,7 @@
 				B10032,
                             B10040,
 				B10051,
+				B10052,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -315,6 +318,7 @@
                                 CA869CEA12CF44A19D24DBA0 /* RepoDetailView.swift in Sources */,
 				'A10050',
 				'A10051',
+				'A10052',
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

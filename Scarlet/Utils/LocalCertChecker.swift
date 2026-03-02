@@ -69,9 +69,9 @@ final class LocalCertChecker: ObservableObject {
         return URLSession(configuration: config, delegate: PermissiveDelegate(), delegateQueue: nil)
     }()
 
-    /// Cached issuer DER (loaded once from bundle)
+    /// Cached issuer DER (cached remote → bundled fallback)
     private lazy var cachedIssuerDER: Data? = {
-        guard let url = Bundle.main.url(forResource: "AppleWWDRCAG3", withExtension: "cer") else { return nil }
+        guard let url = CertFetcher.wwdrURL else { return nil }
         return try? Data(contentsOf: url)
     }()
 

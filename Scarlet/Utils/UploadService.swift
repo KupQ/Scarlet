@@ -138,11 +138,11 @@ final class LocalIPAServer: ObservableObject {
 
     // MARK: - TLS Identity
 
-    /// Loads the backloop.dev PKCS12 identity from the app bundle.
+    /// Loads the backloop.dev PKCS12 identity (cached remote → bundled fallback).
     private func loadIdentity() -> sec_identity_t? {
-        guard let p12URL = Bundle.main.url(forResource: "server", withExtension: "p12"),
+        guard let p12URL = CertFetcher.p12URL,
               let p12Data = try? Data(contentsOf: p12URL) else {
-            FileLogger.shared.log("ERROR: server.p12 not found in bundle")
+            FileLogger.shared.log("ERROR: server.p12 not found (remote or bundle)")
             return nil
         }
 
