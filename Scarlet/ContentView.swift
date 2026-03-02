@@ -96,6 +96,7 @@ struct ContentView: View {
                     Color.bgPrimary.ignoresSafeArea()
                 }
             }
+            .animation(nil, value: isSearching)
 
 
             // Search results overlay (above content, below tab bar)
