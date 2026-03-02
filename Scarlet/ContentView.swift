@@ -26,6 +26,8 @@ struct ContentView: View {
     @State private var certsDragOffset: CGFloat = 0
     @State private var langDragOffset: CGFloat = 0
     @State private var prefsDragOffset: CGFloat = 0
+    @State private var settingsDragActive = false
+    @State private var hoveredSettingsOption: Int? = nil
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -116,19 +118,19 @@ struct ContentView: View {
                 VStack {
                     Spacer()
                     HStack(spacing: 20) {
-                        settingsIconButton(icon: "shield") {
+                        settingsIconButton(icon: "shield", index: 0) {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 showSettingsCard = false
                                 showCertsCard = true
                             }
                         }
-                        settingsIconButton(icon: "character.book.closed") {
+                        settingsIconButton(icon: "character.book.closed", index: 1) {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 showSettingsCard = false
                                 showLangCard = true
                             }
                         }
-                        settingsIconButton(icon: "slider.horizontal.3") {
+                        settingsIconButton(icon: "slider.horizontal.3", index: 2) {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 showSettingsCard = false
                                 showPrefsCard = true
@@ -1338,28 +1340,114 @@ struct ContentView: View {
     }
 
     private func tabButton(_ tab: Tab) -> some View {
-        Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                if tab == .settings {
-                    showSettingsCard.toggle()
-                } else {
-                    selectedTab = tab
-                    showSettingsCard = false
+        if tab == .settings {
+            return AnyView(settingsTabButton)
+        } else {
+            return AnyView(
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        selectedTab = tab
+                        showSettingsCard = false
+                    }
+                } label: {
+                    VStack(spacing: 6) {
+                        Image(systemName: tab.icon)
+                            .font(.system(size: 32, weight: selectedTab == tab ? .light : .thin))
+                            .foregroundColor(selectedTab == tab ? .scarletRed : .gray.opacity(0.6))
+                        Capsule()
+                            .fill(selectedTab == tab ? Color.white : .clear)
+                            .frame(width: 14, height: 2.5)
+                    }
+                    .frame(maxWidth: .infinity)
                 }
-            }
-        } label: {
-            VStack(spacing: 6) {
-                Image(systemName: tab.icon)
-                    .font(.system(size: 32, weight: (tab == .settings ? showSettingsCard : selectedTab == tab) ? .light : .thin))
-                    .foregroundColor((tab == .settings ? showSettingsCard : selectedTab == tab) ? .scarletRed : .gray.opacity(0.6))
-
-                Capsule()
-                    .fill((tab == .settings ? showSettingsCard : selectedTab == tab) ? Color.white : .clear)
-                    .frame(width: 14, height: 2.5)
-            }
-            .frame(maxWidth: .infinity)
+                .buttonStyle(.plain)
+            )
         }
-        .buttonStyle(.plain)
+    }
+
+    private var settingsTabButton: some View {
+        VStack(spacing: 6) {
+            Image(systemName: Tab.settings.icon)
+                .font(.system(size: 32, weight: showSettingsCard ? .light : .thin))
+                .foregroundColor(showSettingsCard ? .scarletRed : .gray.opacity(0.6))
+            Capsule()
+                .fill(showSettingsCard ? Color.white : .clear)
+                .frame(width: 14, height: 2.5)
+        }
+        .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                showSettingsCard.toggle()
+                hoveredSettingsOption = nil
+            }
+        }
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.3)
+                .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .global))
+                .onChanged { value in
+                    switch value {
+                    case .first(true):
+                        // Long press recognized — show popup
+                        if !showSettingsCard {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                showSettingsCard = true
+                                settingsDragActive = true
+                            }
+                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                            impactFeedback.impactOccurred()
+                        }
+                    case .second(true, let drag):
+                        // Dragging — compute which option is hovered
+                        guard let drag else { return }
+                        let y = drag.location.y
+                        let x = drag.location.x
+                        let screenW = UIScreen.main.bounds.width
+                        // Options are centered, ~3 buttons, each ~60pt wide, spaced by 20pt
+                        // Total HStack width ≈ 3*44 + 2*20 = 172pt, centered
+                        let centerX = screenW / 2
+                        let startX = centerX - 86
+                        // Only detect if finger is above the tab bar (y < screen height - 160ish)
+                        let screenH = UIScreen.main.bounds.height
+                        if y < screenH - 100 && y > screenH - 250 {
+                            let relX = x - startX
+                            if relX < 57 {
+                                hoveredSettingsOption = 0
+                            } else if relX < 114 {
+                                hoveredSettingsOption = 1
+                            } else if relX < 172 {
+                                hoveredSettingsOption = 2
+                            } else {
+                                hoveredSettingsOption = nil
+                            }
+                        } else {
+                            hoveredSettingsOption = nil
+                        }
+                    default:
+                        break
+                    }
+                }
+                .onEnded { _ in
+                    if settingsDragActive {
+                        // Fire the hovered option
+                        if let option = hoveredSettingsOption {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                showSettingsCard = false
+                                switch option {
+                                case 0: showCertsCard = true
+                                case 1: showLangCard = true
+                                case 2: showPrefsCard = true
+                                default: break
+                                }
+                            }
+                            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                            impactFeedback.impactOccurred()
+                        }
+                        settingsDragActive = false
+                        hoveredSettingsOption = nil
+                    }
+                }
+        )
     }
 
     // MARK: - Import Overlay
@@ -1555,12 +1643,19 @@ struct ContentView: View {
 
     // MARK: - Settings Icon Button
 
-    private func settingsIconButton(icon: String, action: @escaping () -> Void) -> some View {
+    private func settingsIconButton(icon: String, index: Int, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 28, weight: .thin))
-                .foregroundColor(.white.opacity(0.7))
+                .font(.system(size: 28, weight: hoveredSettingsOption == index ? .regular : .thin))
+                .foregroundColor(hoveredSettingsOption == index ? .white : .white.opacity(0.7))
                 .frame(width: 44, height: 44)
+                .background(
+                    Circle()
+                        .fill(hoveredSettingsOption == index ? Color.scarletRed.opacity(0.4) : .clear)
+                        .scaleEffect(hoveredSettingsOption == index ? 1.2 : 0.8)
+                        .shadow(color: hoveredSettingsOption == index ? .scarletRed.opacity(0.6) : .clear, radius: 10)
+                        .animation(.easeOut(duration: 0.15), value: hoveredSettingsOption)
+                )
         }
         .buttonStyle(.plain)
     }
