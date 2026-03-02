@@ -66,7 +66,7 @@ struct ContentView: View {
             Group {
                 switch selectedTab {
                 case .home:
-                    NavigationStack {
+                    NavigationView {
                         HomeView(signingState: signingState, switchToLibrary: {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 selectedTab = .sign
@@ -74,7 +74,7 @@ struct ContentView: View {
                         })
                     }
                 case .sign:
-                    NavigationStack {
+                    NavigationView {
                         SigningView(signingState: signingState, onAppTapped: { app in
                             openConfigSheet(app)
                         })
