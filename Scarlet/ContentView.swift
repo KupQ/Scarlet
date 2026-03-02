@@ -20,6 +20,7 @@ struct ContentView: View {
     @State private var searchText = ""
     @State private var showSettingsCard = false
     @State private var showCertsCard = false
+    @State private var certsDragOffset: CGFloat = 0
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -98,34 +99,34 @@ struct ContentView: View {
                     }
             }
 
-            // Floating settings card
+            // Floating settings popup — icon-only bubbles
             if showSettingsCard {
-                VStack(spacing: 0) {
+                VStack {
                     Spacer()
-                    VStack(spacing: 2) {
-                        settingsRow(icon: "checkmark.shield", title: "Certificates", subtitle: "Manage P12 & provisioning") {
+                    HStack(spacing: 12) {
+                        settingsIconButton(icon: "checkmark.shield") {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 showSettingsCard = false
                                 showCertsCard = true
                             }
                         }
-                        settingsRow(icon: "globe", title: "Language", subtitle: "English") {}
-                        settingsRow(icon: "info.circle", title: "About Scarlet", subtitle: "v1.0.0") {}
+                        settingsIconButton(icon: "globe") {}
+                        settingsIconButton(icon: "info.circle") {}
                     }
-                    .padding(6)
+                    .padding(8)
                     .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.bgPrimary.opacity(0.95))
+                        Capsule()
+                            .fill(.ultraThinMaterial)
+                            .environment(\.colorScheme, .dark)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                                Capsule()
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
                             )
-                            .shadow(color: .black.opacity(0.4), radius: 20, y: -5)
+                            .shadow(color: .black.opacity(0.3), radius: 12, y: -4)
                     )
-                    .padding(.horizontal, 20)
                     .padding(.bottom, 100)
                 }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .transition(.scale(scale: 0.5, anchor: .bottom).combined(with: .opacity))
                 .zIndex(92)
             }
 
@@ -147,28 +148,12 @@ struct ContentView: View {
                 VStack(spacing: 0) {
                     Spacer()
                     VStack(spacing: 0) {
-                        // Drag handle + close
-                        HStack {
-                            Spacer()
-                            RoundedRectangle(cornerRadius: 2.5)
-                                .fill(Color.white.opacity(0.15))
-                                .frame(width: 36, height: 5)
-                            Spacer()
-                        }
-                        .padding(.top, 10)
-                        .padding(.bottom, 6)
-                        .overlay(alignment: .trailing) {
-                            Button {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    showCertsCard = false
-                                }
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.system(size: 24))
-                                    .foregroundColor(.white.opacity(0.2))
-                            }
-                            .padding(.trailing, 16)
-                        }
+                        // Drag handle
+                        Capsule()
+                            .fill(Color.white.opacity(0.25))
+                            .frame(width: 36, height: 4)
+                            .padding(.top, 10)
+                            .padding(.bottom, 4)
 
                         // Embedded CertificatesView
                         NavigationStack {
@@ -177,15 +162,39 @@ struct ContentView: View {
                         .frame(height: UIScreen.main.bounds.height * 0.65)
                     }
                     .background(
-                        RoundedRectangle(cornerRadius: 24)
-                            .fill(Color.bgPrimary)
+                        RoundedRectangle(cornerRadius: 28)
+                            .fill(.ultraThinMaterial)
+                            .environment(\.colorScheme, .dark)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 24)
+                                RoundedRectangle(cornerRadius: 28)
                                     .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
                             )
                             .shadow(color: .black.opacity(0.5), radius: 30, y: -10)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .clipShape(RoundedRectangle(cornerRadius: 28))
+                    .offset(y: certsDragOffset)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                if value.translation.height > 0 {
+                                    certsDragOffset = value.translation.height
+                                }
+                            }
+                            .onEnded { value in
+                                if value.translation.height > 120 {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        showCertsCard = false
+                                        certsDragOffset = 0
+                                    }
+                                } else {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        certsDragOffset = 0
+                                    }
+                                }
+                            }
+                    )
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 8)
                 }
                 .transition(.move(edge: .bottom))
                 .zIndex(97)
@@ -1147,33 +1156,18 @@ struct ContentView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Settings Row
+    // MARK: - Settings Icon Button
 
-    private func settingsRow(icon: String, title: String, subtitle: String, action: @escaping () -> Void) -> some View {
+    private func settingsIconButton(icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 14) {
-                Image(systemName: icon)
-                    .font(.system(size: 20, weight: .light))
-                    .foregroundColor(.white.opacity(0.5))
-                    .frame(width: 28)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.white)
-                    Text(subtitle)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(.white.opacity(0.3))
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.15))
-            }
-            .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.white.opacity(0.03))
-            )
+            Image(systemName: icon)
+                .font(.system(size: 20, weight: .light))
+                .foregroundColor(.white.opacity(0.7))
+                .frame(width: 44, height: 44)
+                .background(
+                    Circle()
+                        .fill(Color.white.opacity(0.06))
+                )
         }
         .buttonStyle(.plain)
     }
