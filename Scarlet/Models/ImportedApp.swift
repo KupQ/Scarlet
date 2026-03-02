@@ -158,16 +158,18 @@ final class ImportedAppsManager: ObservableObject {
         importingFileName = url.lastPathComponent
         isImporting = true
 
-        Task.detached { [weak self] in
+        Task { @MainActor [weak self] in
             guard let self else { return }
+            defer { self.isImporting = false }
 
             let log = FileLogger.shared
             log.log("Importing IPA: \(url.lastPathComponent)")
 
-            // Parse metadata from the IPA
-            guard let metadata = IPAParser.parse(ipaURL: url) else {
+            // Parse metadata from the IPA (off main thread)
+            guard let metadata = await Task.detached(operation: {
+                IPAParser.parse(ipaURL: url)
+            }).value else {
                 log.log("ERROR: Failed to parse IPA metadata")
-                await MainActor.run { self.isImporting = false }
                 return
             }
 
@@ -185,7 +187,6 @@ final class ImportedAppsManager: ObservableObject {
                 log.log("Copied IPA to storage")
             } catch {
                 log.log("ERROR: Failed to copy IPA: \(error)")
-                await MainActor.run { self.isImporting = false }
                 return
             }
 
@@ -208,12 +209,9 @@ final class ImportedAppsManager: ObservableObject {
                 ipaFileName: ipaName
             )
 
-            await MainActor.run {
-                self.apps.insert(app, at: 0)
-                self.saveApps()
-                self.isImporting = false
-                log.log("Import complete: \(metadata.appName)")
-            }
+            self.apps.insert(app, at: 0)
+            self.saveApps()
+            log.log("Import complete: \(metadata.appName)")
         }
     }
 
