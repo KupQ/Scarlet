@@ -12,6 +12,7 @@ struct CertificatesView: View {
 
     @ObservedObject private var certService = CertificateService.shared
     @ObservedObject private var settings = SigningSettings.shared
+    @ObservedObject private var localChecker = LocalCertChecker.shared
 
     // Import flow
     @State private var importStep: ImportStep = .idle
@@ -63,6 +64,9 @@ struct CertificatesView: View {
             }
         }
         .task { await certService.fetchCertificates() }
+        .task {
+            if hasLocalCert { await localChecker.checkSavedCert() }
+        }
         .sheet(isPresented: $showFilePicker) {
             if filePickerType == .p12 {
                 DocumentPicker(contentTypes: [.p12]) { handleP12Picked($0) }
@@ -181,7 +185,20 @@ struct CertificatesView: View {
     // MARK: - Local Certificate Card
 
     private var localCertCard: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        let info = localChecker.certInfo
+        let statusColor: Color = {
+            switch info?.status {
+            case .valid: return Color(red: 0.2, green: 0.65, blue: 0.3)
+            case .revoked: return .red
+            case .expired: return .orange
+            case .checking: return .yellow
+            default: return .gray
+            }
+        }()
+        let statusLabel: String = info?.status.label ?? "Checking…"
+        let certName = info?.commonName ?? settings.savedCertName?.replacingOccurrences(of: ".p12", with: "") ?? "Certificate"
+
+        return VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 5) {
@@ -193,20 +210,27 @@ struct CertificatesView: View {
                             .tracking(2)
                             .foregroundColor(.white.opacity(0.2))
                     }
-                    Text(settings.savedCertName?.replacingOccurrences(of: ".p12", with: "") ?? "Certificate")
+                    Text(certName)
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white)
                         .lineLimit(2)
+                    if let info = info {
+                        Text("Expires: \(info.daysRemaining)d")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.white.opacity(0.3))
+                    }
                 }
                 Spacer()
-                // Checkmark badge
+                // Status badge
                 ZStack {
                     Circle()
-                        .fill(Color.scarletRed.opacity(0.15))
+                        .fill(statusColor.opacity(0.15))
                         .frame(width: 40, height: 40)
-                    Image(systemName: "checkmark")
+                    Image(systemName: info?.status == .valid ? "checkmark" :
+                            info?.status.isRevoked == true ? "xmark" :
+                            info?.status == .expired ? "clock" : "ellipsis")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.scarletRed)
+                        .foregroundColor(statusColor)
                 }
             }
             .padding(.horizontal, 18)
@@ -214,7 +238,7 @@ struct CertificatesView: View {
             .padding(.bottom, 14)
 
             Rectangle()
-                .fill(LinearGradient(colors: [.clear, Color.scarletRed.opacity(0.2), .clear],
+                .fill(LinearGradient(colors: [.clear, statusColor.opacity(0.3), .clear],
                                      startPoint: .leading, endPoint: .trailing))
                 .frame(height: 0.5)
 
@@ -231,11 +255,11 @@ struct CertificatesView: View {
 
                 HStack(spacing: 4) {
                     Circle()
-                        .fill(Color(red: 0.2, green: 0.65, blue: 0.3).opacity(0.7))
+                        .fill(statusColor.opacity(0.7))
                         .frame(width: 5, height: 5)
-                    Text("Active")
+                    Text(statusLabel)
                         .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(.white.opacity(0.4))
+                        .foregroundColor(statusColor.opacity(0.8))
                 }
             }
             .padding(.horizontal, 18)

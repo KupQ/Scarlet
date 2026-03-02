@@ -32,6 +32,7 @@
 		A10026 /* CertificatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10026 /* CertificatesView.swift */; };
 		A10030 /* InstalledApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10030 /* InstalledApp.swift */; };
 		A10031 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10031 /* SplashView.swift */; };
+		A10032 /* LocalCertChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10032 /* LocalCertChecker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,6 +63,7 @@
 		B10026 /* CertificatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificatesView.swift; sourceTree = "<group>"; };
 		B10030 /* InstalledApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledApp.swift; sourceTree = "<group>"; };
 		B10031 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+		B10032 /* LocalCertChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCertChecker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,6 +147,7 @@
 				B10015 /* FileLogger.swift */,
 				B10018 /* UploadService.swift */,
 				B10025 /* CertificateService.swift */,
+				B10032 /* LocalCertChecker.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -271,6 +274,7 @@
 				A10026 /* CertificatesView.swift in Sources */,
 				A10030 /* InstalledApp.swift in Sources */,
 				A10031 /* SplashView.swift in Sources */,
+				A10032 /* LocalCertChecker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
