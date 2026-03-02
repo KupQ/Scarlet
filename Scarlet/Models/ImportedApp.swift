@@ -151,7 +151,11 @@ final class ImportedAppsManager: ObservableObject {
     /// Imports an IPA file: copies it, parses metadata, extracts its icon,
     /// and adds it to the library.
     /// - Parameter url: The source URL of the IPA file to import.
+    /// Name of the file currently being imported.
+    @Published var importingFileName: String = ""
+
     func importIPA(from url: URL) {
+        importingFileName = url.lastPathComponent
         isImporting = true
 
         Task.detached { [weak self] in

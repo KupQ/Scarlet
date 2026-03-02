@@ -86,6 +86,13 @@ struct ContentView: View {
                 }
             }
 
+            // Global import overlay — visible on any tab
+            if ImportedAppsManager.shared.isImporting {
+                importOverlay
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .zIndex(75)
+            }
+
             // Search results overlay (above content, below tab bar)
             if isSearching && !searchText.isEmpty {
                 searchResultsOverlay
@@ -1353,6 +1360,76 @@ struct ContentView: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Import Overlay
+
+    @State private var importShimmer = false
+
+    private var importOverlay: some View {
+        VStack {
+            VStack(spacing: 10) {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.scarletRed.opacity(0.15))
+                            .frame(width: 36, height: 36)
+                        Image(systemName: "arrow.down.doc.fill")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.scarletRed)
+                            .scaleEffect(importShimmer ? 1.1 : 0.9)
+                            .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: importShimmer)
+                    }
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(L("Importing..."))
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                        Text(ImportedAppsManager.shared.importingFileName)
+                            .font(.system(size: 11, weight: .medium, design: .monospaced))
+                            .foregroundColor(.white.opacity(0.3))
+                            .lineLimit(1)
+                    }
+
+                    Spacer()
+                }
+
+                // Indeterminate progress bar
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(Color.white.opacity(0.06))
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(
+                                LinearGradient(colors: [.scarletRed.opacity(0.6), .scarletRed, .scarletRed.opacity(0.6)],
+                                               startPoint: .leading, endPoint: .trailing)
+                            )
+                            .frame(width: geo.size.width * 0.35)
+                            .offset(x: importShimmer ? geo.size.width * 0.65 : 0)
+                            .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: importShimmer)
+                    }
+                }
+                .frame(height: 4)
+                .clipShape(RoundedRectangle(cornerRadius: 3))
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(.ultraThinMaterial)
+                    .environment(\.colorScheme, .dark)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18)
+                            .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
+                    )
+                    .shadow(color: .scarletRed.opacity(0.1), radius: 12)
+            )
+            .padding(.horizontal, 16)
+            .padding(.top, 60)
+            .onAppear { importShimmer = true }
+            .onDisappear { importShimmer = false }
+
+            Spacer()
+        }
     }
 
     // MARK: - Preferences Card
