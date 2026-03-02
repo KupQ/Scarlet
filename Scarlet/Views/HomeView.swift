@@ -205,17 +205,19 @@ struct HomeView: View {
     }
 
     private func appShowcaseCard(_ app: RepoApp) -> some View {
-        let hue = Double(abs(app.displayName.hashValue % 360)) / 360.0
+        let seed = Double(abs(app.displayName.hashValue % 100)) / 100.0
+        let hue = (0.98 + seed * 0.04).truncatingRemainder(dividingBy: 1.0)
+        let sat = 0.65 + seed * 0.2
+        let bri = 0.30 + seed * 0.12
 
         return ZStack {
-            // Vibrant gradient background
             RoundedRectangle(cornerRadius: 22)
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color(hue: hue, saturation: 0.7, brightness: 0.35),
-                            Color(hue: (hue + 0.08).truncatingRemainder(dividingBy: 1.0), saturation: 0.5, brightness: 0.18),
-                            Color(white: 0.08)
+                            Color(hue: hue, saturation: sat, brightness: bri),
+                            Color(hue: 0.0, saturation: 0.5, brightness: 0.15),
+                            Color(white: 0.06)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -225,85 +227,43 @@ struct HomeView: View {
                     RoundedRectangle(cornerRadius: 22)
                         .stroke(
                             LinearGradient(
-                                colors: [
-                                    Color(hue: hue, saturation: 0.6, brightness: 0.6).opacity(0.4),
-                                    Color.white.opacity(0.05)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
+                                colors: [Color.scarletRed.opacity(0.3), Color.white.opacity(0.05)],
+                                startPoint: .topLeading, endPoint: .bottomTrailing
                             ),
                             lineWidth: 1
                         )
                 )
 
-            // Primary glow orb
             Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            Color(hue: hue, saturation: 0.8, brightness: 0.6).opacity(0.35),
-                            Color.clear
-                        ],
-                        center: .center,
-                        startRadius: 5,
-                        endRadius: 90
-                    )
-                )
+                .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.3), .clear], center: .center, startRadius: 5, endRadius: 90))
                 .frame(width: 180, height: 180)
                 .offset(x: 90, y: -50)
                 .blur(radius: 25)
 
-            // Secondary glow orb
             Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            Color(hue: (hue + 0.15).truncatingRemainder(dividingBy: 1.0), saturation: 0.6, brightness: 0.4).opacity(0.2),
-                            Color.clear
-                        ],
-                        center: .center,
-                        startRadius: 5,
-                        endRadius: 70
-                    )
-                )
+                .fill(RadialGradient(colors: [Color(hue: 0.0, saturation: 0.7, brightness: 0.3).opacity(0.2), .clear], center: .center, startRadius: 5, endRadius: 70))
                 .frame(width: 140, height: 140)
                 .offset(x: -70, y: 40)
                 .blur(radius: 20)
 
-            // Content
             HStack(spacing: 16) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 18)
                         .fill(Color.white.opacity(0.1))
                         .frame(width: 76, height: 76)
-                        .shadow(color: Color(hue: hue, saturation: 0.6, brightness: 0.5).opacity(0.3), radius: 12, y: 4)
+                        .shadow(color: Color.scarletRed.opacity(0.25), radius: 12, y: 4)
 
                     AsyncImage(url: URL(string: app.resolvedIconURL ?? "")) { phase in
                         switch phase {
                         case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
+                            image.resizable().aspectRatio(contentMode: .fill)
                                 .frame(width: 72, height: 72)
                                 .clipShape(RoundedRectangle(cornerRadius: 16))
                         default:
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [
-                                            Color(hue: hue, saturation: 0.4, brightness: 0.25),
-                                            Color(hue: hue, saturation: 0.3, brightness: 0.15)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
+                                .fill(LinearGradient(colors: [.scarletRed.opacity(0.3), .scarletDark.opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing))
                                 .frame(width: 72, height: 72)
-                                .overlay(
-                                    Image(systemName: "app.fill")
-                                        .font(.system(size: 30))
-                                        .foregroundColor(.white.opacity(0.25))
-                                )
+                                .overlay(Image(systemName: "app.fill").font(.system(size: 30)).foregroundColor(.white.opacity(0.25)))
                         }
                     }
                 }
@@ -316,32 +276,18 @@ struct HomeView: View {
                         .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
 
                     HStack(spacing: 6) {
-                        Image(systemName: "tag.fill")
-                            .font(.system(size: 9))
-                            .foregroundColor(Color(hue: hue, saturation: 0.5, brightness: 0.8))
-                        Text(app.version ?? "1.0")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.6))
-
+                        Image(systemName: "tag.fill").font(.system(size: 9)).foregroundColor(.scarletRed.opacity(0.7))
+                        Text(app.version ?? "1.0").font(.system(size: 11, weight: .semibold)).foregroundColor(.white.opacity(0.6))
                         if app.size != nil {
-                            Text("·")
-                                .foregroundColor(.white.opacity(0.3))
-                            Text(app.sizeString)
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundColor(.white.opacity(0.6))
+                            Text("·").foregroundColor(.white.opacity(0.3))
+                            Text(app.sizeString).font(.system(size: 11, weight: .semibold)).foregroundColor(.white.opacity(0.6))
                         }
                     }
 
                     HStack(spacing: 3) {
-                        Capsule()
-                            .fill(Color(hue: hue, saturation: 0.6, brightness: 0.7))
-                            .frame(width: 30, height: 3)
-                        Capsule()
-                            .fill(Color(hue: hue, saturation: 0.4, brightness: 0.5).opacity(0.5))
-                            .frame(width: 16, height: 3)
-                        Capsule()
-                            .fill(Color(hue: hue, saturation: 0.3, brightness: 0.4).opacity(0.3))
-                            .frame(width: 8, height: 3)
+                        Capsule().fill(Color.scarletRed.opacity(0.6)).frame(width: 30, height: 3)
+                        Capsule().fill(Color.scarletRed.opacity(0.3)).frame(width: 16, height: 3)
+                        Capsule().fill(Color.scarletRed.opacity(0.15)).frame(width: 8, height: 3)
                     }
                     .padding(.top, 2)
                 }
@@ -350,13 +296,7 @@ struct HomeView: View {
 
                 Button {
                     guard let urlStr = app.resolvedDownloadURL, let url = URL(string: urlStr) else { return }
-                    DownloadManager.shared.download(
-                        id: app.id,
-                        url: url,
-                        appName: app.displayName,
-                        iconURL: app.resolvedIconURL,
-                        sizeString: app.sizeString
-                    ) { fileURL in
+                    DownloadManager.shared.download(id: app.id, url: url, appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString) { fileURL in
                         ImportedAppsManager.shared.importIPA(from: fileURL)
                     }
                     switchToLibrary()
@@ -368,17 +308,8 @@ struct HomeView: View {
                         .padding(.vertical, 9)
                         .background(
                             Capsule()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [
-                                            Color(hue: hue, saturation: 0.7, brightness: 0.5),
-                                            Color(hue: hue, saturation: 0.6, brightness: 0.35)
-                                        ],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-                                )
-                                .shadow(color: Color(hue: hue, saturation: 0.7, brightness: 0.5).opacity(0.5), radius: 6, y: 2)
+                                .fill(LinearGradient(colors: [.scarletRed, .scarletDark], startPoint: .top, endPoint: .bottom))
+                                .shadow(color: .scarletRed.opacity(0.4), radius: 6, y: 2)
                         )
                 }
                 .buttonStyle(.plain)
