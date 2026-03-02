@@ -248,8 +248,7 @@ struct SigningView: View {
                 }
             }
 
-            // ── All Apps (sign / re-sign) ──
-            sectionHeader(title: L("All Apps"), count: allAppsSorted.count)
+            // ── Unsigned Apps ──
             VStack(spacing: 10) {
                 ForEach(allAppsSorted) { app in
                     SwipeableAppCard(app: app, onTap: { signApp(app) }, onDelete: {

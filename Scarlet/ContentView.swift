@@ -97,12 +97,6 @@ struct ContentView: View {
                 }
             }
 
-            // Global import overlay — visible on any tab
-            if appsManager.isImporting {
-                importOverlay
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                    .zIndex(75)
-            }
 
             // Search results overlay (above content, below tab bar)
             if isSearching && !searchText.isEmpty {
