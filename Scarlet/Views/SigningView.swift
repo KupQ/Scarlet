@@ -71,9 +71,11 @@ struct SigningView: View {
                             }
                         }
                     }
+                    .frame(maxWidth: .infinity)
                     .padding(.bottom, 80)
                 }
             }
+            .navigationBarHidden(true)
         }
         .sheet(isPresented: $showIPAImportPicker) {
             DocumentPicker(contentTypes: [.ipa]) { url in
