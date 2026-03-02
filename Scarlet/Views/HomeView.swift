@@ -205,13 +205,17 @@ struct HomeView: View {
     }
 
     private func appShowcaseCard(_ app: RepoApp) -> some View {
-        ZStack {
+        let hue = Double(abs(app.displayName.hashValue % 360)) / 360.0
+
+        return ZStack {
+            // Vibrant gradient background
             RoundedRectangle(cornerRadius: 22)
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color(hue: Double(abs(app.displayName.hashValue % 360)) / 360, saturation: 0.4, brightness: 0.15),
-                            Color(white: 0.06)
+                            Color(hue: hue, saturation: 0.7, brightness: 0.35),
+                            Color(hue: (hue + 0.08).truncatingRemainder(dividingBy: 1.0), saturation: 0.5, brightness: 0.18),
+                            Color(white: 0.08)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -221,99 +225,162 @@ struct HomeView: View {
                     RoundedRectangle(cornerRadius: 22)
                         .stroke(
                             LinearGradient(
-                                colors: [Color.white.opacity(0.1), Color.white.opacity(0.03)],
+                                colors: [
+                                    Color(hue: hue, saturation: 0.6, brightness: 0.6).opacity(0.4),
+                                    Color.white.opacity(0.05)
+                                ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
-                            lineWidth: 0.5
+                            lineWidth: 1
                         )
                 )
 
+            // Primary glow orb
             Circle()
                 .fill(
                     RadialGradient(
                         colors: [
-                            Color(hue: Double(abs(app.displayName.hashValue % 360)) / 360, saturation: 0.5, brightness: 0.3).opacity(0.3),
+                            Color(hue: hue, saturation: 0.8, brightness: 0.6).opacity(0.35),
                             Color.clear
                         ],
                         center: .center,
-                        startRadius: 10,
-                        endRadius: 100
+                        startRadius: 5,
+                        endRadius: 90
                     )
                 )
-                .frame(width: 200, height: 200)
-                .offset(x: 80, y: -30)
-                .blur(radius: 30)
+                .frame(width: 180, height: 180)
+                .offset(x: 90, y: -50)
+                .blur(radius: 25)
 
+            // Secondary glow orb
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color(hue: (hue + 0.15).truncatingRemainder(dividingBy: 1.0), saturation: 0.6, brightness: 0.4).opacity(0.2),
+                            Color.clear
+                        ],
+                        center: .center,
+                        startRadius: 5,
+                        endRadius: 70
+                    )
+                )
+                .frame(width: 140, height: 140)
+                .offset(x: -70, y: 40)
+                .blur(radius: 20)
+
+            // Content
             HStack(spacing: 16) {
-                AsyncImage(url: URL(string: app.resolvedIconURL ?? "")) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 72, height: 72)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .shadow(color: .black.opacity(0.4), radius: 8, y: 4)
-                    default:
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.white.opacity(0.06))
-                            .frame(width: 72, height: 72)
-                            .overlay(
-                                Image(systemName: "app.fill")
-                                    .font(.system(size: 28))
-                                    .foregroundColor(.white.opacity(0.15))
-                            )
+                ZStack {
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(Color.white.opacity(0.1))
+                        .frame(width: 76, height: 76)
+                        .shadow(color: Color(hue: hue, saturation: 0.6, brightness: 0.5).opacity(0.3), radius: 12, y: 4)
+
+                    AsyncImage(url: URL(string: app.resolvedIconURL ?? "")) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 72, height: 72)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                        default:
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            Color(hue: hue, saturation: 0.4, brightness: 0.25),
+                                            Color(hue: hue, saturation: 0.3, brightness: 0.15)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 72, height: 72)
+                                .overlay(
+                                    Image(systemName: "app.fill")
+                                        .font(.system(size: 30))
+                                        .foregroundColor(.white.opacity(0.25))
+                                )
+                        }
                     }
                 }
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 5) {
                     Text(app.displayName)
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white)
                         .lineLimit(1)
+                        .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
 
-                    HStack(spacing: 8) {
-                        Label(app.version ?? "1.0", systemImage: "tag.fill")
+                    HStack(spacing: 6) {
+                        Image(systemName: "tag.fill")
+                            .font(.system(size: 9))
+                            .foregroundColor(Color(hue: hue, saturation: 0.5, brightness: 0.8))
+                        Text(app.version ?? "1.0")
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.white.opacity(0.6))
 
                         if app.size != nil {
-                            Text("•")
-                                .foregroundColor(.white.opacity(0.2))
+                            Text("·")
+                                .foregroundColor(.white.opacity(0.3))
                             Text(app.sizeString)
                                 .font(.system(size: 11, weight: .semibold))
-                                .foregroundColor(.white.opacity(0.5))
+                                .foregroundColor(.white.opacity(0.6))
                         }
                     }
 
-                    Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: [.scarletRed.opacity(0.4), .scarletPink.opacity(0.2), .scarletRed.opacity(0.4)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(width: 60, height: 3)
-                        .padding(.top, 2)
+                    HStack(spacing: 3) {
+                        Capsule()
+                            .fill(Color(hue: hue, saturation: 0.6, brightness: 0.7))
+                            .frame(width: 30, height: 3)
+                        Capsule()
+                            .fill(Color(hue: hue, saturation: 0.4, brightness: 0.5).opacity(0.5))
+                            .frame(width: 16, height: 3)
+                        Capsule()
+                            .fill(Color(hue: hue, saturation: 0.3, brightness: 0.4).opacity(0.3))
+                            .frame(width: 8, height: 3)
+                    }
+                    .padding(.top, 2)
                 }
 
                 Spacer()
 
-                Text("GET")
-                    .font(.system(size: 13, weight: .heavy))
-                    .foregroundColor(.scarletRed)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 7)
-                    .background(
-                        Capsule()
-                            .fill(Color.white.opacity(0.08))
-                            .overlay(
-                                Capsule()
-                                    .stroke(Color.scarletRed.opacity(0.3), lineWidth: 0.5)
-                            )
-                    )
+                Button {
+                    guard let urlStr = app.resolvedDownloadURL, let url = URL(string: urlStr) else { return }
+                    DownloadManager.shared.download(
+                        id: app.id,
+                        url: url,
+                        appName: app.displayName,
+                        iconURL: app.resolvedIconURL,
+                        sizeString: app.sizeString
+                    ) { fileURL in
+                        ImportedAppsManager.shared.importIPA(from: fileURL)
+                    }
+                } label: {
+                    Text("GET")
+                        .font(.system(size: 14, weight: .heavy))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 9)
+                        .background(
+                            Capsule()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            Color(hue: hue, saturation: 0.7, brightness: 0.5),
+                                            Color(hue: hue, saturation: 0.6, brightness: 0.35)
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                                .shadow(color: Color(hue: hue, saturation: 0.7, brightness: 0.5).opacity(0.5), radius: 6, y: 2)
+                        )
+                }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 22)
         }
