@@ -214,8 +214,8 @@ struct CertificatesView: View {
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white)
                         .lineLimit(2)
-                    if let info = info {
-                        Text("Expires: \(info.daysRemaining)d")
+                    if let info = info, !info.notAfter.isEmpty {
+                        Text("Expires: \(info.notAfter)")
                             .font(.system(size: 11, weight: .medium))
                             .foregroundColor(.white.opacity(0.3))
                     }

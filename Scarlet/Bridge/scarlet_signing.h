@@ -32,6 +32,52 @@ int png_is_cgbi(const unsigned char *data, unsigned long dataLen);
 int png_normalize_cgbi(const unsigned char *inData, unsigned long inLen,
                        unsigned char **outData, unsigned long *outLen);
 
+// ─── Scarlet Signing (Rust FFI) ───
+
+/// Sign an IPA with a P12 certificate.
+int scarlet_sign_ipa(const char *ipa_path, const char *cert_path,
+                     const char *cert_password, const char *profile_path,
+                     const char *output_path);
+
+/// Sign an IPA with PEM cert + key.
+int scarlet_sign_ipa_pem(const char *ipa_path, const char *cert_pem,
+                         const char *key_pem, const char *profile_path,
+                         const char *output_path);
+
+/// Get the last error message from Rust.
+char *scarlet_get_last_error(void);
+
+/// Free a string allocated by Rust.
+void scarlet_free_string(char *ptr);
+
+// ─── OCSP Certificate Checking (Rust FFI) ───
+
+/// Extract cert info from P12. Returns JSON string (caller frees with
+/// scarlet_free_string).
+char *scarlet_cert_info_from_p12(const unsigned char *p12_data,
+                                 unsigned long p12_len, const char *password);
+
+/// Build an OCSP request DER from P12 + issuer cert.
+/// Returns 0 on success, negative on error.
+int scarlet_build_ocsp_request(const unsigned char *p12_data,
+                               unsigned long p12_len, const char *password,
+                               const unsigned char *issuer_der,
+                               unsigned long issuer_len,
+                               unsigned char **out_data,
+                               unsigned long *out_len);
+
+/// Parse OCSP response. Returns status string: "Valid", "Revoked", "Unknown",
+/// or "Error". Caller frees with scarlet_free_string.
+char *scarlet_parse_ocsp_response(const unsigned char *p12_data,
+                                  unsigned long p12_len, const char *password,
+                                  const unsigned char *issuer_der,
+                                  unsigned long issuer_len,
+                                  const unsigned char *response_der,
+                                  unsigned long response_len);
+
+/// Free data allocated by Rust OCSP functions.
+void scarlet_free_data(unsigned char *ptr);
+
 #ifdef __cplusplus
 }
 #endif

@@ -225,3 +225,210 @@ fn unsafe_cstr_to_str(ptr: *const c_char, name: &str) -> Result<String, i32> {
             })
     }
 }
+
+// ─────────────────────────────────────────────────────────────
+// OCSP Certificate Checking (using OpenSSL)
+// ─────────────────────────────────────────────────────────────
+
+use openssl::{hash::MessageDigest, ocsp::*, pkcs12::Pkcs12, x509::X509};
+
+/// Extract certificate info from a P12 file.
+/// Returns a JSON string: {"name":"…","expires":"…","serial":"…"}
+/// Caller must free the returned string with scarlet_free_string.
+#[no_mangle]
+pub extern "C" fn scarlet_cert_info_from_p12(
+    p12_data: *const u8,
+    p12_len: usize,
+    password: *const c_char,
+) -> *mut c_char {
+    let data = unsafe { std::slice::from_raw_parts(p12_data, p12_len) };
+    let pwd = match unsafe_cstr_to_str(password, "password") {
+        Ok(s) => s,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match do_cert_info(data, &pwd) {
+        Ok(json) => CString::new(json).unwrap_or_default().into_raw(),
+        Err(e) => {
+            set_last_error(e);
+            std::ptr::null_mut()
+        }
+    }
+}
+
+fn cert_cn(cert: &X509) -> String {
+    let name = cert.subject_name().entries()
+        .find(|e| e.object().nid().short_name().unwrap_or("") == "CN")
+        .and_then(|e| e.data().as_utf8().ok())
+        .map(|s| s.to_string())
+        .unwrap_or_default();
+
+    let stripped = name.strip_prefix("iPhone Distribution: ")
+        .or(name.strip_prefix("Apple Distribution: "))
+        .or(name.strip_prefix("iPhone Developer: "))
+        .or(name.strip_prefix("Apple Developer: "))
+        .unwrap_or(&name);
+
+    stripped.split(" (").next().unwrap_or(stripped).to_string()
+}
+
+fn do_cert_info(data: &[u8], password: &str) -> Result<String, String> {
+    let parsed = Pkcs12::from_der(data).map_err(|e| format!("Bad P12: {e}"))?
+        .parse2(password).map_err(|e| format!("Wrong password: {e}"))?;
+
+    let cert = parsed.cert.ok_or("No cert in P12")?;
+    let cn = cert_cn(&cert);
+
+    let not_before = cert.not_before().to_string();
+    let not_after = cert.not_after().to_string();
+
+    let serial = cert.serial_number().to_bn()
+        .map(|bn| bn.to_hex_str().map(|s| s.to_string()).unwrap_or_default())
+        .unwrap_or_default();
+
+    Ok(format!(
+        "{{\"name\":\"{}\",\"not_before\":\"{}\",\"not_after\":\"{}\",\"serial\":\"{}\"}}",
+        cn.replace('\"', "\\\""),
+        not_before,
+        not_after,
+        serial
+    ))
+}
+
+/// Build an OCSP request for a P12 certificate.
+/// `issuer_der` is the DER-encoded Apple WWDR issuer certificate.
+/// Returns the DER-encoded OCSP request. Caller must free with scarlet_free_data.
+#[no_mangle]
+pub extern "C" fn scarlet_build_ocsp_request(
+    p12_data: *const u8,
+    p12_len: usize,
+    password: *const c_char,
+    issuer_der: *const u8,
+    issuer_len: usize,
+    out_data: *mut *mut u8,
+    out_len: *mut usize,
+) -> i32 {
+    let data = unsafe { std::slice::from_raw_parts(p12_data, p12_len) };
+    let issuer_bytes = unsafe { std::slice::from_raw_parts(issuer_der, issuer_len) };
+    let pwd = match unsafe_cstr_to_str(password, "password") {
+        Ok(s) => s,
+        Err(code) => return code,
+    };
+
+    match do_build_ocsp(data, &pwd, issuer_bytes) {
+        Ok(ocsp_der) => {
+            let len = ocsp_der.len();
+            let ptr = ocsp_der.as_ptr();
+            unsafe {
+                *out_data = libc_malloc(len) as *mut u8;
+                if (*out_data).is_null() {
+                    set_last_error("malloc failed".to_string());
+                    return -4;
+                }
+                std::ptr::copy_nonoverlapping(ptr, *out_data, len);
+                *out_len = len;
+            }
+            0
+        }
+        Err(e) => {
+            set_last_error(e);
+            -5
+        }
+    }
+}
+
+extern "C" {
+    #[link_name = "malloc"]
+    fn libc_malloc(size: usize) -> *mut std::ffi::c_void;
+}
+
+fn do_build_ocsp(p12_data: &[u8], password: &str, issuer_der: &[u8]) -> Result<Vec<u8>, String> {
+    let parsed = Pkcs12::from_der(p12_data).map_err(|e| format!("Bad P12: {e}"))?
+        .parse2(password).map_err(|e| format!("Wrong password: {e}"))?;
+
+    let cert = parsed.cert.ok_or("No cert in P12")?;
+    let issuer = X509::from_der(issuer_der).map_err(|e| format!("Bad issuer cert: {e}"))?;
+
+    let cert_id = OcspCertId::from_cert(MessageDigest::sha1(), &cert, &issuer)
+        .map_err(|e| format!("CertId: {e}"))?;
+
+    let mut request = OcspRequest::new().map_err(|e| format!("OcspReq: {e}"))?;
+    request.add_id(cert_id).map_err(|e| format!("add_id: {e}"))?;
+
+    let der = request.to_der().map_err(|e| format!("to_der: {e}"))?;
+    Ok(der)
+}
+
+/// Parse an OCSP response and return the certificate status.
+/// Returns a string: "Valid", "Revoked", or "Unknown".
+/// Caller must free with scarlet_free_string.
+#[no_mangle]
+pub extern "C" fn scarlet_parse_ocsp_response(
+    p12_data: *const u8,
+    p12_len: usize,
+    password: *const c_char,
+    issuer_der: *const u8,
+    issuer_len: usize,
+    response_der: *const u8,
+    response_len: usize,
+) -> *mut c_char {
+    let data = unsafe { std::slice::from_raw_parts(p12_data, p12_len) };
+    let issuer_bytes = unsafe { std::slice::from_raw_parts(issuer_der, issuer_len) };
+    let resp_bytes = unsafe { std::slice::from_raw_parts(response_der, response_len) };
+    let pwd = match unsafe_cstr_to_str(password, "password") {
+        Ok(s) => s,
+        Err(_) => return CString::new("Error").unwrap_or_default().into_raw(),
+    };
+
+    let result = match do_parse_ocsp(data, &pwd, issuer_bytes, resp_bytes) {
+        Ok(status) => status,
+        Err(e) => {
+            set_last_error(e);
+            "Error".to_string()
+        }
+    };
+
+    CString::new(result).unwrap_or_default().into_raw()
+}
+
+fn do_parse_ocsp(p12_data: &[u8], password: &str, issuer_der: &[u8], resp_der: &[u8]) -> Result<String, String> {
+    let parsed = Pkcs12::from_der(p12_data).map_err(|e| format!("Bad P12: {e}"))?
+        .parse2(password).map_err(|e| format!("Wrong password: {e}"))?;
+
+    let cert = parsed.cert.ok_or("No cert in P12")?;
+    let issuer = X509::from_der(issuer_der).map_err(|e| format!("Bad issuer cert: {e}"))?;
+
+    let resp = OcspResponse::from_der(resp_der).map_err(|e| format!("Bad OCSP resp: {e}"))?;
+
+    if resp.status() != OcspResponseStatus::SUCCESSFUL {
+        return Err(format!("OCSP not successful: {:?}", resp.status()));
+    }
+
+    let cert_id = OcspCertId::from_cert(MessageDigest::sha1(), &cert, &issuer)
+        .map_err(|e| format!("CertId: {e}"))?;
+
+    let basic = resp.basic().map_err(|e| format!("basic: {e}"))?;
+
+    match basic.find_status(&cert_id) {
+        Some(s) if s.revocation_time.is_some() => Ok("Revoked".to_string()),
+        Some(_) => Ok("Valid".to_string()),
+        None => Ok("Unknown".to_string()),
+    }
+}
+
+/// Free data allocated by Rust (for OCSP request bytes).
+#[no_mangle]
+pub extern "C" fn scarlet_free_data(ptr: *mut u8) {
+    if !ptr.is_null() {
+        unsafe {
+            // This was allocated with libc malloc, so free with libc free
+            libc_free(ptr as *mut std::ffi::c_void);
+        }
+    }
+}
+
+extern "C" {
+    #[link_name = "free"]
+    fn libc_free(ptr: *mut std::ffi::c_void);
+}
+
