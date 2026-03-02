@@ -151,3 +151,8 @@
 // ─── Misc ───
 "•" = "•";
 "·" = "·";
+
+// ─── Language Picker ───
+"Choose Language" = "Choose Language";
+"English" = "English";
+"Русский" = "Русский";

@@ -37,6 +37,9 @@
 		'A10031' = {isa = PBXBuildFile; fileRef = B10031; };
 		'A10032' = {isa = PBXBuildFile; fileRef = B10032; };
 		'A10033' = {isa = PBXBuildFile; fileRef = B10033; };
+             'A10040' = {isa = PBXBuildFile; fileRef = B10040; };
+             'A10041' = {isa = PBXBuildFile; fileRef = B10041; };
+             'A10042' = {isa = PBXBuildFile; fileRef = B10042; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -85,6 +88,9 @@
 		'B10033' = {isa = PBXFileReference; lastKnownFileType = file; path = AppleWWDRCAG3.cer; sourceTree = "<group>"; };
 		'B10099' = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Scarlet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0BA443991662CB3224DFAD9 /* RepoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RepoService.swift; path = Scarlet/RepoService.swift; sourceTree = SOURCE_ROOT; };
+             B10040 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
+             B10041 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+             B10042 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +119,8 @@
 		'D10002' = {
 			isa = PBXGroup;
 			children = (
+                            B10041,
+                            B10042,
 				B10001,
 				B10002,
 				B10003,
@@ -171,6 +179,7 @@
 				B10018,
 				B10025,
 				B10032,
+                            B10040,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -262,6 +271,8 @@
 			files = (
 				A10024,
 				A10033,
+                            'A10041',
+                            'A10042',
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -293,6 +304,7 @@
 				A10030,
 				A10031,
 				A10032,
+                            'A10040',
 				061045B48843202A469994B3 /* RepoService.swift in Sources */,
                                 CA869CEA12CF44A19D24DBA0 /* RepoDetailView.swift in Sources */,
 			);

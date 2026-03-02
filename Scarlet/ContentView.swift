@@ -15,12 +15,15 @@ struct ContentView: View {
     @ObservedObject private var certService = CertificateService.shared
     @ObservedObject private var repoService = RepoService.shared
     @ObservedObject private var downloadManager = DownloadManager.shared
+    @ObservedObject private var langManager = LanguageManager.shared
     @State private var selectedTab: Tab = .home
     @State private var isSearching = false
     @State private var searchText = ""
     @State private var showSettingsCard = false
     @State private var showCertsCard = false
+    @State private var showLangCard = false
     @State private var certsDragOffset: CGFloat = 0
+    @State private var langDragOffset: CGFloat = 0
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -110,7 +113,12 @@ struct ContentView: View {
                                 showCertsCard = true
                             }
                         }
-                        settingsIconButton(icon: "character.book.closed") {}
+                        settingsIconButton(icon: "character.book.closed") {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                showSettingsCard = false
+                                showLangCard = true
+                            }
+                        }
                         settingsIconButton(icon: "slider.horizontal.3") {}
                     }
                     .padding(.horizontal, 20)
@@ -197,6 +205,132 @@ struct ContentView: View {
                 }
                 .transition(.move(edge: .bottom))
                 .zIndex(97)
+            }
+
+            // Language picker glass card
+            if showLangCard {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .zIndex(98)
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            showLangCard = false
+                        }
+                    }
+
+                VStack(spacing: 0) {
+                    Spacer()
+                    VStack(spacing: 20) {
+                        // Drag handle
+                        Capsule()
+                            .fill(Color.white.opacity(0.25))
+                            .frame(width: 36, height: 4)
+                            .padding(.top, 10)
+
+                        // Title
+                        Text(L("Choose Language"))
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundColor(.white)
+
+                        // Language cards
+                        VStack(spacing: 12) {
+                            ForEach(LanguageManager.supportedLanguages) { lang in
+                                let isSelected = langManager.currentLanguage == lang.id
+                                Button {
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                                        langManager.currentLanguage = lang.id
+                                    }
+                                    // Dismiss after brief delay
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                            showLangCard = false
+                                        }
+                                    }
+                                } label: {
+                                    HStack(spacing: 16) {
+                                        Text(lang.flag)
+                                            .font(.system(size: 36))
+
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Text(lang.name)
+                                                .font(.system(size: 17, weight: .semibold))
+                                                .foregroundColor(.white)
+                                            Text(lang.id.uppercased())
+                                                .font(.system(size: 10, weight: .heavy))
+                                                .foregroundColor(.white.opacity(0.2))
+                                                .tracking(2)
+                                        }
+
+                                        Spacer()
+
+                                        if isSelected {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .font(.system(size: 22))
+                                                .foregroundColor(.scarletRed)
+                                                .transition(.scale.combined(with: .opacity))
+                                        }
+                                    }
+                                    .padding(16)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 18)
+                                            .fill(.ultraThinMaterial)
+                                            .environment(\.colorScheme, .dark)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 18)
+                                                    .stroke(
+                                                        isSelected ? Color.scarletRed.opacity(0.4) : Color.white.opacity(0.06),
+                                                        lineWidth: isSelected ? 1.5 : 0.5
+                                                    )
+                                            )
+                                            .shadow(color: isSelected ? .scarletRed.opacity(0.15) : .clear, radius: 12)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                                .scaleEffect(isSelected ? 1.02 : 1.0)
+                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+                            }
+                        }
+                        .padding(.horizontal, 4)
+                        .padding(.bottom, 24)
+                    }
+                    .padding(.horizontal, 20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 28)
+                            .fill(.ultraThinMaterial)
+                            .environment(\.colorScheme, .dark)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 28)
+                                    .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                            )
+                            .shadow(color: .black.opacity(0.5), radius: 30, y: -10)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 28))
+                    .offset(y: langDragOffset)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                if value.translation.height > 0 {
+                                    langDragOffset = value.translation.height
+                                }
+                            }
+                            .onEnded { value in
+                                if value.translation.height > 120 {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        showLangCard = false
+                                        langDragOffset = 0
+                                    }
+                                } else {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        langDragOffset = 0
+                                    }
+                                }
+                            }
+                    )
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 8)
+                }
+                .transition(.move(edge: .bottom))
+                .zIndex(99)
             }
 
             // Dimmed backdrop

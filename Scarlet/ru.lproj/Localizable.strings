@@ -1,0 +1,152 @@
+/* ============================================
+   Scarlet — Русский (Russian)
+   ============================================ */
+
+// ─── General / Buttons ───
+"OK" = "ОК";
+"Cancel" = "Отмена";
+"Delete" = "Удалить";
+"Add" = "Добавить";
+"Done" = "Готово";
+"Open" = "Открыть";
+"Sign" = "Подписать";
+"Import" = "Импорт";
+
+// ─── Home View ───
+"Scarlet" = "Scarlet";
+"iOS App Signing" = "Подпись приложений iOS";
+"Sign & Install" = "Подписать и установить";
+"Powered by zsign" = "На базе zsign";
+"Start Signing" = "Начать подпись";
+"Import IPA & sign with certificate" = "Импортируйте IPA и подпишите сертификатом";
+"REPOSITORIES" = "РЕПОЗИТОРИИ";
+
+// ─── Home — Context Menu ───
+"Add Repo" = "Добавить репо";
+"Add Multiple" = "Добавить несколько";
+"Add from Clipboard" = "Из буфера обмена";
+
+// ─── Home — Alerts ───
+"Add Repository" = "Добавить репозиторий";
+"Enter the repo JSON URL" = "Введите URL JSON репозитория";
+"Add Multiple Repos" = "Добавить несколько репозиториев";
+"One URL per line" = "По одному URL на строку";
+"Enter repo URLs, one per line" = "Введите URL репозиториев, по одному на строку";
+"Add All" = "Добавить все";
+"Repo Error" = "Ошибка репозитория";
+
+// ─── Library / Signing View ───
+"Library" = "Библиотека";
+"Imported Apps" = "Импортированные приложения";
+"Importing..." = "Импортируется...";
+"Extracting metadata and icon" = "Извлечение метаданных и значка";
+"No Apps Imported" = "Нет импортированных приложений";
+"Tap + to import an IPA file" = "Нажмите + для импорта IPA файла";
+"Import IPA" = "Импорт IPA";
+"Downloading" = "Загрузка";
+"All Apps" = "Все приложения";
+
+// ─── Repo Detail ───
+"GET" = "СКАЧАТЬ";
+
+// ─── Certificates ───
+"Certificates" = "Сертификаты";
+"Loading certificates..." = "Загрузка сертификатов...";
+"No Certificates Yet" = "Сертификатов пока нет";
+"Import a P12 certificate to get started" = "Импортируйте P12 сертификат для начала работы";
+"Import Certificate" = "Импортировать сертификат";
+"ACTIVE" = "АКТИВЕН";
+"Local Certificate" = "Локальный сертификат";
+"Delete Certificate" = "Удалить сертификат";
+"Certificate Password" = "Пароль сертификата";
+"Password" = "Пароль";
+
+// ─── Certificate Chips ───
+"Development" = "Разработка";
+"Distribution" = "Дистрибуция";
+"PPQ" = "PPQ";
+"PPQless" = "Без PPQ";
+"Expired" = "Истёк";
+
+// ─── Settings ───
+"Settings" = "Настройки";
+"Imported · P12" = "Импортирован · P12";
+"Enter password" = "Введите пароль";
+"Imported · mobileprovision" = "Импортирован · mobileprovision";
+"Signing Options" = "Параметры подписи";
+"Bundle ID" = "Bundle ID";
+"Display Name" = "Имя приложения";
+"Version" = "Версия";
+"Keep original" = "Оставить оригинал";
+"Zip Compression" = "Сжатие ZIP";
+"0 (Store)" = "0 (Без сжатия)";
+"1 (Fast)" = "1 (Быстрое)";
+"3 (Normal)" = "3 (Обычное)";
+"6 (Good)" = "6 (Хорошее)";
+"9 (Best)" = "9 (Лучшее)";
+"Remove Plugins" = "Удалить плагины";
+"Strip app extensions" = "Удалить расширения приложений";
+"About" = "О приложении";
+"Language" = "Язык";
+"About Scarlet" = "О Scarlet";
+
+// ─── Signing Sheet ───
+"Compression" = "Сжатие";
+"Certificate" = "Сертификат";
+"Tap to select" = "Нажмите для выбора";
+"Local" = "Локальный";
+"No certificates available" = "Нет доступных сертификатов";
+"Signing Failed" = "Ошибка подписи";
+
+// ─── Result ───
+"Signed Successfully" = "Успешно подписано";
+"Your IPA has been re-signed" = "Ваш IPA файл был переподписан";
+"Share Signed IPA" = "Поделиться подписанным IPA";
+
+// ─── Install Flow ───
+"Install" = "Установить";
+"Installing" = "Установка";
+"Sending Manifest..." = "Отправка манифеста...";
+"Sending Payload..." = "Отправка данных...";
+"Installed ✓" = "Установлено ✓";
+
+// ─── Search ───
+"Search apps..." = "Поиск приложений...";
+
+// ─── Certificate Status Labels ───
+"Checking…" = "Проверка…";
+"Valid" = "Действителен";
+"Revoked" = "Отозван";
+"Error" = "Ошибка";
+
+// ─── Dynamic Strings (format) ───
+"Certificate imported: %@" = "Сертификат импортирован: %@";
+"Profile imported: %@" = "Профиль импортирован: %@";
+"Import failed: %@" = "Ошибка импорта: %@";
+"Replace Certificate" = "Заменить сертификат";
+"Import Certificate (.p12)" = "Импортировать сертификат (.p12)";
+"Replace Profile" = "Заменить профиль";
+"Import Profile (.mobileprovision)" = "Импортировать профиль (.mobileprovision)";
+
+// ─── Compression Labels ───
+"Fastest" = "Самое быстрое";
+"Fast" = "Быстрое";
+"Normal" = "Обычное";
+"Smallest" = "Наименьшее";
+"Store" = "Без сжатия";
+
+// ─── Settings About ───
+"Engine" = "Движок";
+"OpenSSL" = "OpenSSL";
+"Bundled" = "Встроенный";
+
+// ─── Splash ───
+
+// ─── Misc ───
+"•" = "•";
+"·" = "·";
+
+// ─── Language Picker ───
+"Choose Language" = "Выбрать язык";
+"English" = "English";
+"Русский" = "Русский";
