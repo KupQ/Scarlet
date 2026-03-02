@@ -165,41 +165,41 @@ struct RepoDetailView: View {
     private func repoAppRow(_ app: RepoApp) -> some View {
         let progress = downloadManager.activeDownloads[app.id]
 
-        return HStack(spacing: 12) {
+        return HStack(spacing: 14) {
             // Icon
             if let iconStr = app.resolvedIconURL, let url = URL(string: iconStr) {
                 AsyncImage(url: url) { img in
                     img.resizable().aspectRatio(contentMode: .fill)
                 } placeholder: {
-                    RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(0.04))
+                    RoundedRectangle(cornerRadius: 13).fill(Color.white.opacity(0.04))
                 }
-                .frame(width: 44, height: 44)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .frame(width: 52, height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: 13))
             } else {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 13)
                     .fill(Color.white.opacity(0.04))
-                    .frame(width: 44, height: 44)
+                    .frame(width: 52, height: 52)
                     .overlay(Image(systemName: "app.fill").foregroundColor(.white.opacity(0.15)))
             }
 
             // Info
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(app.displayName)
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: 15, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(1)
                 HStack(spacing: 4) {
                     if let v = app.version {
                         Text("v\(v)")
-                            .font(.system(size: 10, weight: .medium))
+                            .font(.system(size: 11, weight: .medium))
                     }
                     Text("•")
                     Text(app.sizeString)
-                        .font(.system(size: 10, weight: .medium))
+                        .font(.system(size: 11, weight: .medium))
                     if let dev = app.developerName {
                         Text("•")
                         Text(dev)
-                            .font(.system(size: 10, weight: .medium))
+                            .font(.system(size: 11, weight: .medium))
                             .lineLimit(1)
                     }
                 }
@@ -211,25 +211,25 @@ struct RepoDetailView: View {
             // GET / progress
             if let p = progress {
                 Text("\(Int(p * 100))%")
-                    .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                    .font(.system(size: 12, weight: .heavy, design: .monospaced))
                     .foregroundColor(.scarletRed)
                     .frame(width: 50)
             } else {
                 Button { downloadApp(app) } label: {
                     Text(L("GET"))
-                        .font(.system(size: 11, weight: .heavy))
+                        .font(.system(size: 12, weight: .heavy))
                         .foregroundColor(.scarletRed)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 7)
                         .background(Capsule().fill(Color.scarletRed.opacity(0.12)))
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
         .background(
-            RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.02))
+            RoundedRectangle(cornerRadius: 14).fill(Color.white.opacity(0.02))
         )
     }
 

@@ -1694,49 +1694,49 @@ struct ContentView: View {
     private func searchResultRow(_ app: RepoApp) -> some View {
         let progress = downloadManager.activeDownloads[app.id]
 
-        return HStack(spacing: 12) {
+        return HStack(spacing: 14) {
             if let iconStr = app.resolvedIconURL, let url = URL(string: iconStr) {
                 AsyncImage(url: url) { image in
                     image.resizable().aspectRatio(contentMode: .fill)
                 } placeholder: {
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: 13)
                         .fill(Color.white.opacity(0.05))
                 }
-                .frame(width: 40, height: 40)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .frame(width: 52, height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: 13))
             } else {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 13)
                     .fill(Color.white.opacity(0.05))
-                    .frame(width: 40, height: 40)
+                    .frame(width: 52, height: 52)
             }
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(app.displayName)
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: 15, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(1)
                 Text("v\(app.version ?? "?") • \(app.sizeString)")
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.white.opacity(0.25))
             }
             Spacer()
             if let p = progress {
                 Text("\(Int(p * 100))%")
-                    .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                    .font(.system(size: 12, weight: .heavy, design: .monospaced))
                     .foregroundColor(.scarletRed)
                     .frame(width: 50)
             } else {
                 Button { downloadFromSearch(app) } label: {
                     Text(L("GET"))
-                        .font(.system(size: 11, weight: .heavy))
+                        .font(.system(size: 12, weight: .heavy))
                         .foregroundColor(.scarletRed)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 7)
                         .background(Capsule().fill(Color.scarletRed.opacity(0.12)))
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(10)
+        .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color.white.opacity(0.03))
