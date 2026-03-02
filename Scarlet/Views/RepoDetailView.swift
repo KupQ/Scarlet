@@ -126,6 +126,8 @@ struct RepoDetailView: View {
             }
         }
         .navigationBarHidden(true)
+        .onAppear { RepoService.shared.activeRepo = repo }
+        .onDisappear { RepoService.shared.activeRepo = nil }
     }
 
     private func repoAppRow(_ app: RepoApp) -> some View {

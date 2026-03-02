@@ -62,6 +62,7 @@ class RepoService: ObservableObject {
     @Published var repos: [LoadedRepo] = []
     @Published var isLoading = false
     @Published var lastError: String?
+    @Published var activeRepo: LoadedRepo?
 
     private let key = "scarlet_repo_urls_v2"
 
@@ -72,6 +73,14 @@ class RepoService: ObservableObject {
 
     var allApps: [RepoApp] {
         repos.flatMap { $0.manifest.apps ?? [] }
+    }
+
+    /// Apps to search — scoped to active repo if inside one, otherwise all repos
+    var searchableApps: [RepoApp] {
+        if let active = activeRepo {
+            return active.manifest.apps ?? []
+        }
+        return allApps
     }
 
     private init() {

@@ -1040,7 +1040,7 @@ struct ContentView: View {
     // MARK: - Search Results
 
     private var searchResultsOverlay: some View {
-        let filtered = repoService.allApps.filter {
+        let filtered = repoService.searchableApps.filter {
             $0.displayName.localizedCaseInsensitiveContains(searchText)
         }
         return VStack(spacing: 0) {
