@@ -296,11 +296,27 @@ struct SigningView: View {
     private var signedAppsList: some View {
         VStack(spacing: 10) {
             ForEach(signedManager.signedApps) { app in
-                signedAppCard(app)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .top).combined(with: .opacity),
-                        removal: .move(edge: .trailing).combined(with: .opacity)
-                    ))
+                SwipeableSignedCard(
+                    onShare: {
+                        let url = signedManager.ipaURL(for: app)
+                        let ac = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+                        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                           let root = scene.windows.first?.rootViewController {
+                            root.present(ac, animated: true)
+                        }
+                    },
+                    onDelete: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            signedManager.removeApp(app)
+                        }
+                    }
+                ) {
+                    signedAppCard(app)
+                }
+                .transition(.asymmetric(
+                    insertion: .move(edge: .top).combined(with: .opacity),
+                    removal: .move(edge: .trailing).combined(with: .opacity)
+                ))
             }
         }
         .padding(.horizontal, 20)
@@ -308,7 +324,6 @@ struct SigningView: View {
 
     private func signedAppCard(_ app: SignedApp) -> some View {
         HStack(spacing: 14) {
-            // Icon
             if let iconURL = signedManager.iconURL(for: app),
                let data = try? Data(contentsOf: iconURL),
                let uiImage = UIImage(data: data) {
@@ -353,7 +368,6 @@ struct SigningView: View {
 
             Spacer()
 
-            // Share button
             Button {
                 let url = signedManager.ipaURL(for: app)
                 let ac = UIActivityViewController(activityItems: [url], applicationActivities: nil)
@@ -362,23 +376,21 @@ struct SigningView: View {
                     root.present(ac, animated: true)
                 }
             } label: {
-                Image(systemName: "square.and.arrow.up")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.white.opacity(0.4))
-                    .frame(width: 32, height: 32)
-            }
-            .buttonStyle(.plain)
-
-            // Delete
-            Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    signedManager.removeApp(app)
-                }
-            } label: {
-                Image(systemName: "trash")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.scarletRed.opacity(0.6))
-                    .frame(width: 32, height: 32)
+                Text(L("Install"))
+                    .font(.system(size: 12, weight: .heavy))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 7)
+                    .background(
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.scarletRed, .scarletDark],
+                                    startPoint: .top, endPoint: .bottom
+                                )
+                            )
+                            .shadow(color: .scarletRed.opacity(0.3), radius: 4, y: 2)
+                    )
             }
             .buttonStyle(.plain)
         }
