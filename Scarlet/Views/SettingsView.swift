@@ -81,7 +81,7 @@ struct SettingsView: View {
 
     private var certificateSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            sectionHeader(icon: "lock.shield.fill", title: "Certificates", color: .orange)
+            sectionHeader(icon: "lock.shield.fill", title: L("Certificates"), color: .orange)
 
             // Import Certificate
             if settings.hasCertificate {
@@ -97,7 +97,7 @@ struct SettingsView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(settings.savedCertName ?? "Certificate")
+                        Text(settings.savedCertName ?? L("Certificate"))
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(.white)
                             .lineLimit(1)
@@ -178,7 +178,7 @@ struct SettingsView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(settings.savedProfileName ?? "Profile")
+                        Text(settings.savedProfileName ?? L("Profile"))
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(.white)
                             .lineLimit(1)
@@ -227,29 +227,29 @@ struct SettingsView: View {
 
     private var zsignOptionsSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            sectionHeader(icon: "gearshape.2.fill", title: "Signing Options", color: .purple)
+            sectionHeader(icon: "gearshape.2.fill", title: L("Signing Options"), color: .purple)
 
             // Bundle ID
             settingsTextField(
                 icon: "app.badge",
-                title: "Bundle ID",
-                placeholder: "Keep original",
+                title: L("Bundle ID"),
+                placeholder: L("Keep original"),
                 text: $settings.bundleId
             )
 
             // Display Name
             settingsTextField(
                 icon: "textformat",
-                title: "Display Name",
-                placeholder: "Keep original",
+                title: L("Display Name"),
+                placeholder: L("Keep original"),
                 text: $settings.displayName
             )
 
             // Version
             settingsTextField(
                 icon: "number",
-                title: "Version",
-                placeholder: "Keep original",
+                title: L("Version"),
+                placeholder: L("Keep original"),
                 text: $settings.version
             )
 
@@ -269,7 +269,7 @@ struct SettingsView: View {
                         Text(L("Zip Compression"))
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(.white)
-                        Text("Level \(settings.zipCompression) — \(compressionLabel)")
+                        Text("\(L("Level")) \(settings.zipCompression) — \(compressionLabel)")
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(.gray)
                     }
@@ -325,14 +325,14 @@ struct SettingsView: View {
 
     private var aboutSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            sectionHeader(icon: "info.circle.fill", title: "About", color: .gray)
+            sectionHeader(icon: "info.circle.fill", title: L("About"), color: .gray)
 
             VStack(spacing: 0) {
-                aboutRow(label: "Engine", value: "zsign (C++)")
+                aboutRow(label: L("Engine"), value: "zsign (C++)")
                 Divider().background(Color.glassBorder).padding(.horizontal, 16)
-                aboutRow(label: "OpenSSL", value: "Bundled")
+                aboutRow(label: L("OpenSSL"), value: L("Bundled"))
                 Divider().background(Color.glassBorder).padding(.horizontal, 16)
-                aboutRow(label: "Version", value: "1.0")
+                aboutRow(label: L("Version"), value: "1.0")
             }
             .glassCard(cornerRadius: 18)
         }

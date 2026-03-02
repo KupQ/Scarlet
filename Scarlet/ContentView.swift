@@ -537,8 +537,8 @@ struct ContentView: View {
 
             // Editable fields
             configField(icon: "textformat", label: "App Name", text: $signDisplayName)
-            configField(icon: "app.badge", label: "Bundle ID", text: $signBundleId)
-            configField(icon: "number", label: "Version", text: $signVersion)
+            configField(icon: "app.badge", label: L("Bundle ID"), text: $signBundleId)
+            configField(icon: "number", label: L("Version"), text: $signVersion)
 
             // Compression picker
             HStack(spacing: 12) {
@@ -634,7 +634,7 @@ struct ContentView: View {
                                         HStack(spacing: 3) {
                                             Image(systemName: isDev ? "hammer" : "building.2")
                                                 .font(.system(size: 8, weight: .bold))
-                                            Text(isDev ? "Development" : "Distribution")
+                                            Text(isDev ? L("Development") : L("Distribution"))
                                                 .font(.system(size: 9, weight: .bold))
                                         }
                                         .foregroundColor(.white.opacity(0.3))
@@ -642,7 +642,7 @@ struct ContentView: View {
                                         HStack(spacing: 3) {
                                             Image(systemName: cert.isPPQEnabled ? "lock.fill" : "lock.open")
                                                 .font(.system(size: 8, weight: .bold))
-                                            Text(cert.isPPQEnabled ? "PPQ" : "PPQless")
+                                            Text(cert.isPPQEnabled ? L("PPQ") : L("PPQless"))
                                                 .font(.system(size: 9, weight: .bold))
                                         }
                                         .foregroundColor(.white.opacity(0.3))
@@ -752,10 +752,10 @@ struct ContentView: View {
                         let status = localChecker.localCertInfos[localCert.filename]?.status ?? .checking
                         certStatusDot(status)
                     } else {
-                        certStatusDot(.error("Not found"))
+                        certStatusDot(.error(L("Not found")))
                     }
                 } else {
-                    certStatusDot(.error("None"))
+                    certStatusDot(.error(L("None")))
                 }
             }
 
@@ -915,8 +915,8 @@ struct ContentView: View {
 
             // App info during signing
             HStack(spacing: 16) {
-                infoChip(label: "Bundle", value: signBundleId.isEmpty ? "—" : signBundleId)
-                infoChip(label: "Version", value: signVersion.isEmpty ? "—" : signVersion)
+                infoChip(label: L("Bundle"), value: signBundleId.isEmpty ? "—" : signBundleId)
+                infoChip(label: L("Version"), value: signVersion.isEmpty ? "—" : signVersion)
             }
         }
         .padding(.horizontal, 18)
@@ -1048,8 +1048,8 @@ struct ContentView: View {
 
             // App info
             HStack(spacing: 12) {
-                infoChip(label: "Bundle", value: signBundleId.isEmpty ? "—" : signBundleId)
-                infoChip(label: "Version", value: signVersion.isEmpty ? "—" : signVersion)
+                infoChip(label: L("Bundle"), value: signBundleId.isEmpty ? "—" : signBundleId)
+                infoChip(label: L("Version"), value: signVersion.isEmpty ? "—" : signVersion)
             }
 
 
@@ -1090,7 +1090,7 @@ struct ContentView: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.white.opacity(0.5))
         case .installing(let progress):
-            Text("Installing... \(Int(progress * 100))%")
+            Text("\(L("Installing")) \(Int(progress * 100))%")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.scarletRed)
         case .completed:
@@ -1098,7 +1098,7 @@ struct ContentView: View {
                 .font(.system(size: 13, weight: .bold))
                 .foregroundColor(.scarletRed)
         case .failed(let msg):
-            Text("Error: \(msg)")
+            Text("\(L("Error")): \(msg)")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.red)
         default:

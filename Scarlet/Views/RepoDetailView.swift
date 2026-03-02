@@ -103,7 +103,7 @@ struct RepoDetailView: View {
                         Text(repo.manifest.displayName)
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(.white)
-                        Text("\(apps.count) apps")
+                        Text("\(apps.count) \(L("apps"))")
                             .font(.system(size: 11, weight: .medium))
                             .foregroundColor(.white.opacity(0.3))
                     }

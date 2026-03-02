@@ -138,7 +138,7 @@ struct CertificatesView: View {
                 }
             }
         } message: {
-            Text("Are you sure you want to delete \(certToDelete?.filename.replacingOccurrences(of: "local_", with: "").replacingOccurrences(of: ".p12", with: "") ?? "this certificate")?")
+            Text(L("Are you sure you want to delete") + " " + (certToDelete?.filename.replacingOccurrences(of: "local_", with: "").replacingOccurrences(of: ".p12", with: "") ?? L("this certificate")) + "?")
         }
         .onChange(of: importStep) { step in
             if step == .pickProfile {

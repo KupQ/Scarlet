@@ -181,7 +181,7 @@ struct SigningView: View {
         VStack(spacing: 16) {
             // ── Downloading ──
             if !downloadManager.pendingDownloads.isEmpty {
-                sectionHeader(title: "Downloading", count: downloadManager.pendingDownloads.count)
+                sectionHeader(title: L("Downloading"), count: downloadManager.pendingDownloads.count)
                 VStack(spacing: 10) {
                     ForEach(downloadManager.pendingDownloads) { dl in
                         downloadingCard(dl)
@@ -194,7 +194,7 @@ struct SigningView: View {
             }
 
             // ── All Apps (sign / re-sign) ──
-            sectionHeader(title: "All Apps", count: allAppsSorted.count)
+            sectionHeader(title: L("All Apps"), count: allAppsSorted.count)
             VStack(spacing: 10) {
                 ForEach(allAppsSorted) { app in
                     SwipeableAppCard(app: app, onTap: { signApp(app) }, onDelete: {

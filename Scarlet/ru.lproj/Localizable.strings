@@ -150,3 +150,16 @@
 "Choose Language" = "Выбрать язык";
 "English" = "English";
 "Русский" = "Русский";
+
+// ─── Missing Keys (audit) ───
+"apps" = "прил.";
+"Bundle" = "Пакет";
+"Level" = "Уровень";
+"Profile" = "Профиль";
+"Not found" = "Не найден";
+"None" = "Нет";
+"this certificate" = "этот сертификат";
+"Are you sure you want to delete" = "Вы уверены, что хотите удалить";
+"Signed Successfully!" = "Успешно подписано!";
+"No apps found" = "Приложения не найдены";
+" · Local" = " · Локальный";

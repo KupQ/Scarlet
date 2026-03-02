@@ -332,7 +332,7 @@ struct HomeView: View {
                     .foregroundColor(.white)
                     .lineLimit(1)
                 HStack(spacing: 6) {
-                    Text("\(repo.manifest.appCount) apps")
+                    Text("\(repo.manifest.appCount) \(L("apps"))")
                         .font(.system(size: 11, weight: .medium))
                     if let sub = repo.manifest.subtitle {
                         Text("•")
