@@ -19,7 +19,7 @@ struct ContentView: View {
     @State private var isSearching = false
     @State private var searchText = ""
     @State private var showSettingsCard = false
-    @State private var showCertsSheet = false
+    @State private var showCertsCard = false
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -103,12 +103,14 @@ struct ContentView: View {
                 VStack(spacing: 0) {
                     Spacer()
                     VStack(spacing: 2) {
-                        settingsRow(icon: "checkmark.shield", title: "Certificates", subtitle: "Manage P12 & provisioning", color: .orange) {
-                            showSettingsCard = false
-                            showCertsSheet = true
+                        settingsRow(icon: "checkmark.shield", title: "Certificates", subtitle: "Manage P12 & provisioning") {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                showSettingsCard = false
+                                showCertsCard = true
+                            }
                         }
-                        settingsRow(icon: "globe", title: "Language", subtitle: "English", color: .blue) {}
-                        settingsRow(icon: "info.circle", title: "About Scarlet", subtitle: "v1.0.0", color: .purple) {}
+                        settingsRow(icon: "globe", title: "Language", subtitle: "English") {}
+                        settingsRow(icon: "info.circle", title: "About Scarlet", subtitle: "v1.0.0") {}
                     }
                     .padding(6)
                     .background(
@@ -130,6 +132,64 @@ struct ContentView: View {
             // Tab bar (ALWAYS on top so search field is visible)
             glassTabBar
                 .zIndex(95)
+
+            // Certificates liquid glass card
+            if showCertsCard {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .zIndex(96)
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            showCertsCard = false
+                        }
+                    }
+
+                VStack(spacing: 0) {
+                    Spacer()
+                    VStack(spacing: 0) {
+                        // Drag handle + close
+                        HStack {
+                            Spacer()
+                            RoundedRectangle(cornerRadius: 2.5)
+                                .fill(Color.white.opacity(0.15))
+                                .frame(width: 36, height: 5)
+                            Spacer()
+                        }
+                        .padding(.top, 10)
+                        .padding(.bottom, 6)
+                        .overlay(alignment: .trailing) {
+                            Button {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    showCertsCard = false
+                                }
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.white.opacity(0.2))
+                            }
+                            .padding(.trailing, 16)
+                        }
+
+                        // Embedded CertificatesView
+                        NavigationStack {
+                            CertificatesView()
+                        }
+                        .frame(height: UIScreen.main.bounds.height * 0.65)
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 24)
+                            .fill(Color.bgPrimary)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                            )
+                            .shadow(color: .black.opacity(0.5), radius: 30, y: -10)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                }
+                .transition(.move(edge: .bottom))
+                .zIndex(97)
+            }
 
             // Dimmed backdrop
             if sheetVisible {
@@ -180,9 +240,6 @@ struct ContentView: View {
         } message: { Text(errorMessage) }
         .sheet(isPresented: $showShareSheet) {
             if let url = signingOutputURL { ShareSheet(items: [url]) }
-        }
-        .sheet(isPresented: $showCertsSheet) {
-            NavigationStack { CertificatesView() }
         }
         .task {
             // Fetch certs and check OCSP at app launch, regardless of which tab is active
@@ -1092,17 +1149,13 @@ struct ContentView: View {
 
     // MARK: - Settings Row
 
-    private func settingsRow(icon: String, title: String, subtitle: String, color: Color, action: @escaping () -> Void) -> some View {
+    private func settingsRow(icon: String, title: String, subtitle: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 14) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(color.opacity(0.10))
-                        .frame(width: 40, height: 40)
-                    Image(systemName: icon)
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(color.opacity(0.8))
-                }
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .light))
+                    .foregroundColor(.white.opacity(0.5))
+                    .frame(width: 28)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.system(size: 15, weight: .semibold))
