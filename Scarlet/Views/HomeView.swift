@@ -230,32 +230,32 @@ struct HomeView: View {
                         )
                 )
 
-            // Animated drifting glow orb 1
+            // Animated drifting glow orb 1 — large, bright, wide travel
             Circle()
-                .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.35), .clear], center: .center, startRadius: 5, endRadius: 80))
-                .frame(width: 160, height: 160)
-                .offset(x: animateCardGlow ? 80 : 50, y: animateCardGlow ? -60 : -30)
+                .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.5), Color.scarletRed.opacity(0.15), .clear], center: .center, startRadius: 10, endRadius: 100))
+                .frame(width: 200, height: 200)
+                .offset(x: animateCardGlow ? 110 : -20, y: animateCardGlow ? -70 : 20)
                 .blur(radius: 30)
-                .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: animateCardGlow)
+                .animation(.easeInOut(duration: 3.5).repeatForever(autoreverses: true), value: animateCardGlow)
 
-            // Animated drifting glow orb 2
+            // Animated drifting glow orb 2 — warm red, opposite direction
             Circle()
-                .fill(RadialGradient(colors: [Color(hue: 0.95, saturation: 0.8, brightness: 0.4).opacity(0.2), .clear], center: .center, startRadius: 5, endRadius: 60))
-                .frame(width: 120, height: 120)
-                .offset(x: animateCardGlow ? -60 : -30, y: animateCardGlow ? 30 : 50)
+                .fill(RadialGradient(colors: [Color(hue: 0.95, saturation: 0.9, brightness: 0.5).opacity(0.35), .clear], center: .center, startRadius: 5, endRadius: 80))
+                .frame(width: 160, height: 160)
+                .offset(x: animateCardGlow ? -80 : 60, y: animateCardGlow ? 50 : -40)
                 .blur(radius: 25)
-                .animation(.easeInOut(duration: 5).repeatForever(autoreverses: true), value: animateCardGlow)
+                .animation(.easeInOut(duration: 4.5).repeatForever(autoreverses: true), value: animateCardGlow)
 
-            // Animated shimmer streak
+            // Animated shimmer sweep — clearly visible
             RoundedRectangle(cornerRadius: 22)
                 .fill(
                     LinearGradient(
-                        colors: [.clear, Color.scarletRed.opacity(0.08), .clear],
+                        colors: [.clear, .clear, Color.scarletRed.opacity(0.15), Color.white.opacity(0.06), .clear, .clear],
                         startPoint: animateCardGlow ? .leading : .trailing,
                         endPoint: animateCardGlow ? .trailing : .leading
                     )
                 )
-                .animation(.easeInOut(duration: 3).repeatForever(autoreverses: true), value: animateCardGlow)
+                .animation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true), value: animateCardGlow)
 
             HStack(spacing: 16) {
                 ZStack {
