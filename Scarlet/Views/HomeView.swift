@@ -64,12 +64,16 @@ struct HomeView: View {
                     Spacer()
                     Button { showAddRepo = true } label: {
                         ZStack {
-                            Circle()
-                                .fill(Color.white.opacity(0.06))
-                                .frame(width: 36, height: 36)
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.white.opacity(0.03))
+                                .frame(width: 40, height: 40)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                                )
                             Image(systemName: "plus")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(.scarletRed)
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.scarletRed.opacity(0.8))
                         }
                     }
                     .buttonStyle(.plain)

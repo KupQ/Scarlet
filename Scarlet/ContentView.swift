@@ -18,6 +18,8 @@ struct ContentView: View {
     @State private var selectedTab: Tab = .home
     @State private var isSearching = false
     @State private var searchText = ""
+    @State private var showSettingsCard = false
+    @State private var showCertsSheet = false
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -45,12 +47,12 @@ struct ContentView: View {
     @State private var signIconPulse = false
 
     enum Tab: Int, CaseIterable {
-        case home, sign, certs
+        case home, sign, settings
         var icon: String {
             switch self {
             case .home: return "house"
             case .sign: return "square.and.arrow.down"
-            case .certs: return "checkmark.shield"
+            case .settings: return "gearshape"
             }
         }
     }
@@ -73,8 +75,8 @@ struct ContentView: View {
                             openConfigSheet(app)
                         })
                     }
-                case .certs:
-                    NavigationStack { CertificatesView() }
+                case .settings:
+                    Color.bgPrimary.ignoresSafeArea()
                 }
             }
 
@@ -82,6 +84,47 @@ struct ContentView: View {
             if isSearching && !searchText.isEmpty {
                 searchResultsOverlay
                     .zIndex(80)
+            }
+
+            // Settings card backdrop
+            if showSettingsCard {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .zIndex(88)
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            showSettingsCard = false
+                        }
+                    }
+            }
+
+            // Floating settings card
+            if showSettingsCard {
+                VStack(spacing: 0) {
+                    Spacer()
+                    VStack(spacing: 2) {
+                        settingsRow(icon: "checkmark.shield", title: "Certificates", subtitle: "Manage P12 & provisioning", color: .orange) {
+                            showSettingsCard = false
+                            showCertsSheet = true
+                        }
+                        settingsRow(icon: "globe", title: "Language", subtitle: "English", color: .blue) {}
+                        settingsRow(icon: "info.circle", title: "About Scarlet", subtitle: "v1.0.0", color: .purple) {}
+                    }
+                    .padding(6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.bgPrimary.opacity(0.95))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                            )
+                            .shadow(color: .black.opacity(0.4), radius: 20, y: -5)
+                    )
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 100)
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .zIndex(92)
             }
 
             // Tab bar (ALWAYS on top so search field is visible)
@@ -137,6 +180,9 @@ struct ContentView: View {
         } message: { Text(errorMessage) }
         .sheet(isPresented: $showShareSheet) {
             if let url = signingOutputURL { ShareSheet(items: [url]) }
+        }
+        .sheet(isPresented: $showCertsSheet) {
+            NavigationStack { CertificatesView() }
         }
         .task {
             // Fetch certs and check OCSP at app launch, regardless of which tab is active
@@ -1021,18 +1067,60 @@ struct ContentView: View {
 
     private func tabButton(_ tab: Tab) -> some View {
         Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { selectedTab = tab }
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                if tab == .settings {
+                    showSettingsCard.toggle()
+                } else {
+                    selectedTab = tab
+                    showSettingsCard = false
+                }
+            }
         } label: {
             VStack(spacing: 6) {
                 Image(systemName: tab.icon)
-                    .font(.system(size: 32, weight: selectedTab == tab ? .light : .thin))
-                    .foregroundColor(selectedTab == tab ? .scarletRed : .gray.opacity(0.6))
+                    .font(.system(size: 32, weight: (tab == .settings ? showSettingsCard : selectedTab == tab) ? .light : .thin))
+                    .foregroundColor((tab == .settings ? showSettingsCard : selectedTab == tab) ? .scarletRed : .gray.opacity(0.6))
 
                 Capsule()
-                    .fill(selectedTab == tab ? Color.white : .clear)
+                    .fill((tab == .settings ? showSettingsCard : selectedTab == tab) ? Color.white : .clear)
                     .frame(width: 14, height: 2.5)
             }
             .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Settings Row
+
+    private func settingsRow(icon: String, title: String, subtitle: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(color.opacity(0.10))
+                        .frame(width: 40, height: 40)
+                    Image(systemName: icon)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(color.opacity(0.8))
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.white)
+                    Text(subtitle)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.white.opacity(0.3))
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.15))
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.white.opacity(0.03))
+            )
         }
         .buttonStyle(.plain)
     }
