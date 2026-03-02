@@ -34,10 +34,10 @@ struct SigningView: View {
                     .padding(.top, 16)
                     .padding(.bottom, 8)
 
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        if libraryTab == 0 {
-                            // Unsigned tab
+                TabView(selection: $libraryTab) {
+                    // Unsigned tab
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: 0) {
                             if appsManager.isImporting {
                                 importingIndicator
                                     .padding(.top, 16)
@@ -49,31 +49,28 @@ struct SigningView: View {
                             } else {
                                 appsList.padding(.top, 20)
                             }
-                        } else {
-                            // Signed tab
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.bottom, 80)
+                    }
+                    .tag(0)
+
+                    // Signed tab
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: 0) {
                             if signedManager.signedApps.isEmpty {
                                 signedEmptyState.padding(.top, 60)
                             } else {
                                 signedAppsList.padding(.top, 20)
                             }
                         }
+                        .frame(maxWidth: .infinity)
+                        .padding(.bottom, 80)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.bottom, 80)
-                    .gesture(
-                        DragGesture(minimumDistance: 40, coordinateSpace: .local)
-                            .onEnded { value in
-                                let horizontal = value.translation.width
-                                let vertical = abs(value.translation.height)
-                                guard abs(horizontal) > vertical else { return } // ensure horizontal swipe
-                                if horizontal < 0 && libraryTab == 0 {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { libraryTab = 1 }
-                                } else if horizontal > 0 && libraryTab == 1 {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { libraryTab = 0 }
-                                }
-                            }
-                    )
+                    .tag(1)
                 }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: libraryTab)
             }
             .navigationBarHidden(true)
             .navigationTitle("")
