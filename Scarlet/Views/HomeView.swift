@@ -167,7 +167,7 @@ struct HomeView: View {
         let apps = showcaseApps
         return Group {
             if apps.isEmpty {
-                fallbackBanner
+                EmptyView()
             } else {
                 VStack(spacing: 8) {
                     TabView(selection: $currentSlide) {
@@ -309,38 +309,6 @@ struct HomeView: View {
         .frame(height: 180)
     }
 
-    private var fallbackBanner: some View {
-        ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 22)
-                .fill(
-                    LinearGradient(
-                        colors: [Color.scarletRed.opacity(0.20), Color(white: 0.06)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(height: 180)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 22)
-                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
-                )
-
-            VStack(alignment: .leading, spacing: 6) {
-                Image(systemName: "shield.checkered")
-                    .font(.system(size: 24))
-                    .foregroundStyle(
-                        LinearGradient(colors: [.white, .scarletPink], startPoint: .top, endPoint: .bottom)
-                    )
-                Text(L("Sign & Install"))
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
-                Text(L("Add a repo to see apps here"))
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.white.opacity(0.4))
-            }
-            .padding(22)
-        }
-    }
 
 
 
