@@ -31,7 +31,8 @@ struct ContentView: View {
     @State private var hoveredSettingsOption: Int? = nil
     @State private var showSettingsHint = !UserDefaults.standard.bool(forKey: "settingsHintDismissed")
     @State private var hintPulse = false
-    @State private var handPhase = 0 // 0=rest, 1=hold, 2=up, 3=left, 4=center, 5=right, 6=center, 7=down
+    @State private var handPhase = 0
+    @State private var handLoopId = 0
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -1402,7 +1403,7 @@ struct ContentView: View {
         }
         .overlay(alignment: .top) {
             if showSettingsHint && !showSettingsCard && !isSearching {
-                VStack(spacing: 5) {
+                VStack(spacing: 8) {
                     HStack(spacing: 7) {
                         Image(systemName: "hand.tap.fill")
                             .font(.system(size: 15))
@@ -1434,29 +1435,30 @@ struct ContentView: View {
 
                     // Arrow pointing down
                     Image(systemName: "arrowtriangle.down.fill")
-                        .font(.system(size: 10))
+                        .font(.system(size: 12))
                         .foregroundColor(.white.opacity(0.25))
-                        .offset(y: -4)
                 }
                 .fixedSize()
                 .offset(y: -85)
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 .onAppear {
                     hintPulse = false
+                    handPhase = 0
+                    handLoopId += 1
+                    let currentLoopId = handLoopId
                     withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
                         hintPulse = true
                     }
-                    // Hand gesture demo loop: hold longer so they see the press
                     func runHandLoop() {
-                        guard showSettingsHint else { return }
+                        guard showSettingsHint, handLoopId == currentLoopId else { return }
                         handPhase = 0
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { handPhase = 1 } // hold down
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.1) { handPhase = 2 } // up
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { handPhase = 5 } // right
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.9) { handPhase = 3 } // left
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.3) { handPhase = 4 } // middle
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.7) { handPhase = 0 } // down to rest
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 4.3) { runHandLoop() } // repeat
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { guard handLoopId == currentLoopId else { return }; handPhase = 1 }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.1) { guard handLoopId == currentLoopId else { return }; handPhase = 2 }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { guard handLoopId == currentLoopId else { return }; handPhase = 5 }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.9) { guard handLoopId == currentLoopId else { return }; handPhase = 3 }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.3) { guard handLoopId == currentLoopId else { return }; handPhase = 4 }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.7) { guard handLoopId == currentLoopId else { return }; handPhase = 0 }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 4.3) { runHandLoop() }
                     }
                     runHandLoop()
                 }
