@@ -82,7 +82,7 @@ struct CertificatesView: View {
 
     var body: some View {
         ZStack {
-            Color.clear
+            Color.bgPrimary.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 headerSection
@@ -106,9 +106,7 @@ struct CertificatesView: View {
         }
         .task {
             await certService.fetchCertificates()
-            // Check API certs only once per session
             await localChecker.checkAPICertsIfNeeded(certService.certificates)
-            // Check local certs only if not already checked
             let pairs = localCerts.map { (name: $0.filename, password: $0.password) }
             await localChecker.checkAllLocalCerts(certs: pairs)
         }
@@ -151,45 +149,99 @@ struct CertificatesView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(L("Certificates"))
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.white)
-                if let udid = certService.deviceUDID {
-                    Text(udid)
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .foregroundColor(.white.opacity(0.2))
+        VStack(spacing: 0) {
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(L("Certificates"))
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.white)
+                    if let udid = certService.deviceUDID {
+                        HStack(spacing: 4) {
+                            Image(systemName: "cpu")
+                                .font(.system(size: 8))
+                                .foregroundColor(.white.opacity(0.15))
+                            Text(udid)
+                                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                .foregroundColor(.white.opacity(0.15))
+                                .lineLimit(1)
+                        }
+                    }
+                }
+                Spacer()
+                Button {
+                    filePickerType = .p12
+                    showFilePicker = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.scarletRed)
+                        .frame(width: 42, height: 42)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(.ultraThinMaterial)
+                                .environment(\.colorScheme, .dark)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
+                                )
+                        )
                 }
             }
-            Spacer()
-            Button {
-                filePickerType = .p12
-                showFilePicker = true
-            } label: {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white.opacity(0.03))
-                        .frame(width: 40, height: 40)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
-                        )
-                    Image(systemName: "plus")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.scarletRed.opacity(0.8))
-                }
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 20)
+
+            // Stats bar
+            if !certService.certificates.isEmpty || !localCerts.isEmpty {
+                statsBar
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 16)
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 12)
-        .padding(.bottom, 16)
+    }
+
+    private var statsBar: some View {
+        let total = certService.certificates.count + localCerts.count
+        let valid = certService.certificates.filter { localChecker.statusFor($0.id) == .valid }.count
+            + localCerts.filter { (localChecker.localCertInfos[$0.filename]?.status ?? .checking) == .valid }.count
+        let revoked = certService.certificates.filter { localChecker.statusFor($0.id) == .revoked }.count
+            + localCerts.filter { (localChecker.localCertInfos[$0.filename]?.status ?? .checking) == .revoked }.count
+
+        return HStack(spacing: 0) {
+            statPill(count: total, label: L("Total"), color: .white.opacity(0.5))
+            Spacer()
+            statPill(count: valid, label: L("Valid"), color: Color(red: 0.2, green: 0.75, blue: 0.4))
+            Spacer()
+            statPill(count: revoked, label: L("Revoked"), color: Color(red: 0.95, green: 0.25, blue: 0.25))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(.ultraThinMaterial)
+                .environment(\.colorScheme, .dark)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                )
+        )
+    }
+
+    private func statPill(count: Int, label: String, color: Color) -> some View {
+        HStack(spacing: 6) {
+            Text("\(count)")
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundColor(color)
+            Text(label)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(color.opacity(0.6))
+        }
     }
 
     // MARK: - Certificate Content
 
     private var certContent: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             // ── Local cert cards ──
             if !localCerts.isEmpty {
                 ForEach(localCerts) { cert in
@@ -202,7 +254,6 @@ struct CertificatesView: View {
                                 Label(L("Delete Certificate"), systemImage: "trash")
                             }
                         }
-                        .padding(.horizontal, 20)
                 }
             }
 
@@ -210,12 +261,12 @@ struct CertificatesView: View {
             if !certService.certificates.isEmpty {
                 ForEach(certService.certificates) { cert in
                     apiCertCard(cert)
-                        .padding(.horizontal, 20)
                 }
             }
         }
-        .padding(.top, 8)
-        .padding(.bottom, 30)
+        .padding(.horizontal, 20)
+        .padding(.top, 4)
+        .padding(.bottom, 120)
     }
 
     // MARK: - API Certificate Card
@@ -225,66 +276,93 @@ struct CertificatesView: View {
         let isDev = (cert.cert_type?.uppercased() ?? "").contains("DEVELOPMENT")
         let isActive = settings.savedCertName == "\(cert.id).p12"
         let ocspStatus = localChecker.statusFor(cert.id)
-        let (_, statusClr) = statusIconAndColor(ocspStatus)
+        let statusClr = statusColor(ocspStatus)
 
         return Button {
             selectCert(cert)
         } label: {
-            HStack(spacing: 12) {
-                Image(systemName: statusIconName(ocspStatus))
-                    .font(.system(size: 18, weight: .light))
-                    .foregroundColor(statusClr.opacity(0.5))
-                    .frame(width: 22)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(cert.name)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-                    HStack(spacing: 6) {
-                        Text(isDev ? L("Dev") : L("Dist"))
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundColor(.white.opacity(0.25))
-                        Text("·").foregroundColor(.white.opacity(0.15))
-                        Text(cert.isPPQEnabled ? "PPQ" : "PPQless")
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundColor(.white.opacity(0.25))
-                        Text("·").foregroundColor(.white.opacity(0.15))
-                        Text(cert.isExpired ? L("Expired") : "\(days)d")
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundColor(cert.isExpired ? .orange.opacity(0.6) : .white.opacity(0.25))
-                    }
-                }
-
-                Spacer()
-
-                VStack(spacing: 2) {
-                    HStack(spacing: 4) {
-                        Circle().fill(statusClr).frame(width: 5, height: 5)
-                        Text(ocspStatus.label)
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundColor(statusClr.opacity(0.7))
-                    }
+            VStack(spacing: 0) {
+                // Top: status strip
+                HStack(spacing: 0) {
+                    Circle()
+                        .fill(statusClr)
+                        .frame(width: 6, height: 6)
+                        .shadow(color: statusClr.opacity(0.5), radius: 4)
+                    Text(ocspStatus.label.uppercased())
+                        .font(.system(size: 9, weight: .heavy))
+                        .foregroundColor(statusClr)
+                        .tracking(1.2)
+                        .padding(.leading, 6)
+                    Spacer()
                     if isActive {
                         Text(L("ACTIVE"))
-                            .font(.system(size: 7, weight: .heavy))
-                            .foregroundColor(.white.opacity(0.3))
+                            .font(.system(size: 8, weight: .heavy))
+                            .foregroundColor(.scarletRed)
                             .tracking(1.5)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(
+                                Capsule()
+                                    .fill(Color.scarletRed.opacity(0.12))
+                            )
                     }
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 10)
+
+                // Divider
+                Rectangle()
+                    .fill(Color.white.opacity(0.04))
+                    .frame(height: 0.5)
+
+                // Main content
+                HStack(spacing: 14) {
+                    // Icon
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(statusClr.opacity(0.08))
+                            .frame(width: 44, height: 44)
+                        Image(systemName: statusIconName(ocspStatus))
+                            .font(.system(size: 20, weight: .light))
+                            .foregroundColor(statusClr.opacity(0.7))
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(cert.name)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+
+                        HStack(spacing: 8) {
+                            certTag(isDev ? L("Dev") : L("Dist"), icon: "hammer")
+                            certTag(cert.isPPQEnabled ? "PPQ" : "PPQless", icon: "shield")
+                            certTag(cert.isExpired ? L("Expired") : "\(days)d", icon: "calendar",
+                                    highlight: cert.isExpired)
+                        }
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white.opacity(0.15))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.white.opacity(isActive ? 0.05 : 0.03))
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.ultraThinMaterial)
+                    .environment(\.colorScheme, .dark)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14)
+                        RoundedRectangle(cornerRadius: 16)
                             .stroke(
-                                isActive ? statusClr.opacity(0.2) : Color.white.opacity(0.06),
-                                lineWidth: 0.5
+                                isActive ? statusClr.opacity(0.25) : Color.white.opacity(0.06),
+                                lineWidth: isActive ? 1 : 0.5
                             )
                     )
+                    .shadow(color: isActive ? statusClr.opacity(0.08) : .clear, radius: 12)
             )
         }
         .buttonStyle(.plain)
@@ -298,7 +376,7 @@ struct CertificatesView: View {
         let certName = info?.commonName ?? cert.filename.replacingOccurrences(of: ".p12", with: "").replacingOccurrences(of: "local_", with: "")
         let isActive = settings.savedCertName == cert.filename
         let daysLeft = info?.daysLeft ?? 0
-        let (_, statusClr) = statusIconAndColor(ocspStatus)
+        let statusClr = statusColor(ocspStatus)
         let isDev = certName.localizedCaseInsensitiveContains("Development")
 
         return Button {
@@ -308,105 +386,120 @@ struct CertificatesView: View {
                 settings.objectWillChange.send()
             }
         } label: {
-            HStack(spacing: 12) {
-                Image(systemName: statusIconName(ocspStatus))
-                    .font(.system(size: 18, weight: .light))
-                    .foregroundColor(statusClr.opacity(0.5))
-                    .frame(width: 22)
+            VStack(spacing: 0) {
+                // Top: status strip
+                HStack(spacing: 0) {
+                    Circle()
+                        .fill(statusClr)
+                        .frame(width: 6, height: 6)
+                        .shadow(color: statusClr.opacity(0.5), radius: 4)
+                    Text(ocspStatus.label.uppercased())
+                        .font(.system(size: 9, weight: .heavy))
+                        .foregroundColor(statusClr)
+                        .tracking(1.2)
+                        .padding(.leading, 6)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(certName)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-                    HStack(spacing: 6) {
-                        Text(L("Local"))
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundColor(.white.opacity(0.25))
-                        Text("·").foregroundColor(.white.opacity(0.15))
-                        Text(isDev ? L("Dev") : L("Dist"))
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundColor(.white.opacity(0.25))
-                        Text("·").foregroundColor(.white.opacity(0.15))
-                        Text(daysLeft > 0 ? "\(daysLeft)d" : L("Expired"))
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundColor(daysLeft <= 0 ? .orange.opacity(0.6) : .white.opacity(0.25))
-                    }
-                }
+                    Text("·")
+                        .foregroundColor(.white.opacity(0.15))
+                        .padding(.horizontal, 4)
+                    Text(L("LOCAL"))
+                        .font(.system(size: 8, weight: .heavy))
+                        .foregroundColor(.white.opacity(0.25))
+                        .tracking(1)
 
-                Spacer()
-
-                VStack(spacing: 2) {
-                    HStack(spacing: 4) {
-                        Circle().fill(statusClr).frame(width: 5, height: 5)
-                        Text(ocspStatus.label)
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundColor(statusClr.opacity(0.7))
-                    }
+                    Spacer()
                     if isActive {
                         Text(L("ACTIVE"))
-                            .font(.system(size: 7, weight: .heavy))
-                            .foregroundColor(.white.opacity(0.3))
+                            .font(.system(size: 8, weight: .heavy))
+                            .foregroundColor(.scarletRed)
                             .tracking(1.5)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(
+                                Capsule()
+                                    .fill(Color.scarletRed.opacity(0.12))
+                            )
                     }
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 10)
+
+                // Divider
+                Rectangle()
+                    .fill(Color.white.opacity(0.04))
+                    .frame(height: 0.5)
+
+                // Main content
+                HStack(spacing: 14) {
+                    // Icon
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(statusClr.opacity(0.08))
+                            .frame(width: 44, height: 44)
+                        Image(systemName: statusIconName(ocspStatus))
+                            .font(.system(size: 20, weight: .light))
+                            .foregroundColor(statusClr.opacity(0.7))
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(certName)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+
+                        HStack(spacing: 8) {
+                            certTag(isDev ? L("Dev") : L("Dist"), icon: "hammer")
+                            certTag(daysLeft > 0 ? "\(daysLeft)d" : L("Expired"), icon: "calendar",
+                                    highlight: daysLeft <= 0)
+                        }
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white.opacity(0.15))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.white.opacity(isActive ? 0.05 : 0.03))
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.ultraThinMaterial)
+                    .environment(\.colorScheme, .dark)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14)
+                        RoundedRectangle(cornerRadius: 16)
                             .stroke(
-                                isActive ? statusClr.opacity(0.2) : Color.white.opacity(0.06),
-                                lineWidth: 0.5
+                                isActive ? statusClr.opacity(0.25) : Color.white.opacity(0.06),
+                                lineWidth: isActive ? 1 : 0.5
                             )
                     )
+                    .shadow(color: isActive ? statusClr.opacity(0.08) : .clear, radius: 12)
             )
         }
         .buttonStyle(.plain)
     }
 
-    // MARK: - Reusable Card Components
+    // MARK: - Reusable Components
 
-    private func chipView(icon: String, text: String, color: Color? = nil) -> some View {
+    private func certTag(_ text: String, icon: String, highlight: Bool = false) -> some View {
         HStack(spacing: 3) {
             Image(systemName: icon)
-                .font(.system(size: 8, weight: .bold))
-            Text(text)
-                .font(.system(size: 9, weight: .bold))
-        }
-        .foregroundColor(color ?? .white.opacity(0.3))
-    }
-
-    private func certChip(icon: String, text: String, highlight: Bool = false) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 8, weight: .semibold))
             Text(text)
                 .font(.system(size: 10, weight: .semibold))
         }
-        .foregroundColor(highlight ? .orange : .white.opacity(0.45))
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
-        .background(
-            Capsule()
-                .fill(highlight ? Color.orange.opacity(0.08) : Color.white.opacity(0.04))
-                .overlay(
-                    Capsule()
-                        .stroke(highlight ? Color.orange.opacity(0.15) : Color.white.opacity(0.06), lineWidth: 0.5)
-                )
-        )
+        .foregroundColor(highlight ? .orange.opacity(0.8) : .white.opacity(0.3))
     }
 
-    private func statusIconAndColor(_ status: LocalCertInfo.CertStatus) -> (String, Color) {
+    private func statusColor(_ status: LocalCertInfo.CertStatus) -> Color {
         switch status {
-        case .valid:    return ("checkmark.shield.fill", Color(red: 0.2, green: 0.75, blue: 0.4))
-        case .revoked:  return ("xmark.shield.fill", Color(red: 0.95, green: 0.25, blue: 0.25))
-        case .expired:  return ("clock.badge.exclamationmark", .orange)
-        case .checking: return ("shield.lefthalf.filled", .yellow)
-        case .error:    return ("exclamationmark.triangle.fill", .gray)
+        case .valid:    return Color(red: 0.2, green: 0.75, blue: 0.4)
+        case .revoked:  return Color(red: 0.95, green: 0.25, blue: 0.25)
+        case .expired:  return .orange
+        case .checking: return .yellow
+        case .error:    return .gray
         }
     }
 
@@ -420,17 +513,6 @@ struct CertificatesView: View {
         }
     }
 
-    private func statItem(icon: String, label: String) -> some View {
-        HStack(spacing: 5) {
-            Image(systemName: icon)
-                .font(.system(size: 10, weight: .medium))
-            Text(label)
-                .font(.system(size: 11, weight: .medium))
-                .lineLimit(1)
-        }
-        .foregroundColor(.white.opacity(0.35))
-    }
-
     // MARK: - Selection
 
     private func selectCert(_ cert: RemoteCertificate) {
@@ -442,36 +524,47 @@ struct CertificatesView: View {
     // MARK: - Empty / Loading
 
     private var loadingSection: some View {
-        VStack(spacing: 16) {
-            ProgressView().tint(.scarletRed).scaleEffect(1.2)
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.08), .clear],
+                                         center: .center, startRadius: 0, endRadius: 50))
+                    .frame(width: 100, height: 100)
+                ProgressView()
+                    .tint(.scarletRed)
+                    .scaleEffect(1.3)
+            }
             Text(L("Loading certificates..."))
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.white.opacity(0.25))
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.white.opacity(0.3))
         }
         .frame(maxWidth: .infinity).padding(.top, 100)
     }
 
     private var emptySection: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 28) {
             ZStack {
                 Circle()
-                    .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.12), .clear],
-                                         center: .center, startRadius: 0, endRadius: 60))
-                    .frame(width: 120, height: 120)
+                    .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.1), .clear],
+                                         center: .center, startRadius: 0, endRadius: 70))
+                    .frame(width: 140, height: 140)
+
                 Image(systemName: "shield.lefthalf.filled")
-                    .font(.system(size: 40, weight: .light))
+                    .font(.system(size: 48, weight: .ultraLight))
                     .foregroundStyle(
-                        LinearGradient(colors: [.scarletRed.opacity(0.5), .scarletPink.opacity(0.3)],
-                                       startPoint: .top, endPoint: .bottom)
+                        LinearGradient(colors: [.scarletRed.opacity(0.6), .scarletPink.opacity(0.3)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing)
                     )
             }
-            VStack(spacing: 8) {
-                Text(L("No Certificates Yet"))
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white.opacity(0.7))
+
+            VStack(spacing: 10) {
+                Text(L("No Certificates"))
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundColor(.white.opacity(0.8))
                 Text(L("Import a P12 certificate to get started"))
-                    .font(.system(size: 14))
+                    .font(.system(size: 14, weight: .regular))
                     .foregroundColor(.white.opacity(0.3))
+                    .multilineTextAlignment(.center)
             }
 
             Button {
@@ -485,16 +578,16 @@ struct CertificatesView: View {
                         .font(.system(size: 14, weight: .semibold))
                 }
                 .foregroundColor(.white)
-                .padding(.horizontal, 28)
-                .padding(.vertical, 13)
+                .padding(.horizontal, 32)
+                .padding(.vertical, 14)
                 .background(
-                    Capsule()
+                    RoundedRectangle(cornerRadius: 14)
                         .fill(
                             LinearGradient(colors: [.scarletRed, .scarletDark],
                                            startPoint: .leading, endPoint: .trailing)
                         )
+                        .shadow(color: .scarletRed.opacity(0.3), radius: 16, y: 8)
                 )
-                .shadow(color: .scarletRed.opacity(0.3), radius: 12, y: 6)
             }
         }
         .frame(maxWidth: .infinity).padding(.top, 80)
