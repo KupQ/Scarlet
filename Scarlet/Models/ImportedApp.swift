@@ -164,10 +164,24 @@ final class ImportedAppsManager: ObservableObject {
             let log = FileLogger.shared
             log.log("Importing IPA: \(url.lastPathComponent)")
 
-            guard let metadata = IPAParser.parse(ipaURL: url) else {
-                log.log("ERROR: Failed to parse IPA metadata")
-                DispatchQueue.main.async { self.isImporting = false }
-                return
+            let fm = FileManager.default
+            let fileSize = (try? fm.attributesOfItem(atPath: url.path)[.size] as? Int64) ?? 0
+
+            // Try to parse metadata; fall back to basic info if parsing fails
+            let metadata: IPAMetadata
+            if let parsed = IPAParser.parse(ipaURL: url) {
+                metadata = parsed
+            } else {
+                log.log("WARNING: IPA parse failed, importing with basic metadata")
+                let name = url.deletingPathExtension().lastPathComponent
+                metadata = IPAMetadata(
+                    appName: name,
+                    bundleIdentifier: name,
+                    version: "1.0",
+                    iconData: nil,
+                    fileSize: fileSize,
+                    fileName: url.lastPathComponent
+                )
             }
 
             let appId = UUID()
@@ -177,8 +191,8 @@ final class ImportedAppsManager: ObservableObject {
             let accessing = url.startAccessingSecurityScopedResource()
             let destIPA = Self.appsDirectory.appendingPathComponent(ipaName)
             do {
-                try FileManager.default.copyItem(at: url, to: destIPA)
-                log.log("Copied IPA to storage")
+                try fm.copyItem(at: url, to: destIPA)
+                log.log("Copied IPA to storage (\(fileSize) bytes)")
             } catch {
                 log.log("ERROR: Failed to copy IPA: \(error)")
                 if accessing { url.stopAccessingSecurityScopedResource() }
