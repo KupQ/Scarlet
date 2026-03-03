@@ -43,6 +43,7 @@
              'A10052' = {isa = PBXBuildFile; fileRef = B10052; };
              'A10053' = {isa = PBXBuildFile; fileRef = B10053; };
              'A10055' = {isa = PBXBuildFile; fileRef = B10055; };
+             'A10056' = {isa = PBXBuildFile; fileRef = B10056; };
              'A10060' = {isa = PBXBuildFile; fileRef = 'B10060'; };
              'A10070' = {isa = PBXBuildFile; fileRef = 'B10070'; };
              'A10080' = {isa = PBXBuildFile; fileRef = 'B10080'; };
@@ -117,6 +118,7 @@
              B10052 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertFetcher.swift; sourceTree = "<group>"; };
              B10053 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningAssetsScanner.swift; sourceTree = "<group>"; };
              B10055 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeableSignedCard.swift; sourceTree = "<group>"; };
+             B10056 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractivePopGestureEnabler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -219,6 +221,7 @@
 				B10051,
 				B10052,
 				B10053,
+				B10056,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -373,6 +376,7 @@
 				'A10052',
 				'A10053',
 				'A10055',
+				'A10056',
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

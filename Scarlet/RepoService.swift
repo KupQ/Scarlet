@@ -315,7 +315,7 @@ class RepoService: ObservableObject {
             lastError = nil
         }
 
-        // Load all repos concurrently
+        // Load all repos concurrently — each appears on screen as it loads
         var freshRepos: [LoadedRepo] = []
         await withTaskGroup(of: LoadedRepo?.self) { group in
             for entry in allURLs {
@@ -333,22 +333,27 @@ class RepoService: ObservableObject {
             }
 
             for await result in group {
-                if showProgress {
-                    await MainActor.run { loadedCount += 1 }
-                }
+                await MainActor.run { loadedCount += 1 }
                 if let repo = result {
                     freshRepos.append(repo)
+                    // Show repo on screen immediately
+                    await MainActor.run {
+                        // Replace if already exists (refresh), otherwise append
+                        if let idx = repos.firstIndex(where: { $0.url == repo.url }) {
+                            repos[idx] = repo
+                        } else {
+                            repos.append(repo)
+                        }
+                    }
                 }
             }
         }
 
         // Update UI and persist to disk
         await MainActor.run {
-            repos = freshRepos
             isLoading = false
         }
         saveCache(freshRepos)
-        print("[RepoService] Cached \(freshRepos.count) repos to disk")
     }
 
     /// Force refresh — user-triggered

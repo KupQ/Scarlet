@@ -34,42 +34,42 @@ struct SigningView: View {
                     .padding(.top, 16)
                     .padding(.bottom, 8)
 
-                TabView(selection: $libraryTab) {
-                    // Unsigned tab
-                    ScrollView(.vertical, showsIndicators: false) {
-                        VStack(spacing: 0) {
-                            if appsManager.isImporting {
-                                importingIndicator
-                                    .padding(.top, 16)
-                                    .padding(.horizontal, 20)
-                            }
+                // Content area — no page swipe to avoid conflicting with swipe-to-delete
+                Group {
+                    if libraryTab == 0 {
+                        // Unsigned tab
+                        ScrollView(.vertical, showsIndicators: false) {
+                            VStack(spacing: 0) {
+                                if appsManager.isImporting {
+                                    importingIndicator
+                                        .padding(.top, 16)
+                                        .padding(.horizontal, 20)
+                                }
 
-                            if appsManager.apps.isEmpty && !appsManager.isImporting && downloadManager.pendingDownloads.isEmpty {
-                                emptyState.padding(.top, 60)
-                            } else {
-                                appsList.padding(.top, 20)
+                                if appsManager.apps.isEmpty && !appsManager.isImporting && downloadManager.pendingDownloads.isEmpty {
+                                    emptyState.padding(.top, 60)
+                                } else {
+                                    appsList.padding(.top, 20)
+                                }
                             }
+                            .frame(maxWidth: .infinity)
+                            .padding(.bottom, 80)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.bottom, 80)
-                    }
-                    .tag(0)
-
-                    // Signed tab
-                    ScrollView(.vertical, showsIndicators: false) {
-                        VStack(spacing: 0) {
-                            if signedManager.signedApps.isEmpty {
-                                signedEmptyState.padding(.top, 60)
-                            } else {
-                                signedAppsList.padding(.top, 20)
+                    } else {
+                        // Signed tab
+                        ScrollView(.vertical, showsIndicators: false) {
+                            VStack(spacing: 0) {
+                                if signedManager.signedApps.isEmpty {
+                                    signedEmptyState.padding(.top, 60)
+                                } else {
+                                    signedAppsList.padding(.top, 20)
+                                }
                             }
+                            .frame(maxWidth: .infinity)
+                            .padding(.bottom, 80)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.bottom, 80)
                     }
-                    .tag(1)
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.spring(response: 0.3, dampingFraction: 0.8), value: libraryTab)
             }
             .navigationBarHidden(true)

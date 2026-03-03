@@ -176,6 +176,7 @@ struct RepoDetailView: View {
             }
         }
         .navigationBarHidden(true)
+        .background(InteractivePopGestureEnabler())
         .onAppear { RepoService.shared.activeRepo = repo }
         .onDisappear { RepoService.shared.activeRepo = nil }
     }
