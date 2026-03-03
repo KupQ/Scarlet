@@ -22,11 +22,12 @@ struct ContentView: View {
     @State private var searchText = ""
     @State private var showSettingsCard = false
     @State private var showCertsCard = false
-    @State private var showLangCard = false
     @State private var showPrefsCard = false
+    @State private var showInfoCard = false
     @State private var certsDragOffset: CGFloat = 0
-    @State private var langDragOffset: CGFloat = 0
     @State private var prefsDragOffset: CGFloat = 0
+    @State private var infoDragOffset: CGFloat = 0
+    @State private var langExpanded = false
     @State private var settingsDragActive = false
     @State private var hoveredSettingsOption: Int? = nil
     @State private var showSettingsHint = !UserDefaults.standard.bool(forKey: "settingsHintDismissed")
@@ -135,16 +136,16 @@ struct ContentView: View {
                                 showCertsCard = true
                             }
                         }
-                        settingsIconButton(icon: "character.book.closed", index: 1) {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                showSettingsCard = false
-                                showLangCard = true
-                            }
-                        }
-                        settingsIconButton(icon: "slider.horizontal.3", index: 2) {
+                        settingsIconButton(icon: "slider.horizontal.3", index: 1) {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 showSettingsCard = false
                                 showPrefsCard = true
+                            }
+                        }
+                        settingsIconButton(icon: "info.circle", index: 2) {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                showSettingsCard = false
+                                showInfoCard = true
                             }
                         }
                     }
@@ -240,87 +241,64 @@ struct ContentView: View {
             }
 
             // Language picker glass card
-            if showLangCard {
+            // Info card overlay
+            if showInfoCard {
                 Color.black.opacity(0.4)
                     .ignoresSafeArea()
                     .zIndex(98)
                     .onTapGesture {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            showLangCard = false
+                            showInfoCard = false
                         }
                     }
 
                 VStack(spacing: 0) {
                     Spacer()
-                    VStack(spacing: 20) {
+                    VStack(spacing: 16) {
                         // Drag handle
                         Capsule()
                             .fill(Color.white.opacity(0.25))
                             .frame(width: 36, height: 4)
                             .padding(.top, 10)
 
-                        // Title
-                        Text(L("Choose Language"))
-                            .font(.system(size: 22, weight: .bold))
-                            .foregroundColor(.white)
-
-                        // Language cards
-                        VStack(spacing: 12) {
-                            ForEach(LanguageManager.supportedLanguages) { lang in
-                                let isSelected = langManager.currentLanguage == lang.id
-                                Button {
-                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                                        langManager.currentLanguage = lang.id
-                                    }
-                                    // Dismiss after brief delay
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                            showLangCard = false
-                                        }
-                                    }
-                                } label: {
-                                    HStack(spacing: 16) {
-                                        VStack(alignment: .leading, spacing: 3) {
-                                            Text(lang.name)
-                                                .font(.system(size: 17, weight: .semibold))
-                                                .foregroundColor(.white)
-                                            Text(lang.id.uppercased())
-                                                .font(.system(size: 10, weight: .heavy))
-                                                .foregroundColor(.white.opacity(0.2))
-                                                .tracking(2)
-                                        }
-
-                                        Spacer()
-
-                                        if isSelected {
-                                            Image(systemName: "checkmark.circle.fill")
-                                                .font(.system(size: 22))
-                                                .foregroundColor(.scarletRed)
-                                                .transition(.scale.combined(with: .opacity))
-                                        }
-                                    }
-                                    .padding(16)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 18)
-                                            .fill(.ultraThinMaterial)
-                                            .environment(\.colorScheme, .dark)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 18)
-                                                    .stroke(
-                                                        isSelected ? Color.scarletRed.opacity(0.4) : Color.white.opacity(0.06),
-                                                        lineWidth: isSelected ? 1.5 : 0.5
-                                                    )
-                                            )
-                                            .shadow(color: isSelected ? .scarletRed.opacity(0.15) : .clear, radius: 12)
+                        // App icon + name
+                        VStack(spacing: 10) {
+                            ZStack {
+                                Circle()
+                                    .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.15), .clear],
+                                                         center: .center, startRadius: 0, endRadius: 40))
+                                    .frame(width: 80, height: 80)
+                                Image(systemName: "app.fill")
+                                    .font(.system(size: 36, weight: .light))
+                                    .foregroundStyle(
+                                        LinearGradient(colors: [.scarletRed, .scarletPink],
+                                                       startPoint: .topLeading, endPoint: .bottomTrailing)
                                     )
-                                }
-                                .buttonStyle(.plain)
-                                .scaleEffect(isSelected ? 1.02 : 1.0)
-                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
                             }
+
+                            Text("Scarlet")
+                                .font(.system(size: 22, weight: .bold))
+                                .foregroundColor(.white)
+
+                            Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
+                                .font(.system(size: 12, weight: .medium, design: .monospaced))
+                                .foregroundColor(.white.opacity(0.3))
                         }
-                        .padding(.horizontal, 4)
-                        .padding(.bottom, 24)
+
+                        // Developer info
+                        VStack(spacing: 10) {
+                            infoRow(icon: "person.fill", label: L("Developer"), value: "Scarlet Team")
+                            infoRow(icon: "globe", label: L("Website"), value: "scarlet.app")
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .glassCard(cornerRadius: 16)
+
+                        // Credits
+                        Text(L("Built with ❤️ for the community"))
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.2))
+                            .padding(.bottom, 16)
                     }
                     .padding(.horizontal, 20)
                     .background(
@@ -334,23 +312,23 @@ struct ContentView: View {
                             .shadow(color: .black.opacity(0.5), radius: 30, y: -10)
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 28))
-                    .offset(y: langDragOffset)
+                    .offset(y: infoDragOffset)
                     .gesture(
                         DragGesture()
                             .onChanged { value in
                                 if value.translation.height > 0 {
-                                    langDragOffset = value.translation.height
+                                    infoDragOffset = value.translation.height
                                 }
                             }
                             .onEnded { value in
                                 if value.translation.height > 120 {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                        showLangCard = false
-                                        langDragOffset = 0
+                                        showInfoCard = false
+                                        infoDragOffset = 0
                                     }
                                 } else {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                        langDragOffset = 0
+                                        infoDragOffset = 0
                                     }
                                 }
                             }
@@ -1523,8 +1501,8 @@ struct ContentView: View {
                                 showSettingsCard = false
                                 switch option {
                                 case 0: showCertsCard = true
-                                case 1: showLangCard = true
-                                case 2: showPrefsCard = true
+                                case 1: showPrefsCard = true
+                                case 2: showInfoCard = true
                                 default: break
                                 }
                             }
@@ -1627,6 +1605,77 @@ struct ContentView: View {
                 .padding(.bottom, 16)
 
             VStack(spacing: 12) {
+                // Language selector (dropdown)
+                VStack(spacing: 0) {
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            langExpanded.toggle()
+                        }
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "character.book.closed")
+                                .font(.system(size: 16))
+                                .foregroundColor(.scarletRed)
+                                .frame(width: 20)
+                            Text(L("Language"))
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.white)
+                            Spacer()
+                            Text(LanguageManager.supportedLanguages.first { $0.id == langManager.currentLanguage }?.name ?? "English")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(.white.opacity(0.4))
+                            Image(systemName: langExpanded ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(.white.opacity(0.3))
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                    }
+                    .buttonStyle(.plain)
+
+                    if langExpanded {
+                        Rectangle()
+                            .fill(Color.white.opacity(0.04))
+                            .frame(height: 0.5)
+                            .padding(.horizontal, 12)
+
+                        VStack(spacing: 2) {
+                            ForEach(LanguageManager.supportedLanguages) { lang in
+                                let isSelected = langManager.currentLanguage == lang.id
+                                Button {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                        langManager.currentLanguage = lang.id
+                                        langExpanded = false
+                                    }
+                                } label: {
+                                    HStack {
+                                        Text(lang.name)
+                                            .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
+                                            .foregroundColor(isSelected ? .white : .white.opacity(0.5))
+                                        Spacer()
+                                        if isSelected {
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 12, weight: .bold))
+                                                .foregroundColor(.scarletRed)
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(isSelected ? Color.scarletRed.opacity(0.08) : Color.clear)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 6)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+                }
+                .glassCard(cornerRadius: 14)
+
                 // Notifications toggle
                 HStack(spacing: 12) {
                     Image(systemName: "bell.fill")
@@ -1646,67 +1695,41 @@ struct ContentView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.white.opacity(0.03))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
-                        )
-                )
+                .glassCard(cornerRadius: 14)
 
-                // Cache section
-                VStack(spacing: 12) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "internaldrive")
-                            .font(.system(size: 16))
-                            .foregroundColor(.scarletRed)
-                            .frame(width: 20)
-                        Text(L("Cache"))
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white)
-                        Spacer()
-                        Text(cacheSizeFormatted)
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundColor(.white.opacity(0.4))
-                    }
-
-                    Rectangle()
-                        .fill(Color.white.opacity(0.04))
-                        .frame(height: 0.5)
-
+                // Cache — compact row with inline trash icon
+                HStack(spacing: 12) {
+                    Image(systemName: "internaldrive")
+                        .font(.system(size: 16))
+                        .foregroundColor(.scarletRed)
+                        .frame(width: 20)
+                    Text(L("Cache"))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.white)
+                    Spacer()
+                    Text(cacheSizeFormatted)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.4))
                     Button {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                             ImportedAppsManager.shared.clearAll()
                             SignedAppsManager.shared.clearAll()
                         }
                     } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "trash")
-                                .font(.system(size: 13, weight: .medium))
-                            Text(L("Clear Cache"))
-                                .font(.system(size: 14, weight: .semibold))
-                        }
-                        .foregroundColor(.red)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.red.opacity(0.08))
-                        )
+                        Image(systemName: "trash")
+                            .font(.system(size: 13))
+                            .foregroundColor(.red.opacity(0.7))
+                            .padding(8)
+                            .background(
+                                Circle()
+                                    .fill(Color.red.opacity(0.1))
+                            )
                     }
                     .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.white.opacity(0.03))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
-                        )
-                )
+                .padding(.vertical, 10)
+                .glassCard(cornerRadius: 14)
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 20)
@@ -1727,6 +1750,24 @@ struct ContentView: View {
         let signedSize = SignedAppsManager.shared.totalCacheSize
         let unsignedSize = ImportedAppsManager.shared.totalCacheSize
         return ByteCountFormatter.string(fromByteCount: signedSize + unsignedSize, countStyle: .file)
+    }
+
+    // MARK: - Info Row Helper
+
+    private func infoRow(icon: String, label: String, value: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundColor(.scarletRed)
+                .frame(width: 20)
+            Text(label)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.white.opacity(0.5))
+            Spacer()
+            Text(value)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.white)
+        }
     }
 
     // MARK: - Settings Icon Button
