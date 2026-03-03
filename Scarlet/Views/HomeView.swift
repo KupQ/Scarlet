@@ -50,22 +50,7 @@ struct HomeView: View {
                             .foregroundColor(.white.opacity(0.3))
                     }
                     Spacer()
-                    Button { showAddRepo = true } label: {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.white.opacity(0.03))
-                                .frame(width: 40, height: 40)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
-                                )
-                            Image(systemName: "plus")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.scarletRed.opacity(0.8))
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .contextMenu {
+                    Menu {
                         Button { showAddRepo = true } label: {
                             Label(L("Add Repo"), systemImage: "plus.app")
                         }
@@ -86,6 +71,19 @@ struct HomeView: View {
                             }
                         } label: {
                             Label(L("Add from Clipboard"), systemImage: "doc.on.clipboard")
+                        }
+                    } label: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.white.opacity(0.03))
+                                .frame(width: 40, height: 40)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                                )
+                            Image(systemName: "plus")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.scarletRed.opacity(0.8))
                         }
                     }
                 }
