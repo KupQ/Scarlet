@@ -1434,12 +1434,12 @@ struct ContentView: View {
 
                     // Arrow pointing down
                     Image(systemName: "arrowtriangle.down.fill")
-                        .font(.system(size: 8))
+                        .font(.system(size: 10))
                         .foregroundColor(.white.opacity(0.25))
                         .offset(y: -4)
                 }
                 .fixedSize()
-                .offset(y: -75)
+                .offset(y: -85)
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 .onAppear {
                     hintPulse = false
@@ -1452,12 +1452,11 @@ struct ContentView: View {
                         handPhase = 0
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { handPhase = 1 } // hold down
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2.1) { handPhase = 2 } // up
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { handPhase = 3 } // left
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.9) { handPhase = 4 } // center
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.3) { handPhase = 5 } // right
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.7) { handPhase = 6 } // center
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 4.1) { handPhase = 0 } // down to rest
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 4.7) { runHandLoop() } // repeat
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { handPhase = 5 } // right
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.9) { handPhase = 3 } // left
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.3) { handPhase = 4 } // middle
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.7) { handPhase = 0 } // down to rest
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 4.3) { runHandLoop() } // repeat
                     }
                     runHandLoop()
                 }
