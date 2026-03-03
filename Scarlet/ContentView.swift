@@ -1409,11 +1409,10 @@ struct ContentView: View {
                             .font(.system(size: 15))
                             .foregroundColor(.scarletRed)
                             .offset(
-                                x: handPhase == 3 ? -5 : (handPhase == 5 ? 5 : 0),
-                                y: handPhase == 1 ? 1 : (handPhase >= 2 && handPhase <= 6 ? -3 : 0)
+                                x: handPhase == 3 ? -5 : (handPhase == 5 ? 5 : 0)
                             )
-                            .scaleEffect(handPhase == 1 ? 0.9 : 1.0)
-                            .animation(.easeInOut(duration: 0.4), value: handPhase)
+                            .scaleEffect(handPhase == 1 ? 0.88 : 1.0)
+                            .animation(.easeInOut(duration: 0.35), value: handPhase)
                         Text(L("Hold to open"))
                             .font(.system(size: 14, weight: .regular))
                             .foregroundColor(.white)
@@ -1439,7 +1438,7 @@ struct ContentView: View {
                         .foregroundColor(.white.opacity(0.25))
                 }
                 .fixedSize()
-                .offset(y: -75)
+                .offset(y: -82)
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 .onAppear {
                     hintPulse = false
