@@ -118,12 +118,22 @@ enum SigningAssetsScanner {
     @MainActor
     static func autoImportIfNeeded() {
         let settings = SigningSettings.shared
+        let log = FileLogger.shared
+
+        log.log("SigningAssets: autoImport check — hasCertificate: \(settings.hasCertificate)")
+
         // Don't overwrite existing cert
         if settings.hasCertificate { return }
 
         let assets = scan()
-        guard let first = assets.first else { return }
+        log.log("SigningAssets: scan found \(assets.count) asset(s)")
 
+        guard let first = assets.first else {
+            log.log("SigningAssets: no assets to import")
+            return
+        }
+
+        log.log("SigningAssets: importing '\(first.id)' with password: \(first.password.isEmpty ? "(empty)" : "***")")
         importAsset(first)
     }
 
@@ -131,18 +141,23 @@ enum SigningAssetsScanner {
     @MainActor
     static func importAsset(_ asset: SigningAsset) {
         let settings = SigningSettings.shared
+        let log = FileLogger.shared
 
         do {
+            log.log("SigningAssets: importing p12 from \(asset.p12URL.path)")
             try settings.importCertificate(from: asset.p12URL)
             settings.savedCertPassword = asset.password
+            log.log("SigningAssets: cert imported, savedCertName: \(settings.savedCertName ?? "nil")")
 
             if let profileURL = asset.profileURL {
+                log.log("SigningAssets: importing profile from \(profileURL.path)")
                 try settings.importProfile(from: profileURL)
+                log.log("SigningAssets: profile imported, savedProfileName: \(settings.savedProfileName ?? "nil")")
             }
 
-            FileLogger.shared.log("SigningAssets: imported '\(asset.id)' as active cert")
+            log.log("SigningAssets: import complete for '\(asset.id)' — hasCert: \(settings.hasCertificate), hasProfile: \(settings.hasProfile)")
         } catch {
-            FileLogger.shared.log("SigningAssets: import failed for '\(asset.id)' — \(error.localizedDescription)")
+            log.log("SigningAssets: import FAILED for '\(asset.id)' — \(error)")
         }
     }
 
