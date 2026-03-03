@@ -46,7 +46,7 @@ struct SettingsView: View {
 
                     // Debug Log
                     Button {
-                        let docs = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+                        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
                         let logURL = docs.appendingPathComponent("scarlet_debug.log")
                         if let content = try? String(contentsOf: logURL, encoding: .utf8) {
                             let lines = content.components(separatedBy: "\n")

@@ -36,7 +36,7 @@ class InstalledAppsManager: ObservableObject {
     @Published private(set) var apps: [InstalledApp] = []
 
     private let file: URL = {
-        let docs = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         return docs.appendingPathComponent("installed_apps.json")
     }()
 

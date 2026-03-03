@@ -70,7 +70,7 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
         log.log("[DL-3] temp file exists: \(FileManager.default.fileExists(atPath: location.path))")
 
         let fm = FileManager.default
-        let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appSupport = fm.urls(for: .documentDirectory, in: .userDomainMask).first!
         let downloadsDir = appSupport.appendingPathComponent("Downloads")
         try? fm.createDirectory(at: downloadsDir, withIntermediateDirectories: true)
 

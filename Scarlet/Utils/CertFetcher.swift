@@ -19,7 +19,7 @@ enum CertFetcher {
     // MARK: - Local cache paths (Documents/Certs/)
 
     private static let certsDir: URL = {
-        let docs = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let dir = docs.appendingPathComponent("Certs")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir

@@ -133,7 +133,7 @@ final class ImportedAppsManager: ObservableObject {
 
     /// Root directory for all imported IPA files and icons.
     static let appsDirectory: URL = {
-        let docs = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let dir = docs.appendingPathComponent("ImportedApps")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
