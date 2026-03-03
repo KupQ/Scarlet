@@ -84,10 +84,14 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
         }
 
         tasks.removeValue(forKey: downloadTask)
-        completions[id]?(dest)
-        completions.removeValue(forKey: id)
+        let completion = completions.removeValue(forKey: id)
         activeDownloads.removeValue(forKey: id)
         pendingDownloads.removeAll { $0.id == id }
+
+        // Dispatch to main thread — ImportedAppsManager is @MainActor
+        DispatchQueue.main.async {
+            completion?(dest)
+        }
 
         // Notify if backgrounded
         if UIApplication.shared.applicationState != .active {
