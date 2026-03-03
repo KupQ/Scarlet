@@ -102,6 +102,20 @@ struct HomeView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
 
+                    // Loading progress indicator
+                    if repoService.isLoading {
+                        VStack(spacing: 10) {
+                            ProgressView()
+                                .tint(.scarletRed)
+                                .scaleEffect(0.9)
+                            Text(L("Loading sources... \(repoService.loadedCount)/\(repoService.totalCount)"))
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.white.opacity(0.35))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                    }
+
                     // Repos
                     repoAppsSection
 

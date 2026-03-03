@@ -171,6 +171,8 @@ class RepoService: ObservableObject {
     @Published var isLoading = false
     @Published var lastError: String?
     @Published var activeRepo: LoadedRepo?
+    @Published var loadedCount = 0
+    @Published var totalCount = 0
 
     private let localKey = "scarlet_local_repo_urls"
 
@@ -268,38 +270,45 @@ class RepoService: ObservableObject {
     func fetchRepos() async {
         let defaultList = defaultURLs
         let localList = localURLs
-        await MainActor.run { isLoading = true; lastError = nil }
+        let allURLs: [(url: String, isDefault: Bool)] =
+            defaultList.map { ($0, true) } + localList.map { ($0, false) }
 
-        var loaded: [LoadedRepo] = []
-
-        // Load default repos
-        for urlString in defaultList {
-            guard let url = URL(string: urlString) else { continue }
-            do {
-                let (data, _) = try await URLSession.shared.data(from: url)
-                let manifest = try JSONDecoder().decode(RepoManifest.self, from: data)
-                loaded.append(LoadedRepo(url: urlString, manifest: manifest, isDefault: true))
-            } catch {
-                print("[RepoService] Error loading default \(urlString): \(error)")
-            }
+        await MainActor.run {
+            isLoading = true
+            lastError = nil
+            loadedCount = 0
+            totalCount = allURLs.count
+            repos = []
         }
 
-        // Load local repos
-        for urlString in localList {
-            guard let url = URL(string: urlString) else { continue }
-            do {
-                let (data, _) = try await URLSession.shared.data(from: url)
-                let manifest = try JSONDecoder().decode(RepoManifest.self, from: data)
-                loaded.append(LoadedRepo(url: urlString, manifest: manifest, isDefault: false))
-            } catch {
-                print("[RepoService] Error loading local \(urlString): \(error)")
-                await MainActor.run { self.lastError = "Failed to load repo" }
+        // Load all repos concurrently — each appears on screen instantly
+        await withTaskGroup(of: LoadedRepo?.self) { group in
+            for entry in allURLs {
+                group.addTask {
+                    guard let url = URL(string: entry.url) else { return nil }
+                    do {
+                        let (data, _) = try await URLSession.shared.data(from: url)
+                        let manifest = try JSONDecoder().decode(RepoManifest.self, from: data)
+                        return LoadedRepo(url: entry.url, manifest: manifest, isDefault: entry.isDefault)
+                    } catch {
+                        print("[RepoService] Error loading \(entry.url): \(error)")
+                        return nil
+                    }
+                }
+            }
+
+            for await result in group {
+                await MainActor.run {
+                    loadedCount += 1
+                    if let repo = result {
+                        repos.append(repo)
+                    }
+                }
             }
         }
 
         await MainActor.run {
-            self.repos = loaded
-            self.isLoading = false
+            isLoading = false
         }
     }
 }
