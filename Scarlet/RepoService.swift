@@ -75,11 +75,7 @@ struct RepoApp: Codable, Identifiable, Hashable {
 
     // MARK: - Computed (universal — flat fields take priority, versions[] as fallback)
 
-    var id: String {
-        let bundle = bundleID ?? bundleIdentifier ?? _stableId
-        let ver = resolvedVersion ?? ""
-        return bundle + ver
-    }
+    var id: String { _stableId }
 
     // Custom decoding to generate a stable fallback ID once
     enum CodingKeys: String, CodingKey {
@@ -111,12 +107,17 @@ struct RepoApp: Codable, Identifiable, Hashable {
         subtitle = try c.decodeIfPresent(String.self, forKey: .subtitle)
         tintColor = try c.decodeIfPresent(String.self, forKey: .tintColor)
 
-        // Generate stable fallback from name + downloadURL if no bundle ID
-        if bundleID == nil && bundleIdentifier == nil {
-            let fallback = (name ?? "") + (downloadURL ?? down ?? UUID().uuidString)
-            _stableId = "gen_\(abs(fallback.hashValue))"
+        // Generate a stable unique ID for every app
+        let bid = bundleID ?? bundleIdentifier ?? ""
+        let dl = downloadURL ?? down ?? ""
+        let ver = version ?? ""
+        let nm = name ?? ""
+        if !bid.isEmpty || !dl.isEmpty {
+            // Combine all distinguishing fields for uniqueness
+            let combo = bid + "|" + ver + "|" + dl + "|" + nm
+            _stableId = "app_\(abs(combo.hashValue))"
         } else {
-            _stableId = ""
+            _stableId = UUID().uuidString
         }
     }
 
