@@ -1386,39 +1386,47 @@ struct ContentView: View {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 showSettingsCard.toggle()
                 hoveredSettingsOption = nil
-                // Dismiss hint forever on first tap
-                if showSettingsHint {
-                    showSettingsHint = false
-                    UserDefaults.standard.set(true, forKey: "settingsHintDismissed")
-                }
             }
         }
         .overlay(alignment: .top) {
             if showSettingsHint {
-                VStack(spacing: 4) {
-                    Text(L("Hold for Settings"))
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.white.opacity(0.9))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            Capsule()
-                                .fill(.ultraThinMaterial)
-                                .environment(\.colorScheme, .dark)
-                                .overlay(
-                                    Capsule()
-                                        .stroke(Color.scarletRed.opacity(hintPulse ? 0.6 : 0.25), lineWidth: 1)
-                                )
-                                .shadow(color: .scarletRed.opacity(hintPulse ? 0.3 : 0.1), radius: hintPulse ? 10 : 4)
-                        )
+                VStack(spacing: 6) {
+                    VStack(spacing: 4) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "hand.tap.fill")
+                                .font(.system(size: 12))
+                                .foregroundColor(.scarletRed)
+                            Text(L("Hold to open"))
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.white)
+                        }
+                        Text(L("Press & hold the gear icon to access Settings, Certificates & Language"))
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(.white.opacity(0.5))
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(.ultraThinMaterial)
+                            .environment(\.colorScheme, .dark)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.scarletRed.opacity(hintPulse ? 0.5 : 0.2), lineWidth: 1)
+                            )
+                            .shadow(color: .scarletRed.opacity(hintPulse ? 0.25 : 0.08), radius: hintPulse ? 12 : 5)
+                    )
 
                     // Arrow pointing down
                     Image(systemName: "arrowtriangle.down.fill")
                         .font(.system(size: 8))
-                        .foregroundColor(.white.opacity(0.3))
-                        .offset(y: -3)
+                        .foregroundColor(.white.opacity(0.25))
+                        .offset(y: -4)
                 }
-                .offset(y: -45)
+                .frame(width: 200)
+                .offset(y: -70)
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 .onAppear {
                     withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
@@ -1438,6 +1446,11 @@ struct ContentView: View {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 showSettingsCard = true
                                 settingsDragActive = true
+                                // Dismiss hint forever on hold
+                                if showSettingsHint {
+                                    showSettingsHint = false
+                                    UserDefaults.standard.set(true, forKey: "settingsHintDismissed")
+                                }
                             }
                             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                             impactFeedback.impactOccurred()
