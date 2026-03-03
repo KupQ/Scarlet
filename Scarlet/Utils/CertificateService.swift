@@ -91,7 +91,7 @@ final class CertificateService: ObservableObject {
     static let shared = CertificateService()
 
     private let apiURL = "https://api.nekoo.eu.org/certificate"
-    private let apiKey = ""  // TODO: inject securely
+    private let apiKey = "0332d944d65e41df8a0be6010033d1df"
 
     @Published var certificates: [RemoteCertificate] = []
     @Published var isLoading = false

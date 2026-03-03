@@ -17,7 +17,7 @@
 "Import" = "Import";
 
 // ─── Home View ───
-"Scarlet" = "1Sign";
+"Scarlet" = "Alpha";
 "iOS App Signing" = "iOS App Signing";
 "Sign & Install" = "Sign & Install";
 "Powered by zsign" = "Powered by zsign";
@@ -93,7 +93,7 @@
 "Strip app extensions" = "Strip app extensions";
 "About" = "About";
 "Language" = "Language";
-"About Scarlet" = "About 1Sign";
+"About Scarlet" = "About Alpha";
 
 // ─── Signing Sheet ───
 "Compression" = "Compression";
@@ -146,7 +146,7 @@
 "Bundled" = "Bundled";
 
 // ─── Splash ───
-"Scarlet" = "1Sign";
+"Scarlet" = "Alpha";
 
 // ─── Misc ───
 "•" = "•";

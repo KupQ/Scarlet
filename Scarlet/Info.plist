@@ -22,7 +22,7 @@
 		<string>itms-services</string>
 	</array>
 	<key>CFBundleDisplayName</key>
-	<string>1Sign</string>
+	<string>Alpha</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>1Sign runs a local server to install signed apps on this device.</string>
 	<key>UIBackgroundModes</key>
