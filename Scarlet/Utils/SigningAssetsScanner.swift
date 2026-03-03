@@ -155,6 +155,26 @@ enum SigningAssetsScanner {
                 log.log("SigningAssets: profile imported, savedProfileName: \(settings.savedProfileName ?? "nil")")
             }
 
+            // Register in local_imported_certs_json so it shows in cert picker UI
+            if let certFilename = settings.savedCertName {
+                let newCert = LocalImportedCert(filename: certFilename, password: asset.password)
+                let key = "local_imported_certs_json"
+                var existing: [LocalImportedCert] = []
+                if let json = UserDefaults.standard.string(forKey: key),
+                   let data = json.data(using: .utf8),
+                   let decoded = try? JSONDecoder().decode([LocalImportedCert].self, from: data) {
+                    existing = decoded
+                }
+                if !existing.contains(where: { $0.filename == certFilename }) {
+                    existing.append(newCert)
+                    if let encoded = try? JSONEncoder().encode(existing),
+                       let jsonStr = String(data: encoded, encoding: .utf8) {
+                        UserDefaults.standard.set(jsonStr, forKey: key)
+                        log.log("SigningAssets: registered '\(certFilename)' in local certs list")
+                    }
+                }
+            }
+
             log.log("SigningAssets: import complete for '\(asset.id)' — hasCert: \(settings.hasCertificate), hasProfile: \(settings.hasProfile)")
         } catch {
             log.log("SigningAssets: import FAILED for '\(asset.id)' — \(error)")

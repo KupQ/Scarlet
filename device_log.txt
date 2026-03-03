@@ -1,0 +1,50 @@
+[2026-03-03T14:34:55Z] Found 1 provisioned devices
+[2026-03-03T14:34:55Z] Extracted UDID: 00008150-001261A93CDA401C
+[2026-03-03T14:34:55Z] SigningAssets: seeded bundled 'National Oilwell Varco'
+[2026-03-03T14:34:55Z] SigningAssets: autoImport check — hasCertificate: false
+[2026-03-03T14:34:55Z] SigningAssets: password matched from known list
+[2026-03-03T14:34:55Z] SigningAssets: found 'National Oilwell Varco' — p12: certificate.p12, profile: provision.mobileprovision, pass: ***
+[2026-03-03T14:34:55Z] SigningAssets: scan found 1 asset(s)
+[2026-03-03T14:34:55Z] SigningAssets: importing 'National Oilwell Varco' with password: ***
+[2026-03-03T14:34:55Z] SigningAssets: importing p12 from /private/var/mobile/Containers/Data/Application/18BF2373-C83B-4CF9-A5DD-53F4CA9869CF/Library/Application Support/signing-assets/National Oilwell Varco/certificate.p12
+[2026-03-03T14:34:55Z] SigningAssets: cert imported, savedCertName: certificate.p12
+[2026-03-03T14:34:55Z] SigningAssets: importing profile from /private/var/mobile/Containers/Data/Application/18BF2373-C83B-4CF9-A5DD-53F4CA9869CF/Library/Application Support/signing-assets/National Oilwell Varco/provision.mobileprovision
+[2026-03-03T14:34:55Z] SigningAssets: profile imported, savedProfileName: provision.mobileprovision
+[2026-03-03T14:34:55Z] SigningAssets: import complete for 'National Oilwell Varco' — hasCert: true, hasProfile: true
+[2026-03-03T14:34:55Z] Fetching certificates for UDID: 00008150-001261A93CDA401C
+[2026-03-03T14:34:55Z] CertFetcher: server.p12 updated (4221 bytes)
+[2026-03-03T14:34:55Z] CertFetcher: AppleWWDRCAG3.cer updated (1109 bytes)
+[2026-03-03T14:34:56Z] API returned 4 entries
+[2026-03-03T14:34:56Z]   [0] Luohe Yin Ping Network Technology Co., LTD. (W7CI5F) ✓
+[2026-03-03T14:34:56Z]   [1] Daniel Petersn (IE1EEG) ✓
+[2026-03-03T14:34:56Z]   [2] kingsley lee (C3UI72) ✓
+[2026-03-03T14:34:56Z]   [3] Luohe Yin Ping Network Technology Co., LTD. (W7CI5F) ✓
+[2026-03-03T14:34:56Z] Total certificates: 5
+[2026-03-03T14:34:56Z] Fetching certificates for UDID: 00008150-001261A93CDA401C
+[2026-03-03T14:34:56Z] API returned 4 entries
+[2026-03-03T14:34:56Z]   [0] Luohe Yin Ping Network Technology Co., LTD. (W7CI5F) ✓
+[2026-03-03T14:34:56Z]   [1] Daniel Petersn (IE1EEG) ✓
+[2026-03-03T14:34:56Z]   [2] kingsley lee (C3UI72) ✓
+[2026-03-03T14:34:56Z]   [3] Luohe Yin Ping Network Technology Co., LTD. (W7CI5F) ✓
+[2026-03-03T14:34:56Z] Total certificates: 5
+[2026-03-03T14:34:59Z] Fetching certificates for UDID: 00008150-001261A93CDA401C
+[2026-03-03T14:34:59Z] API returned 4 entries
+[2026-03-03T14:34:59Z]   [0] Luohe Yin Ping Network Technology Co., LTD. (W7CI5F) ✓
+[2026-03-03T14:34:59Z]   [1] Daniel Petersn (IE1EEG) ✓
+[2026-03-03T14:34:59Z]   [2] kingsley lee (C3UI72) ✓
+[2026-03-03T14:34:59Z]   [3] Luohe Yin Ping Network Technology Co., LTD. (W7CI5F) ✓
+[2026-03-03T14:34:59Z] Total certificates: 5
+[2026-03-03T14:35:03Z] Fetching certificates for UDID: 00008150-001261A93CDA401C
+[2026-03-03T14:35:03Z] API returned 4 entries
+[2026-03-03T14:35:03Z]   [0] Luohe Yin Ping Network Technology Co., LTD. (W7CI5F) ✓
+[2026-03-03T14:35:03Z]   [1] Daniel Petersn (IE1EEG) ✓
+[2026-03-03T14:35:03Z]   [2] kingsley lee (C3UI72) ✓
+[2026-03-03T14:35:03Z]   [3] Luohe Yin Ping Network Technology Co., LTD. (W7CI5F) ✓
+[2026-03-03T14:35:03Z] Total certificates: 5
+[2026-03-03T14:35:04Z] Fetching certificates for UDID: 00008150-001261A93CDA401C
+[2026-03-03T14:35:04Z] ERROR: cancelled
+[2026-03-03T14:35:04Z] OCSP: cancelled
+[2026-03-03T14:35:04Z] OCSP: cancelled
+[2026-03-03T14:35:04Z] OCSP: cancelled
+[2026-03-03T14:35:04Z] OCSP: cancelled
+[2026-03-03T14:35:04Z] OCSP: cancelled
