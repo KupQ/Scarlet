@@ -1317,7 +1317,7 @@ struct ContentView: View {
                 } label: {
                     VStack(spacing: 6) {
                         Image(systemName: "magnifyingglass")
-                            .font(.system(size: 22, weight: .regular))
+                            .font(.system(size: 32, weight: .thin))
                             .foregroundColor(.gray.opacity(0.6))
                         Capsule()
                             .fill(Color.clear)
@@ -1328,8 +1328,8 @@ struct ContentView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, isSearching ? 20 : 40)
-        .padding(.vertical, 20)
+        .padding(.horizontal, isSearching ? 20 : 24)
+        .padding(.vertical, 18)
         .background(
             RoundedRectangle(cornerRadius: 24)
                 .fill(.ultraThinMaterial)
@@ -1339,7 +1339,7 @@ struct ContentView: View {
                         .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
                 )
         )
-        .padding(.horizontal, isSearching ? 16 : 40)
+        .padding(.horizontal, isSearching ? 16 : 24)
         .padding(.bottom, 20)
     }
 
