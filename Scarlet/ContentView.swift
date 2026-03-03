@@ -1751,18 +1751,9 @@ struct ContentView: View {
         downloadManager.download(
             id: app.id, url: url,
             appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString
-        ) { tempURL in
-            let docs = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-            try? FileManager.default.createDirectory(at: docs, withIntermediateDirectories: true)
-            let filename = "\(app.bundleID ?? app.bundleIdentifier ?? UUID().uuidString).ipa"
-            let dest = docs.appendingPathComponent(filename)
-            try? FileManager.default.removeItem(at: dest)
-            do {
-                try FileManager.default.moveItem(at: tempURL, to: dest)
-                ImportedAppsManager.shared.importIPA(from: dest)
-            } catch {
-                print("[Search] Move error: \(error)")
-            }
+        ) { savedURL in
+            // File is already saved in Application Support/Downloads by DownloadManager
+            ImportedAppsManager.shared.importIPA(from: savedURL)
         }
     }
 }

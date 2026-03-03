@@ -62,10 +62,28 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
                     didFinishDownloadingTo location: URL) {
         guard let id = tasks[downloadTask] else { return }
         let appName = pendingDownloads.first(where: { $0.id == id })?.appName ?? "App"
-        let tmp = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".ipa")
-        try? FileManager.default.moveItem(at: location, to: tmp)
+
+        // Save directly to Application Support — no intermediate temp file
+        let fm = FileManager.default
+        let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let downloadsDir = appSupport.appendingPathComponent("Downloads")
+        try? fm.createDirectory(at: downloadsDir, withIntermediateDirectories: true)
+
+        let dest = downloadsDir.appendingPathComponent(UUID().uuidString + ".ipa")
+        do {
+            try fm.copyItem(at: location, to: dest)
+            FileLogger.shared.log("Download saved: \(dest.lastPathComponent) (\(appName))")
+        } catch {
+            FileLogger.shared.log("ERROR saving download: \(error)")
+            // Try reading data directly as a last resort
+            if let data = try? Data(contentsOf: location) {
+                try? data.write(to: dest)
+                FileLogger.shared.log("Saved via data read fallback (\(data.count) bytes)")
+            }
+        }
+
         tasks.removeValue(forKey: downloadTask)
-        completions[id]?(tmp)
+        completions[id]?(dest)
         completions.removeValue(forKey: id)
         activeDownloads.removeValue(forKey: id)
         pendingDownloads.removeAll { $0.id == id }
@@ -240,18 +258,9 @@ struct RepoDetailView: View {
         downloadManager.download(
             id: app.id, url: url,
             appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString
-        ) { tempURL in
-            let docs = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-            try? FileManager.default.createDirectory(at: docs, withIntermediateDirectories: true)
-            let filename = "\(app.bundleID ?? app.bundleIdentifier ?? UUID().uuidString).ipa"
-            let dest = docs.appendingPathComponent(filename)
-            try? FileManager.default.removeItem(at: dest)
-            do {
-                try FileManager.default.moveItem(at: tempURL, to: dest)
-                ImportedAppsManager.shared.importIPA(from: dest)
-            } catch {
-                print("[RepoDetail] Move error: \(error)")
-            }
+        ) { savedURL in
+            // File is already saved in Application Support/Downloads by DownloadManager
+            ImportedAppsManager.shared.importIPA(from: savedURL)
         }
     }
 }
