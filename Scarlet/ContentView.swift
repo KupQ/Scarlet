@@ -163,6 +163,11 @@ struct ContentView: View {
             // Tab bar (ALWAYS on top so search field is visible)
             glassTabBar
                 .zIndex(95)
+                .onReceive(NotificationCenter.default.publisher(for: .switchToLibrary)) { _ in
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        selectedTab = .sign
+                    }
+                }
 
             // Certificates liquid glass card
             if showCertsCard {

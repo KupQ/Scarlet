@@ -266,5 +266,15 @@ struct RepoDetailView: View {
             // File is already saved in Application Support/Downloads by DownloadManager
             ImportedAppsManager.shared.importIPA(from: savedURL)
         }
+
+        // Navigate back and switch to Library tab
+        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            NotificationCenter.default.post(name: .switchToLibrary, object: nil)
+        }
     }
+}
+
+extension Notification.Name {
+    static let switchToLibrary = Notification.Name("switchToLibrary")
 }
