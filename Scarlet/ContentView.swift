@@ -1439,7 +1439,7 @@ struct ContentView: View {
                 }
                 .fixedSize()
                 .offset(y: -82)
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                .transition(.opacity)
                 .onAppear {
                     hintPulse = false
                     handPhase = 0
