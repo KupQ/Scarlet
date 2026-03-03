@@ -1407,7 +1407,7 @@ struct ContentView: View {
                             .font(.system(size: 15))
                             .foregroundColor(.scarletRed)
                         Text(L("Hold to open"))
-                            .font(.system(size: 14, weight: .bold))
+                            .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.white)
                             .fixedSize()
                     }
@@ -1436,7 +1436,7 @@ struct ContentView: View {
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 .onAppear {
                     hintPulse = false
-                    withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+                    withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
                         hintPulse = true
                     }
                 }
