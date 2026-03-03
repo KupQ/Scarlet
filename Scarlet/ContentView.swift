@@ -72,34 +72,35 @@ struct ContentView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            Group {
-                switch selectedTab {
-                case .home:
-                    NavigationView {
-                        HomeView(signingState: signingState, switchToLibrary: {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                selectedTab = .sign
-                            }
-                        })
-                        .navigationBarHidden(true)
-                        .navigationTitle("")
-                        .navigationBarTitleDisplayMode(.inline)
+            // Keep all tabs alive so navigation state is preserved
+            NavigationView {
+                HomeView(signingState: signingState, switchToLibrary: {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        selectedTab = .sign
                     }
-                    .navigationViewStyle(.stack)
-                case .sign:
-                    NavigationView {
-                        SigningView(signingState: signingState, onAppTapped: { app in
-                            openConfigSheet(app)
-                        })
-                        .navigationBarHidden(true)
-                        .navigationTitle("")
-                        .navigationBarTitleDisplayMode(.inline)
-                    }
-                    .navigationViewStyle(.stack)
-                case .settings:
-                    Color.bgPrimary.ignoresSafeArea()
-                }
+                })
+                .navigationBarHidden(true)
+                .navigationTitle("")
+                .navigationBarTitleDisplayMode(.inline)
             }
+            .navigationViewStyle(.stack)
+            .opacity(selectedTab == .home ? 1 : 0)
+            .allowsHitTesting(selectedTab == .home)
+
+            NavigationView {
+                SigningView(signingState: signingState, onAppTapped: { app in
+                    openConfigSheet(app)
+                })
+                .navigationBarHidden(true)
+                .navigationTitle("")
+                .navigationBarTitleDisplayMode(.inline)
+            }
+            .navigationViewStyle(.stack)
+            .opacity(selectedTab == .sign ? 1 : 0)
+            .allowsHitTesting(selectedTab == .sign)
+
+            Color.bgPrimary.ignoresSafeArea()
+                .opacity(selectedTab == .settings ? 1 : 0)
 
 
             // Search results overlay (above content, below tab bar)
