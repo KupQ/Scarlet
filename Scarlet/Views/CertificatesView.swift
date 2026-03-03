@@ -167,35 +167,28 @@ struct CertificatesView: View {
                     }
                 }
                 Spacer()
-                HStack(spacing: 10) {
-                    // Fetch from server
+                Menu {
                     Button {
                         Task {
                             await certService.fetchCertificates()
                             await localChecker.forceCheckAPICerts(certService.certificates)
                         }
                     } label: {
-                        Image(systemName: certService.isLoading ? "arrow.triangle.2.circlepath" : "icloud.and.arrow.down")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.scarletRed)
-                            .frame(width: 42, height: 42)
-                            .glassCard(cornerRadius: 14)
-                            .rotationEffect(.degrees(certService.isLoading ? 360 : 0))
-                            .animation(certService.isLoading ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: certService.isLoading)
+                        Label(L("Fetch from Server"), systemImage: "icloud.and.arrow.down")
                     }
-                    .disabled(certService.isLoading)
 
-                    // Import local cert
                     Button {
                         filePickerType = .p12
                         showFilePicker = true
                     } label: {
-                        Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.scarletRed)
-                            .frame(width: 42, height: 42)
-                            .glassCard(cornerRadius: 14)
+                        Label(L("Import Certificate (.p12)"), systemImage: "doc.badge.plus")
                     }
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.scarletRed)
+                        .frame(width: 42, height: 42)
+                        .glassCard(cornerRadius: 14)
                 }
             }
             .padding(.horizontal, 20)
