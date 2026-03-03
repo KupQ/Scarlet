@@ -1310,6 +1310,12 @@ struct ContentView: View {
                 ForEach(Tab.allCases, id: \.rawValue) { tab in
                     tabButton(tab)
                 }
+                // Divider
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(Color.white.opacity(0.08))
+                    .frame(width: 1.5, height: 28)
+                    .padding(.horizontal, 4)
+
                 // Search button
                 Button {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
@@ -1391,17 +1397,17 @@ struct ContentView: View {
         .overlay(alignment: .top) {
             if showSettingsHint && !showSettingsCard {
                 VStack(spacing: 5) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: 7) {
                         Image(systemName: "hand.tap.fill")
-                            .font(.system(size: 13))
+                            .font(.system(size: 15))
                             .foregroundColor(.scarletRed)
                         Text(L("Hold to open"))
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.white)
                             .fixedSize()
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
                     .fixedSize()
                     .background(
                         RoundedRectangle(cornerRadius: 12)
