@@ -31,6 +31,7 @@ struct ContentView: View {
     @State private var hoveredSettingsOption: Int? = nil
     @State private var showSettingsHint = !UserDefaults.standard.bool(forKey: "settingsHintDismissed")
     @State private var hintPulse = false
+    @State private var handPhase = 0 // 0=rest, 1=press, 2=up, 3=left, 4=right
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -1406,6 +1407,12 @@ struct ContentView: View {
                         Image(systemName: "hand.tap.fill")
                             .font(.system(size: 15))
                             .foregroundColor(.scarletRed)
+                            .offset(
+                                x: handPhase == 3 ? -5 : (handPhase == 4 ? 5 : 0),
+                                y: handPhase == 1 ? 2 : (handPhase >= 2 ? -4 : 0)
+                            )
+                            .scaleEffect(handPhase == 1 ? 0.9 : 1.0)
+                            .animation(.easeInOut(duration: 0.4), value: handPhase)
                         Text(L("Hold to open"))
                             .font(.system(size: 14, weight: .regular))
                             .foregroundColor(.white)
@@ -1439,6 +1446,18 @@ struct ContentView: View {
                     withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
                         hintPulse = true
                     }
+                    // Hand gesture demo loop
+                    func runHandLoop() {
+                        guard showSettingsHint else { return }
+                        handPhase = 0
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { handPhase = 1 } // press
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { handPhase = 2 } // up
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { handPhase = 3 } // left
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { handPhase = 4 } // right
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { handPhase = 0 } // rest
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { runHandLoop() } // repeat
+                    }
+                    runHandLoop()
                     // Auto-dismiss after 8 seconds
                     DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
                         withAnimation { showSettingsHint = false }
