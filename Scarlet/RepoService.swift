@@ -3,42 +3,106 @@ import SwiftUI
 
 // MARK: - Models
 
+/// AltStore v2 nested version entry (used by ~20% of repos).
+struct AppVersion: Codable, Hashable {
+    let version: String?
+    let date: String?
+    let downloadURL: String?
+    let size: Int?
+    let localizedDescription: String?
+    let minOSVersion: String?
+    let sha256: String?
+}
+
+/// Repo news item (some repos include news/announcements).
+struct RepoNews: Codable, Identifiable {
+    let title: String?
+    let identifier: String?
+    let caption: String?
+    let tintColor: String?
+    let imageURL: String?
+    let date: String?
+    let url: String?
+    let notify: Bool?
+    var id: String { identifier ?? title ?? UUID().uuidString }
+}
+
 struct RepoManifest: Codable {
     let name: String?
     let identifier: String?
     let sourceURL: String?
     let iconURL: String?
     let subtitle: String?
+    let website: String?
     let apps: [RepoApp]?
+    let news: [RepoNews]?
 
     var displayName: String { name ?? "Unknown Repo" }
     var appCount: Int { apps?.count ?? 0 }
 }
 
 struct RepoApp: Codable, Identifiable, Hashable {
+    // Core fields (present in all formats)
     let name: String?
     let bundleID: String?
     let bundleIdentifier: String?
+    let developerName: String?
+    let localizedDescription: String?
+    let iconURL: String?
+    let icon: String?           // some repos use "icon" instead of "iconURL"
+    let type: Int?
+
+    // Flat format fields (ESign / most repos)
     let version: String?
     let size: Int?
     let downloadURL: String?
-    let down: String?  // some repos use "down" instead of "downloadURL"
-    let localizedDescription: String?
-    let iconURL: String?
-    let icon: String?  // some repos use "icon" instead of "iconURL"
-    let developerName: String?
+    let down: String?           // some repos use "down" instead of "downloadURL"
     let versionDate: String?
-    let type: Int?
     let appUpdateTime: String?
+    let versionDescription: String?
 
-    var id: String { (bundleID ?? bundleIdentifier ?? UUID().uuidString) + (version ?? "") }
+    // AltStore v2 format (versions nested per app)
+    let versions: [AppVersion]?
+
+    // Optional rich fields
+    let screenshotURLs: [String]?
+    let subtitle: String?
+    let tintColor: String?
+
+    // MARK: - Computed (universal — flat fields take priority, versions[] as fallback)
+
+    var id: String {
+        let bundle = bundleID ?? bundleIdentifier ?? UUID().uuidString
+        let ver = resolvedVersion ?? ""
+        return bundle + ver
+    }
 
     var displayName: String { name ?? "Unknown App" }
-    var resolvedDownloadURL: String? { downloadURL ?? down }
+
+    var resolvedDownloadURL: String? {
+        downloadURL ?? down ?? versions?.first?.downloadURL
+    }
+
     var resolvedIconURL: String? { iconURL ?? icon }
 
+    var resolvedVersion: String? {
+        version ?? versions?.first?.version
+    }
+
+    var resolvedSize: Int? {
+        size ?? versions?.first?.size
+    }
+
+    var resolvedDate: String? {
+        versionDate ?? appUpdateTime ?? versions?.first?.date
+    }
+
+    var resolvedDescription: String? {
+        localizedDescription ?? versions?.first?.localizedDescription
+    }
+
     var sizeString: String {
-        guard let s = size else { return "—" }
+        guard let s = resolvedSize else { return "—" }
         if s > 1_000_000_000 { return String(format: "%.1f GB", Double(s) / 1_000_000_000) }
         if s > 1_000_000 { return String(format: "%.0f MB", Double(s) / 1_000_000) }
         return String(format: "%.0f KB", Double(s) / 1_000)

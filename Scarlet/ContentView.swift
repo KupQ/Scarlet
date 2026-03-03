@@ -1715,7 +1715,7 @@ struct ContentView: View {
                     .foregroundColor(.white)
                     .lineLimit(1)
                 HStack(spacing: 6) {
-                    Text("v\(app.version ?? "?") • \(app.sizeString)")
+                    Text("v\(app.resolvedVersion ?? "?") • \(app.sizeString)")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.white.opacity(0.25))
                     // Repo source badge (only in global search)

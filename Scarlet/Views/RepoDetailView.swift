@@ -207,7 +207,7 @@ struct RepoDetailView: View {
                     .foregroundColor(.white)
                     .lineLimit(1)
                 HStack(spacing: 4) {
-                    if let v = app.version {
+                    if let v = app.resolvedVersion {
                         Text("v\(v)")
                             .font(.system(size: 11, weight: .medium))
                     }

@@ -273,8 +273,8 @@ struct HomeView: View {
                             .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
                         HStack(spacing: 6) {
                             Image(systemName: "tag.fill").font(.system(size: 9)).foregroundColor(.scarletRed.opacity(0.7))
-                            Text(app.version ?? "1.0").font(.system(size: 11, weight: .semibold)).foregroundColor(.white.opacity(0.6))
-                            if app.size != nil {
+                            Text(app.resolvedVersion ?? "1.0").font(.system(size: 11, weight: .semibold)).foregroundColor(.white.opacity(0.6))
+                            if app.resolvedSize != nil {
                                 Text("·").foregroundColor(.white.opacity(0.3))
                                 Text(app.sizeString).font(.system(size: 11, weight: .semibold)).foregroundColor(.white.opacity(0.6))
                             }
