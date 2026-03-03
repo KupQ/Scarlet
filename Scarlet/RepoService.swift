@@ -69,12 +69,55 @@ struct RepoApp: Codable, Identifiable, Hashable {
     let subtitle: String?
     let tintColor: String?
 
+    /// Stable fallback identifier for apps that lack bundleID/bundleIdentifier.
+    /// Generated once during decoding so SwiftUI identity stays consistent.
+    private let _stableId: String
+
     // MARK: - Computed (universal — flat fields take priority, versions[] as fallback)
 
     var id: String {
-        let bundle = bundleID ?? bundleIdentifier ?? UUID().uuidString
+        let bundle = bundleID ?? bundleIdentifier ?? _stableId
         let ver = resolvedVersion ?? ""
         return bundle + ver
+    }
+
+    // Custom decoding to generate a stable fallback ID once
+    enum CodingKeys: String, CodingKey {
+        case name, bundleID, bundleIdentifier, developerName, localizedDescription
+        case iconURL, icon, type, version, size, downloadURL, down
+        case versionDate, appUpdateTime, versionDescription, versions
+        case screenshotURLs, subtitle, tintColor
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        name = try c.decodeIfPresent(String.self, forKey: .name)
+        bundleID = try c.decodeIfPresent(String.self, forKey: .bundleID)
+        bundleIdentifier = try c.decodeIfPresent(String.self, forKey: .bundleIdentifier)
+        developerName = try c.decodeIfPresent(String.self, forKey: .developerName)
+        localizedDescription = try c.decodeIfPresent(String.self, forKey: .localizedDescription)
+        iconURL = try c.decodeIfPresent(String.self, forKey: .iconURL)
+        icon = try c.decodeIfPresent(String.self, forKey: .icon)
+        type = try c.decodeIfPresent(Int.self, forKey: .type)
+        version = try c.decodeIfPresent(String.self, forKey: .version)
+        size = try c.decodeIfPresent(Int.self, forKey: .size)
+        downloadURL = try c.decodeIfPresent(String.self, forKey: .downloadURL)
+        down = try c.decodeIfPresent(String.self, forKey: .down)
+        versionDate = try c.decodeIfPresent(String.self, forKey: .versionDate)
+        appUpdateTime = try c.decodeIfPresent(String.self, forKey: .appUpdateTime)
+        versionDescription = try c.decodeIfPresent(String.self, forKey: .versionDescription)
+        versions = try c.decodeIfPresent([AppVersion].self, forKey: .versions)
+        screenshotURLs = try c.decodeIfPresent([String].self, forKey: .screenshotURLs)
+        subtitle = try c.decodeIfPresent(String.self, forKey: .subtitle)
+        tintColor = try c.decodeIfPresent(String.self, forKey: .tintColor)
+
+        // Generate stable fallback from name + downloadURL if no bundle ID
+        if bundleID == nil && bundleIdentifier == nil {
+            let fallback = (name ?? "") + (downloadURL ?? down ?? UUID().uuidString)
+            _stableId = "gen_\(abs(fallback.hashValue))"
+        } else {
+            _stableId = ""
+        }
     }
 
     var displayName: String { name ?? "Unknown App" }
