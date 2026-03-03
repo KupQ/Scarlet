@@ -80,10 +80,10 @@ final class SigningSettings: ObservableObject {
 
     // MARK: - Certificate Management
 
-    /// Directory where certificates and profiles are stored.
+    /// Directory where certificates and profiles are stored (Library — hidden from Files).
     var certsDirectory: URL {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let dir = docs.appendingPathComponent("Certificates")
+        let lib = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
+        let dir = lib.appendingPathComponent("Certificates")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
     }

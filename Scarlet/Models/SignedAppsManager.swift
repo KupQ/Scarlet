@@ -44,7 +44,7 @@ class SignedAppsManager: ObservableObject {
     private let jsonKey = "signed_apps_json"
 
     private init() {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let docs = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
         signedDir = docs.appendingPathComponent("signedapps")
         iconsDir = signedDir.appendingPathComponent("Icons")
         try? FileManager.default.createDirectory(at: signedDir, withIntermediateDirectories: true)

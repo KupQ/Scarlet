@@ -181,7 +181,7 @@ class RepoService: ObservableObject {
     // MARK: - Cache
 
     private var cacheURL: URL {
-        let support = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let support = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
         return support.appendingPathComponent("repo_cache.json")
     }
 

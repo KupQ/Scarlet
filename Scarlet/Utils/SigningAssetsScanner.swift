@@ -28,54 +28,28 @@ enum SigningAssetsScanner {
         "test", "cert", "apple", "12345678", "AppleP12.com"
     ]
 
-    // MARK: - Signing-assets directory
+    // MARK: - Signing-assets directories
 
-    static var assetsDirectory: URL {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let dir = docs.appendingPathComponent("signing-assets")
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir
+    /// Bundled assets inside the app (read-only)
+    static var bundledAssetsDirectory: URL {
+        Bundle.main.bundleURL.appendingPathComponent("signing-assets")
     }
 
-    /// Copies bundled signing-assets from the app bundle to Application Support
-    /// so they become scannable. Only copies folders that don't already exist.
+    /// Copies bundled signing-assets — NO-OP, assets are read directly from bundle
     static func seedBundledAssets() {
-        let fm = FileManager.default
-        let bundledDir = Bundle.main.bundleURL.appendingPathComponent("signing-assets")
-
-        guard fm.fileExists(atPath: bundledDir.path) else {
-            FileLogger.shared.log("SigningAssets: no bundled signing-assets folder at \(bundledDir.path)")
-            return
-        }
-
-        guard let folders = try? fm.contentsOfDirectory(
-            at: bundledDir, includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]
-        ) else { return }
-
-        let destBase = assetsDirectory
-
-        for folder in folders where folder.hasDirectoryPath {
-            let destFolder = destBase.appendingPathComponent(folder.lastPathComponent)
-            if fm.fileExists(atPath: destFolder.path) { continue }
-
-            do {
-                try fm.copyItem(at: folder, to: destFolder)
-                FileLogger.shared.log("SigningAssets: seeded bundled '\(folder.lastPathComponent)'")
-            } catch {
-                FileLogger.shared.log("SigningAssets: failed to seed '\(folder.lastPathComponent)': \(error)")
-            }
-        }
+        // Assets are read directly from the bundle, no copy needed
+        FileLogger.shared.log("SigningAssets: using bundled assets directly from app bundle")
     }
 
     // MARK: - Scan
 
-    /// Scans `Application Support/signing-assets/` and returns discovered assets.
+    /// Scans the app bundle's signing-assets folder and returns discovered assets.
     static func scan() -> [SigningAsset] {
         let fm = FileManager.default
-        let base = assetsDirectory
+        let base = bundledAssetsDirectory
 
-        guard let folders = try? fm.contentsOfDirectory(
+        guard fm.fileExists(atPath: base.path),
+              let folders = try? fm.contentsOfDirectory(
             at: base, includingPropertiesForKeys: nil,
             options: [.skipsHiddenFiles]
         ) else { return [] }
@@ -225,11 +199,12 @@ enum SigningAssetsScanner {
 
     // MARK: - Repo auto-load from repo.txt
 
-    /// Reads `Documents/signing-assets/repo.txt` and adds each URL
+    /// Reads `repo.txt` from the app bundle and adds each URL
     /// (one per line) to RepoService if not already present.
     static func loadReposFromFile() {
-        let repoFile = assetsDirectory.appendingPathComponent("repo.txt")
-        guard let content = try? String(contentsOf: repoFile, encoding: .utf8) else { return }
+        // Check app bundle for repo.txt
+        let bundleRepoFile = Bundle.main.bundleURL.appendingPathComponent("repo.txt")
+        guard let content = try? String(contentsOf: bundleRepoFile, encoding: .utf8) else { return }
 
         let lines = content.components(separatedBy: .newlines)
             .map { $0.trimmingCharacters(in: .whitespaces) }

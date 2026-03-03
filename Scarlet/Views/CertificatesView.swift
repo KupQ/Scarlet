@@ -63,7 +63,7 @@ struct CertificatesView: View {
             localCertsJSON = json
         }
         // Delete file from disk
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let docs = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
         let fileURL = docs.appendingPathComponent(cert.filename)
         try? FileManager.default.removeItem(at: fileURL)
         // Clear active cert if it was the deleted one

@@ -16,11 +16,11 @@ enum CertFetcher {
     private static let p12RemoteURL  = URL(string: "https://nekoo.eu.org/scarlet/server.p12")!
     private static let wwdrRemoteURL = URL(string: "https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer")!
 
-    // MARK: - Local cache paths (Documents/Certs/)
+    // MARK: - Local cache paths (Library/Certs/ — hidden from Files app)
 
     private static let certsDir: URL = {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let dir = docs.appendingPathComponent("Certs")
+        let lib = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
+        let dir = lib.appendingPathComponent("Certs")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
     }()
