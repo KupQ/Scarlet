@@ -30,12 +30,9 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDataDelegate {
         return URLSession(configuration: config, delegate: self, delegateQueue: .main)
     }()
 
-    /// Downloads directory inside Documents — always writable
+    /// Downloads go to the same unsigned/ dir as imported apps
     private var downloadsDir: URL {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let dir = docs.appendingPathComponent("Downloads")
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir
+        ImportedAppsManager.appsDirectory
     }
 
     func download(id: String, url: URL, appName: String = "", iconURL: String? = nil, sizeString: String = "", completion: @escaping (URL) -> Void) {
