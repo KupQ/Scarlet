@@ -17,6 +17,8 @@ struct SettingsView: View {
     @State private var showProfilePicker = false
     @State private var showImportSuccess = false
     @State private var importMessage = ""
+    @State private var showDebugLog = false
+    @State private var debugLogText = ""
 
     var body: some View {
         ZStack {
@@ -41,6 +43,35 @@ struct SettingsView: View {
 
                     // About Section
                     aboutSection
+
+                    // Debug Log
+                    Button {
+                        let docs = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+                        let logURL = docs.appendingPathComponent("scarlet_debug.log")
+                        if let content = try? String(contentsOf: logURL, encoding: .utf8) {
+                            let lines = content.components(separatedBy: "\n")
+                            debugLogText = lines.suffix(100).joined(separator: "\n")
+                        } else {
+                            debugLogText = "No log file found"
+                        }
+                        showDebugLog = true
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "doc.text.magnifyingglass")
+                                .font(.system(size: 20))
+                                .foregroundColor(.orange)
+                            Text("Debug Log")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.white)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13))
+                                .foregroundColor(.gray)
+                        }
+                        .padding(14)
+                        .glassCard(cornerRadius: 18)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 40)
@@ -74,6 +105,25 @@ struct SettingsView: View {
             Button(L("OK")) {}
         } message: {
             Text(importMessage)
+        }
+        .sheet(isPresented: $showDebugLog) {
+            NavigationView {
+                ScrollView {
+                    Text(debugLogText)
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundColor(.white)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .background(Color.black)
+                .navigationTitle("Debug Log")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Done") { showDebugLog = false }
+                    }
+                }
+            }
         }
     }
 

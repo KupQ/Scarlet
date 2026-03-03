@@ -63,30 +63,38 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
                     didFinishDownloadingTo location: URL) {
         guard let id = tasks[downloadTask] else { return }
         let appName = pendingDownloads.first(where: { $0.id == id })?.appName ?? "App"
+        let log = FileLogger.shared
 
-        // Save directly to Application Support — no intermediate temp file
+        log.log("[DL-1] didFinishDownloadingTo for '\(appName)' thread=\(Thread.isMainThread ? "main" : "bg")")
+        log.log("[DL-2] temp location: \(location.path)")
+        log.log("[DL-3] temp file exists: \(FileManager.default.fileExists(atPath: location.path))")
+
         let fm = FileManager.default
         let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let downloadsDir = appSupport.appendingPathComponent("Downloads")
         try? fm.createDirectory(at: downloadsDir, withIntermediateDirectories: true)
 
         let dest = downloadsDir.appendingPathComponent(UUID().uuidString + ".ipa")
+        log.log("[DL-4] dest path: \(dest.path)")
+
         var saved = false
         do {
             try fm.copyItem(at: location, to: dest)
             saved = true
-            FileLogger.shared.log("Download saved: \(dest.lastPathComponent) (\(appName))")
+            let size = (try? fm.attributesOfItem(atPath: dest.path)[.size] as? Int64) ?? -1
+            log.log("[DL-5] copyItem OK, saved size=\(size) bytes")
         } catch {
-            FileLogger.shared.log("ERROR saving download (copy): \(error)")
-            // Try reading data directly as a last resort
+            log.log("[DL-5] ERROR copyItem: \(error)")
             if let data = try? Data(contentsOf: location) {
                 do {
                     try data.write(to: dest)
                     saved = true
-                    FileLogger.shared.log("Saved via data read fallback (\(data.count) bytes)")
+                    log.log("[DL-6] data fallback OK (\(data.count) bytes)")
                 } catch {
-                    FileLogger.shared.log("ERROR saving download (data write): \(error)")
+                    log.log("[DL-6] ERROR data write: \(error)")
                 }
+            } else {
+                log.log("[DL-6] ERROR cannot read temp file data")
             }
         }
 
@@ -95,15 +103,17 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
         activeDownloads.removeValue(forKey: id)
         pendingDownloads.removeAll { $0.id == id }
 
-        // Only call completion if the file was actually saved
         guard saved, fm.fileExists(atPath: dest.path) else {
-            FileLogger.shared.log("ERROR: Download file NOT saved — skipping import for \(appName)")
+            log.log("[DL-7] ABORT: file not saved, skipping import")
             return
         }
 
-        // Dispatch to main thread — ImportedAppsManager is @MainActor
+        log.log("[DL-7] file verified, dispatching import to main")
+
         DispatchQueue.main.async {
+            log.log("[DL-8] main dispatch fired, calling completion")
             completion?(dest)
+            log.log("[DL-9] completion returned")
         }
 
         // Notify if backgrounded

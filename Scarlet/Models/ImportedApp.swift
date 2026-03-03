@@ -158,21 +158,30 @@ final class ImportedAppsManager: ObservableObject {
         importingFileName = url.lastPathComponent
         isImporting = true
 
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self else { return }
+        let log = FileLogger.shared
+        log.log("[IMP-1] importIPA called, url=\(url.path) thread=\(Thread.isMainThread ? "main" : "bg")")
+        log.log("[IMP-2] file exists: \(FileManager.default.fileExists(atPath: url.path))")
 
-            let log = FileLogger.shared
-            log.log("Importing IPA: \(url.lastPathComponent)")
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else {
+                log.log("[IMP-3] self is nil, aborting")
+                return
+            }
+
+            log.log("[IMP-3] background thread started")
 
             let fm = FileManager.default
             let fileSize = (try? fm.attributesOfItem(atPath: url.path)[.size] as? Int64) ?? 0
+            log.log("[IMP-4] fileSize=\(fileSize)")
 
             // Try to parse metadata; fall back to basic info if parsing fails
+            log.log("[IMP-5] starting parse...")
             let metadata: IPAMetadata
             if let parsed = IPAParser.parse(ipaURL: url) {
                 metadata = parsed
+                log.log("[IMP-6] parse OK: \(parsed.appName) v\(parsed.version)")
             } else {
-                log.log("WARNING: IPA parse failed, importing with basic metadata")
+                log.log("[IMP-6] parse FAILED, using basic metadata")
                 let name = url.deletingPathExtension().lastPathComponent
                 metadata = IPAMetadata(
                     appName: name,
@@ -190,11 +199,12 @@ final class ImportedAppsManager: ObservableObject {
 
             let accessing = url.startAccessingSecurityScopedResource()
             let destIPA = Self.appsDirectory.appendingPathComponent(ipaName)
+            log.log("[IMP-7] copying to \(destIPA.lastPathComponent)")
             do {
                 try fm.copyItem(at: url, to: destIPA)
-                log.log("Copied IPA to storage (\(fileSize) bytes)")
+                log.log("[IMP-8] copy OK")
             } catch {
-                log.log("ERROR: Failed to copy IPA: \(error)")
+                log.log("[IMP-8] ERROR copy: \(error)")
                 if accessing { url.stopAccessingSecurityScopedResource() }
                 DispatchQueue.main.async { self.isImporting = false }
                 return
@@ -204,7 +214,7 @@ final class ImportedAppsManager: ObservableObject {
             if let iconData = metadata.iconData, let iconName {
                 let destIcon = Self.appsDirectory.appendingPathComponent(iconName)
                 try? iconData.write(to: destIcon)
-                log.log("Saved icon")
+                log.log("[IMP-9] icon saved")
             }
 
             let app = ImportedApp(
@@ -223,7 +233,7 @@ final class ImportedAppsManager: ObservableObject {
                 self.apps.insert(app, at: 0)
                 self.saveApps()
                 self.isImporting = false
-                log.log("Import complete: \(metadata.appName)")
+                log.log("[IMP-10] import complete: \(metadata.appName)")
             }
         }
     }
