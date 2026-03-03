@@ -176,15 +176,7 @@ struct CertificatesView: View {
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.scarletRed)
                         .frame(width: 42, height: 42)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(.ultraThinMaterial)
-                                .environment(\.colorScheme, .dark)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .stroke(Color.scarletRed.opacity(0.15), lineWidth: 0.5)
-                                )
-                        )
+                        .glassCard(cornerRadius: 14)
                 }
             }
             .padding(.horizontal, 20)
@@ -216,15 +208,7 @@ struct CertificatesView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(.ultraThinMaterial)
-                .environment(\.colorScheme, .dark)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
-                )
-        )
+        .glassCard(cornerRadius: 14)
     }
 
     private func statPill(count: Int, label: String, color: Color) -> some View {
@@ -351,19 +335,15 @@ struct CertificatesView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
             }
-            .background(
+            .glassCard(cornerRadius: 16)
+            .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(.ultraThinMaterial)
-                    .environment(\.colorScheme, .dark)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(
-                                isActive ? statusClr.opacity(0.25) : Color.white.opacity(0.06),
-                                lineWidth: isActive ? 1 : 0.5
-                            )
+                    .stroke(
+                        isActive ? statusClr.opacity(0.25) : Color.clear,
+                        lineWidth: isActive ? 1 : 0
                     )
-                    .shadow(color: isActive ? statusClr.opacity(0.08) : .clear, radius: 12)
             )
+            .shadow(color: isActive ? statusClr.opacity(0.08) : .clear, radius: 12)
         }
         .buttonStyle(.plain)
     }
@@ -464,19 +444,15 @@ struct CertificatesView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
             }
-            .background(
+            .glassCard(cornerRadius: 16)
+            .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(.ultraThinMaterial)
-                    .environment(\.colorScheme, .dark)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(
-                                isActive ? statusClr.opacity(0.25) : Color.white.opacity(0.06),
-                                lineWidth: isActive ? 1 : 0.5
-                            )
+                    .stroke(
+                        isActive ? statusClr.opacity(0.25) : Color.clear,
+                        lineWidth: isActive ? 1 : 0
                     )
-                    .shadow(color: isActive ? statusClr.opacity(0.08) : .clear, radius: 12)
             )
+            .shadow(color: isActive ? statusClr.opacity(0.08) : .clear, radius: 12)
         }
         .buttonStyle(.plain)
     }
