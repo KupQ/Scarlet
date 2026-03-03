@@ -1396,21 +1396,26 @@ struct ContentView: View {
         .overlay(alignment: .top) {
             if showSettingsHint {
                 VStack(spacing: 4) {
-                    Text(L("Tap for Settings"))
+                    Text(L("Hold for Settings"))
                         .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
+                        .foregroundColor(.white.opacity(0.9))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
                         .background(
                             Capsule()
-                                .fill(Color.scarletRed)
-                                .shadow(color: .scarletRed.opacity(hintPulse ? 0.6 : 0.2), radius: hintPulse ? 8 : 4)
+                                .fill(.ultraThinMaterial)
+                                .environment(\.colorScheme, .dark)
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color.scarletRed.opacity(hintPulse ? 0.6 : 0.25), lineWidth: 1)
+                                )
+                                .shadow(color: .scarletRed.opacity(hintPulse ? 0.3 : 0.1), radius: hintPulse ? 10 : 4)
                         )
 
                     // Arrow pointing down
                     Image(systemName: "arrowtriangle.down.fill")
                         .font(.system(size: 8))
-                        .foregroundColor(.scarletRed)
+                        .foregroundColor(.white.opacity(0.3))
                         .offset(y: -3)
                 }
                 .offset(y: -45)
