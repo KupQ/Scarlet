@@ -34,43 +34,75 @@ struct SigningView: View {
                     .padding(.top, 16)
                     .padding(.bottom, 8)
 
-                // Content area — no page swipe to avoid conflicting with swipe-to-delete
-                Group {
-                    if libraryTab == 0 {
-                        // Unsigned tab
-                        ScrollView(.vertical, showsIndicators: false) {
-                            VStack(spacing: 0) {
-                                if appsManager.isImporting {
-                                    importingIndicator
-                                        .padding(.top, 16)
-                                        .padding(.horizontal, 20)
-                                }
+                // Content area — edge swipe switches tabs, middle area free for swipe-to-delete
+                ZStack {
+                    Group {
+                        if libraryTab == 0 {
+                            // Unsigned tab
+                            ScrollView(.vertical, showsIndicators: false) {
+                                VStack(spacing: 0) {
+                                    if appsManager.isImporting {
+                                        importingIndicator
+                                            .padding(.top, 16)
+                                            .padding(.horizontal, 20)
+                                    }
 
-                                if appsManager.apps.isEmpty && !appsManager.isImporting && downloadManager.pendingDownloads.isEmpty {
-                                    emptyState.padding(.top, 60)
-                                } else {
-                                    appsList.padding(.top, 20)
+                                    if appsManager.apps.isEmpty && !appsManager.isImporting && downloadManager.pendingDownloads.isEmpty {
+                                        emptyState.padding(.top, 60)
+                                    } else {
+                                        appsList.padding(.top, 20)
+                                    }
                                 }
+                                .frame(maxWidth: .infinity)
+                                .padding(.bottom, 80)
                             }
-                            .frame(maxWidth: .infinity)
-                            .padding(.bottom, 80)
-                        }
-                    } else {
-                        // Signed tab
-                        ScrollView(.vertical, showsIndicators: false) {
-                            VStack(spacing: 0) {
-                                if signedManager.signedApps.isEmpty {
-                                    signedEmptyState.padding(.top, 60)
-                                } else {
-                                    signedAppsList.padding(.top, 20)
+                        } else {
+                            // Signed tab
+                            ScrollView(.vertical, showsIndicators: false) {
+                                VStack(spacing: 0) {
+                                    if signedManager.signedApps.isEmpty {
+                                        signedEmptyState.padding(.top, 60)
+                                    } else {
+                                        signedAppsList.padding(.top, 20)
+                                    }
                                 }
+                                .frame(maxWidth: .infinity)
+                                .padding(.bottom, 80)
                             }
-                            .frame(maxWidth: .infinity)
-                            .padding(.bottom, 80)
                         }
                     }
+
+                    // Edge swipe zones — thin invisible strips on left & right edges
+                    HStack(spacing: 0) {
+                        // Left edge → swipe right = go to Unsigned (tab 0)
+                        Color.clear
+                            .frame(width: 24)
+                            .contentShape(Rectangle())
+                            .gesture(DragGesture(minimumDistance: 30)
+                                .onEnded { value in
+                                    if value.translation.width > 50 && libraryTab > 0 {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            libraryTab = 0
+                                        }
+                                    }
+                                }
+                            )
+                        Spacer()
+                        // Right edge → swipe left = go to Signed (tab 1)
+                        Color.clear
+                            .frame(width: 24)
+                            .contentShape(Rectangle())
+                            .gesture(DragGesture(minimumDistance: 30)
+                                .onEnded { value in
+                                    if value.translation.width < -50 && libraryTab < 1 {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            libraryTab = 1
+                                        }
+                                    }
+                                }
+                            )
+                    }
                 }
-                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: libraryTab)
             }
             .navigationBarHidden(true)
             .navigationTitle("")
