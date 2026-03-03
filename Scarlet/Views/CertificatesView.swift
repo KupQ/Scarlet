@@ -331,7 +331,7 @@ struct CertificatesView: View {
                             .lineLimit(1)
 
                         HStack(spacing: 8) {
-                            certTag(isDev ? L("Dev") : L("Dist"), icon: "hammer")
+                            certTag(isDev ? L("Development") : L("Distribution"), icon: "hammer")
                             certTag(cert.isPPQEnabled ? "PPQ" : "PPQless", icon: "shield")
                             certTag(cert.isExpired ? L("Expired") : "\(days)d", icon: "calendar",
                                     highlight: cert.isExpired)
@@ -441,7 +441,7 @@ struct CertificatesView: View {
                             .lineLimit(1)
 
                         HStack(spacing: 8) {
-                            certTag(isDev ? L("Dev") : L("Dist"), icon: "hammer")
+                            certTag(isDev ? L("Development") : L("Distribution"), icon: "hammer")
                             certTag(daysLeft > 0 ? "\(daysLeft)d" : L("Expired"), icon: "calendar",
                                     highlight: daysLeft <= 0)
                         }
