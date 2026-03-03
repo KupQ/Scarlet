@@ -441,10 +441,7 @@ struct ContentView: View {
             if let url = signingOutputURL { ShareSheet(items: [url]) }
         }
         .task {
-            // Fetch certs and check OCSP at app launch, regardless of which tab is active
-            await certService.fetchCertificates()
-            await LocalCertChecker.shared.checkAPICertsIfNeeded(certService.certificates)
-            // Check local certs too
+            // Only check local certs at app launch — API certs fetched manually
             let localJSON = UserDefaults.standard.string(forKey: "local_imported_certs_json") ?? "[]"
             if let data = localJSON.data(using: .utf8),
                let localCerts = try? JSONDecoder().decode([LocalImportedCert].self, from: data) {

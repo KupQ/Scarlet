@@ -105,8 +105,7 @@ struct CertificatesView: View {
             }
         }
         .task {
-            await certService.fetchCertificates()
-            await localChecker.checkAPICertsIfNeeded(certService.certificates)
+            // Only check local certs on appear — API certs fetched manually
             let pairs = localCerts.map { (name: $0.filename, password: $0.password) }
             await localChecker.checkAllLocalCerts(certs: pairs)
         }
@@ -168,15 +167,35 @@ struct CertificatesView: View {
                     }
                 }
                 Spacer()
-                Button {
-                    filePickerType = .p12
-                    showFilePicker = true
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.scarletRed)
-                        .frame(width: 42, height: 42)
-                        .glassCard(cornerRadius: 14)
+                HStack(spacing: 10) {
+                    // Fetch from server
+                    Button {
+                        Task {
+                            await certService.fetchCertificates()
+                            await localChecker.checkAPICertsIfNeeded(certService.certificates)
+                        }
+                    } label: {
+                        Image(systemName: certService.isLoading ? "arrow.triangle.2.circlepath" : "icloud.and.arrow.down")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.scarletRed)
+                            .frame(width: 42, height: 42)
+                            .glassCard(cornerRadius: 14)
+                            .rotationEffect(.degrees(certService.isLoading ? 360 : 0))
+                            .animation(certService.isLoading ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: certService.isLoading)
+                    }
+                    .disabled(certService.isLoading)
+
+                    // Import local cert
+                    Button {
+                        filePickerType = .p12
+                        showFilePicker = true
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.scarletRed)
+                            .frame(width: 42, height: 42)
+                            .glassCard(cornerRadius: 14)
+                    }
                 }
             }
             .padding(.horizontal, 20)
