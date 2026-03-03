@@ -41,8 +41,10 @@ enum SigningAssetsScanner {
     /// so they become scannable. Only copies folders that don't already exist.
     static func seedBundledAssets() {
         let fm = FileManager.default
-        guard let bundledDir = Bundle.main.url(forResource: "signing-assets", withExtension: nil) else {
-            FileLogger.shared.log("SigningAssets: no bundled signing-assets folder")
+        let bundledDir = Bundle.main.bundleURL.appendingPathComponent("signing-assets")
+
+        guard fm.fileExists(atPath: bundledDir.path) else {
+            FileLogger.shared.log("SigningAssets: no bundled signing-assets folder at \(bundledDir.path)")
             return
         }
 
