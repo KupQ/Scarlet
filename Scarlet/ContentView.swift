@@ -31,7 +31,7 @@ struct ContentView: View {
     @State private var hoveredSettingsOption: Int? = nil
     @State private var showSettingsHint = !UserDefaults.standard.bool(forKey: "settingsHintDismissed")
     @State private var hintPulse = false
-    @State private var handPhase = 0 // 0=rest, 1=press, 2=up, 3=left, 4=right
+    @State private var handPhase = 0 // 0=rest, 1=hold, 2=up, 3=left, 4=center, 5=right, 6=center, 7=down
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -1408,8 +1408,8 @@ struct ContentView: View {
                             .font(.system(size: 15))
                             .foregroundColor(.scarletRed)
                             .offset(
-                                x: handPhase == 3 ? -5 : (handPhase == 4 ? 5 : 0),
-                                y: handPhase == 1 ? 2 : (handPhase >= 2 ? -4 : 0)
+                                x: handPhase == 3 ? -5 : (handPhase == 5 ? 5 : 0),
+                                y: handPhase == 1 ? 2 : (handPhase >= 2 && handPhase <= 6 ? -4 : 0)
                             )
                             .scaleEffect(handPhase == 1 ? 0.9 : 1.0)
                             .animation(.easeInOut(duration: 0.4), value: handPhase)
@@ -1450,13 +1450,14 @@ struct ContentView: View {
                     func runHandLoop() {
                         guard showSettingsHint else { return }
                         handPhase = 0
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { handPhase = 1 } // press down
-                        // Hold for 1.5s so they see it
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.1) { handPhase = 2 } // sweep up
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.6) { handPhase = 3 } // left
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.1) { handPhase = 4 } // right
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.6) { handPhase = 0 } // rest
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 4.2) { runHandLoop() } // repeat
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { handPhase = 1 } // hold down
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.1) { handPhase = 2 } // up
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { handPhase = 3 } // left
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.9) { handPhase = 4 } // center
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.3) { handPhase = 5 } // right
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.7) { handPhase = 6 } // center
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 4.1) { handPhase = 0 } // down to rest
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 4.7) { runHandLoop() } // repeat
                     }
                     runHandLoop()
                 }
