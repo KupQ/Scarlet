@@ -1403,7 +1403,7 @@ struct ContentView: View {
         }
         .overlay(alignment: .top) {
             if showSettingsHint && !showSettingsCard && !isSearching {
-                VStack(spacing: 8) {
+                VStack(spacing: 2) {
                     HStack(spacing: 7) {
                         Image(systemName: "hand.tap.fill")
                             .font(.system(size: 15))
@@ -1439,7 +1439,7 @@ struct ContentView: View {
                         .foregroundColor(.white.opacity(0.25))
                 }
                 .fixedSize()
-                .offset(y: -80)
+                .offset(y: -90)
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 .onAppear {
                     hintPulse = false
