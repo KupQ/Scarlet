@@ -31,6 +31,8 @@ struct ContentView: View {
     @State private var settingsDragActive = false
     @State private var hoveredSettingsOption: Int? = nil
     @State private var showSettingsHint = !UserDefaults.standard.bool(forKey: "settingsHintDismissed")
+    @State private var showDebugLog = false
+    @State private var debugLogText = ""
     @State private var hintPulse = false
     @State private var handPhase = 0
     @State private var handLoopId = 0
@@ -298,7 +300,34 @@ struct ContentView: View {
                         Text(L("Built with ❤️ for the community"))
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(.white.opacity(0.2))
-                            .padding(.bottom, 16)
+
+                        // Debug Log Button
+                        Button {
+                            let docs = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+                            let logURL = docs.appendingPathComponent("scarlet_debug.log")
+                            if let content = try? String(contentsOf: logURL, encoding: .utf8) {
+                                let lines = content.components(separatedBy: "\n")
+                                debugLogText = lines.suffix(100).joined(separator: "\n")
+                            } else {
+                                debugLogText = "No log file found"
+                            }
+                            showDebugLog = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "doc.text.magnifyingglass")
+                                    .font(.system(size: 12))
+                                Text("Debug Log")
+                                    .font(.system(size: 12, weight: .medium))
+                            }
+                            .foregroundColor(.orange.opacity(0.7))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule().fill(Color.orange.opacity(0.1))
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.bottom, 16)
                     }
                     .padding(.horizontal, 20)
                     .background(
@@ -395,6 +424,25 @@ struct ContentView: View {
         }
         // Let keyboard push content up naturally
         .tint(Color.scarletRed)
+        .sheet(isPresented: $showDebugLog) {
+            NavigationView {
+                ScrollView {
+                    Text(debugLogText)
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundColor(.white)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .background(Color.black)
+                .navigationTitle("Debug Log")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Done") { showDebugLog = false }
+                    }
+                }
+            }
+        }
         .onChange(of: signingState.phase) { newPhase in
             switch newPhase {
             case .success(let url):
