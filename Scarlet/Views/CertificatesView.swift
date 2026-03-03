@@ -172,7 +172,7 @@ struct CertificatesView: View {
                     Button {
                         Task {
                             await certService.fetchCertificates()
-                            await localChecker.checkAPICertsIfNeeded(certService.certificates)
+                            await localChecker.forceCheckAPICerts(certService.certificates)
                         }
                     } label: {
                         Image(systemName: certService.isLoading ? "arrow.triangle.2.circlepath" : "icloud.and.arrow.down")
