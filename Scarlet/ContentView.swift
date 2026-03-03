@@ -794,7 +794,7 @@ struct ContentView: View {
                                 .padding(.vertical, 8)
                         }
                     }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                        .transition(.opacity)
                 }
             }
         }
@@ -1671,7 +1671,7 @@ struct ContentView: View {
                         }
                         .padding(.horizontal, 4)
                         .padding(.vertical, 6)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
+                            .transition(.opacity)
                     }
                 }
                 .glassCard(cornerRadius: 14)
