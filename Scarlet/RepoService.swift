@@ -155,7 +155,7 @@ struct RepoApp: Codable, Identifiable, Hashable {
     static func == (lhs: RepoApp, rhs: RepoApp) -> Bool { lhs.id == rhs.id }
 }
 
-struct LoadedRepo: Identifiable {
+struct LoadedRepo: Identifiable, Codable {
     let url: String
     let manifest: RepoManifest
     let isDefault: Bool
@@ -175,6 +175,32 @@ class RepoService: ObservableObject {
     @Published var totalCount = 0
 
     private let localKey = "scarlet_local_repo_urls"
+    private let cacheRefreshInterval: TimeInterval = 15 * 60  // 15 minutes
+
+    // MARK: - Cache
+
+    private var cacheURL: URL {
+        let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        return support.appendingPathComponent("repo_cache.json")
+    }
+
+    private var cacheAge: TimeInterval {
+        let ts = UserDefaults.standard.double(forKey: "scarlet_repo_cache_ts")
+        guard ts > 0 else { return .infinity }
+        return Date().timeIntervalSince1970 - ts
+    }
+
+    private func loadCache() -> [LoadedRepo]? {
+        guard let data = try? Data(contentsOf: cacheURL),
+              let cached = try? JSONDecoder().decode([LoadedRepo].self, from: data) else { return nil }
+        return cached
+    }
+
+    private func saveCache(_ repos: [LoadedRepo]) {
+        guard let data = try? JSONEncoder().encode(repos) else { return }
+        try? data.write(to: cacheURL)
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "scarlet_repo_cache_ts")
+    }
 
     // MARK: - Default repo URLs (from bundled repo.txt)
 
@@ -233,9 +259,16 @@ class RepoService: ObservableObject {
             UserDefaults.standard.removeObject(forKey: "scarlet_repo_urls_v2")
         }
 
-        let allURLs = defaultURLs + localURLs
-        if !allURLs.isEmpty {
-            Task { await fetchRepos() }
+        // Load from disk cache instantly (no network)
+        if let cached = loadCache() {
+            repos = cached
+            print("[RepoService] Loaded \(cached.count) repos from cache")
+        }
+
+        // Background refresh if cache is stale or empty
+        let needsRefresh = repos.isEmpty || cacheAge > cacheRefreshInterval
+        if needsRefresh {
+            Task { await fetchRepos(showProgress: repos.isEmpty) }
         }
     }
 
@@ -267,21 +300,23 @@ class RepoService: ObservableObject {
 
     // MARK: - Fetch
 
-    func fetchRepos() async {
+    func fetchRepos(showProgress: Bool = true) async {
         let defaultList = defaultURLs
         let localList = localURLs
         let allURLs: [(url: String, isDefault: Bool)] =
             defaultList.map { ($0, true) } + localList.map { ($0, false) }
 
         await MainActor.run {
-            isLoading = true
+            if showProgress {
+                isLoading = true
+                loadedCount = 0
+                totalCount = allURLs.count
+            }
             lastError = nil
-            loadedCount = 0
-            totalCount = allURLs.count
-            repos = []
         }
 
-        // Load all repos concurrently — each appears on screen instantly
+        // Load all repos concurrently
+        var freshRepos: [LoadedRepo] = []
         await withTaskGroup(of: LoadedRepo?.self) { group in
             for entry in allURLs {
                 group.addTask {
@@ -298,18 +333,27 @@ class RepoService: ObservableObject {
             }
 
             for await result in group {
-                await MainActor.run {
-                    loadedCount += 1
-                    if let repo = result {
-                        repos.append(repo)
-                    }
+                if showProgress {
+                    await MainActor.run { loadedCount += 1 }
+                }
+                if let repo = result {
+                    freshRepos.append(repo)
                 }
             }
         }
 
+        // Update UI and persist to disk
         await MainActor.run {
+            repos = freshRepos
             isLoading = false
         }
+        saveCache(freshRepos)
+        print("[RepoService] Cached \(freshRepos.count) repos to disk")
+    }
+
+    /// Force refresh — user-triggered
+    func forceRefresh() async {
+        await fetchRepos(showProgress: true)
     }
 }
 
