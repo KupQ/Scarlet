@@ -31,6 +31,7 @@ struct ContentView: View {
     @State private var hoveredSettingsOption: Int? = nil
     @State private var showSettingsHint = !UserDefaults.standard.bool(forKey: "settingsHintDismissed")
     @State private var hintPulse = false
+    @State private var handPress = false
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -1406,6 +1407,8 @@ struct ContentView: View {
                         Image(systemName: "hand.tap.fill")
                             .font(.system(size: 15))
                             .foregroundColor(.scarletRed)
+                            .offset(y: handPress ? 3 : 0)
+                            .scaleEffect(handPress ? 0.85 : 1.0)
                         Text(L("Hold to open"))
                             .font(.system(size: 14, weight: .regular))
                             .foregroundColor(.white)
@@ -1436,8 +1439,12 @@ struct ContentView: View {
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 .onAppear {
                     hintPulse = false
+                    handPress = false
                     withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
                         hintPulse = true
+                    }
+                    withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                        handPress = true
                     }
                 }
             }
