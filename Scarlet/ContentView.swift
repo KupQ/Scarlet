@@ -85,6 +85,7 @@ struct ContentView: View {
             }
             .navigationViewStyle(.stack)
             .opacity(selectedTab == .home ? 1 : 0)
+            .animation(.none, value: selectedTab)
             .allowsHitTesting(selectedTab == .home)
 
             NavigationView {
@@ -97,10 +98,12 @@ struct ContentView: View {
             }
             .navigationViewStyle(.stack)
             .opacity(selectedTab == .sign ? 1 : 0)
+            .animation(.none, value: selectedTab)
             .allowsHitTesting(selectedTab == .sign)
 
             Color.bgPrimary.ignoresSafeArea()
                 .opacity(selectedTab == .settings ? 1 : 0)
+                .animation(.none, value: selectedTab)
 
 
             // Search results overlay (above content, below tab bar)
@@ -1365,10 +1368,8 @@ struct ContentView: View {
         } else {
             return AnyView(
                 Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        selectedTab = tab
-                        showSettingsCard = false
-                    }
+                    selectedTab = tab
+                    showSettingsCard = false
                 } label: {
                     VStack(spacing: 6) {
                         Image(systemName: tab.icon)
