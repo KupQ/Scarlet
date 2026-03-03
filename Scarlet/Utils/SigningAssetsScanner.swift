@@ -31,7 +31,7 @@ enum SigningAssetsScanner {
     // MARK: - Signing-assets directory
 
     static var assetsDirectory: URL {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let docs = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let dir = docs.appendingPathComponent("signing-assets")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir

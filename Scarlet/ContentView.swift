@@ -1752,7 +1752,8 @@ struct ContentView: View {
             id: app.id, url: url,
             appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString
         ) { tempURL in
-            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let docs = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+            try? FileManager.default.createDirectory(at: docs, withIntermediateDirectories: true)
             let filename = "\(app.bundleID ?? app.bundleIdentifier ?? UUID().uuidString).ipa"
             let dest = docs.appendingPathComponent(filename)
             try? FileManager.default.removeItem(at: dest)
