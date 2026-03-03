@@ -26,6 +26,7 @@ final class FileLogger {
 
     private init() {
         let docs = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        try? FileManager.default.createDirectory(at: docs, withIntermediateDirectories: true)
         logURL = docs.appendingPathComponent("scarlet_debug.log")
     }
 
