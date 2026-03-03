@@ -171,7 +171,7 @@ enum SigningAssetsScanner {
 
         guard !lines.isEmpty else { return }
 
-        let existing = RepoService.shared.savedURLs
+        let existing = RepoService.shared.defaultURLs + RepoService.shared.localURLs
         let newURLs = lines.filter { !existing.contains($0) }
 
         guard !newURLs.isEmpty else {

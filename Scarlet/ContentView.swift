@@ -1714,9 +1714,23 @@ struct ContentView: View {
                     .font(.system(size: 15, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(1)
-                Text("v\(app.version ?? "?") • \(app.sizeString)")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.white.opacity(0.25))
+                HStack(spacing: 6) {
+                    Text("v\(app.version ?? "?") • \(app.sizeString)")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.white.opacity(0.25))
+                    // Repo source badge (only in global search)
+                    if repoService.activeRepo == nil,
+                       let repoName = repoService.repoName(for: app) {
+                        Text(repoName)
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundColor(.scarletRed.opacity(0.8))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(
+                                Capsule().fill(Color.scarletRed.opacity(0.1))
+                            )
+                    }
+                }
             }
             Spacer()
             if let p = progress {

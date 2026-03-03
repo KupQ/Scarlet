@@ -103,9 +103,7 @@ struct HomeView: View {
                         .padding(.top, 20)
 
                     // Repos
-                    if !repoService.repos.isEmpty {
-                        repoAppsSection
-                    }
+                    repoAppsSection
 
                     Spacer().frame(height: 80)
                 }
@@ -349,27 +347,82 @@ struct HomeView: View {
     // MARK: - Repo Cards
 
     private var repoAppsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text(L("REPOSITORIES"))
-                    .font(.system(size: 10, weight: .heavy))
-                    .tracking(1.5)
-                    .foregroundColor(.white.opacity(0.25))
-                Spacer()
-                if repoService.isLoading {
-                    ProgressView()
-                        .tint(.white.opacity(0.3))
-                        .scaleEffect(0.7)
+        VStack(alignment: .leading, spacing: 16) {
+            // ── Default Repos ──
+            if !repoService.defaultRepos.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text(L("DEFAULT"))
+                            .font(.system(size: 10, weight: .heavy))
+                            .tracking(1.5)
+                            .foregroundColor(.white.opacity(0.25))
+                        Spacer()
+                        if repoService.isLoading {
+                            ProgressView()
+                                .tint(.white.opacity(0.3))
+                                .scaleEffect(0.7)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+
+                    ForEach(repoService.defaultRepos) { repo in
+                        NavigationLink(destination: RepoDetailView(repo: repo)) {
+                            repoCard(repo)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, 20)
+                    }
                 }
             }
-            .padding(.horizontal, 20)
 
-            ForEach(repoService.repos) { repo in
-                NavigationLink(destination: RepoDetailView(repo: repo)) {
-                    repoCard(repo)
+            // ── Local Repos ──
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text(L("LOCAL"))
+                        .font(.system(size: 10, weight: .heavy))
+                        .tracking(1.5)
+                        .foregroundColor(.white.opacity(0.25))
+                    Spacer()
+                    Button {
+                        showAddRepo = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.scarletRed.opacity(0.7))
+                    }
                 }
-                .buttonStyle(.plain)
                 .padding(.horizontal, 20)
+
+                if repoService.localRepos.isEmpty {
+                    HStack {
+                        Spacer()
+                        VStack(spacing: 6) {
+                            Image(systemName: "square.stack.3d.up.slash")
+                                .font(.system(size: 20))
+                                .foregroundColor(.white.opacity(0.15))
+                            Text(L("No local repos added"))
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.white.opacity(0.2))
+                        }
+                        .padding(.vertical, 16)
+                        Spacer()
+                    }
+                } else {
+                    ForEach(repoService.localRepos) { repo in
+                        NavigationLink(destination: RepoDetailView(repo: repo)) {
+                            repoCard(repo)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, 20)
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                repoService.removeRepo(url: repo.url)
+                            } label: {
+                                Label(L("Remove Repo"), systemImage: "trash")
+                            }
+                        }
+                    }
+                }
             }
         }
     }
