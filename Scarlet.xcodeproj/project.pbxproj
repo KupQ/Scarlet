@@ -30,13 +30,11 @@
 		'A10021' = {isa = PBXBuildFile; fileRef = B10021; };
 		'A10022' = {isa = PBXBuildFile; fileRef = B10022; };
 		'A10023' = {isa = PBXBuildFile; fileRef = B10022; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		'A10024' = {isa = PBXBuildFile; fileRef = B10024; };
 		'A10025' = {isa = PBXBuildFile; fileRef = B10025; };
 		'A10026' = {isa = PBXBuildFile; fileRef = B10026; };
 		'A10030' = {isa = PBXBuildFile; fileRef = B10030; };
 		'A10031' = {isa = PBXBuildFile; fileRef = B10031; };
 		'A10032' = {isa = PBXBuildFile; fileRef = B10032; };
-		'A10033' = {isa = PBXBuildFile; fileRef = B10033; };
              'A10040' = {isa = PBXBuildFile; fileRef = B10040; };
              'A10041' = {isa = PBXBuildFile; fileRef = B10041; };
              'A10042' = {isa = PBXBuildFile; fileRef = B10042; };
@@ -94,13 +92,11 @@
 		'B10020' = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libscarlet_signing.a; sourceTree = "<group>"; };
 		'B10021' = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libzsign.a; sourceTree = "<group>"; };
 		'B10022' = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OpenSSL.framework; sourceTree = "<group>"; };
-		'B10024' = {isa = PBXFileReference; lastKnownFileType = file; path = server.p12; sourceTree = "<group>"; };
 		'B10025' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateService.swift; sourceTree = "<group>"; };
 		'B10026' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificatesView.swift; sourceTree = "<group>"; };
 		'B10030' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledApp.swift; sourceTree = "<group>"; };
 		'B10031' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		'B10032' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCertChecker.swift; sourceTree = "<group>"; };
-		'B10033' = {isa = PBXFileReference; lastKnownFileType = file; path = AppleWWDRCAG3.cer; sourceTree = "<group>"; };
 		'B10060' = {isa = PBXFileReference; lastKnownFileType = text; path = repo.txt; sourceTree = "<group>"; };
 		'B10070' = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		'B10080' = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon60x60@2x.png"; sourceTree = "<group>"; };
@@ -159,7 +155,6 @@
 				D10005,
 				D10006,
 				D10007,
-				B10024,
 				D10008,
 				B10070,
 				B10080,
@@ -241,7 +236,6 @@
 		'D10008' = {
 			isa = PBXGroup;
 			children = (
-				B10033,
 				'B10060',
 				'B10080',
 				'B10081',
@@ -323,8 +317,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10024,
-				A10033,
                             'A10041',
                             'A10042',
                             'A10060',
