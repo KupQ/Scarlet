@@ -3,11 +3,13 @@
 //  Scarlet
 //
 //  Parses IPA archives to extract metadata (name, version, bundle ID)
-//  and app icons. Uses pure Swift ZIP reading — no C dependencies.
+//  and app icons. Uses targeted ZIP entry reading — does NOT extract
+//  the entire IPA, keeping memory usage minimal for older devices.
 //
 
 import Foundation
 import UIKit
+import Compression
 
 // MARK: - IPA Metadata
 
@@ -16,22 +18,17 @@ struct IPAMetadata {
     let appName: String
     let bundleIdentifier: String
     let version: String
-    let iconData: Data?   // PNG data (normalized from CgBI if needed)
+    let iconData: Data?
     let fileSize: Int64
     let fileName: String
 }
 
 // MARK: - IPA Parser
 
-/// Parses IPA files to extract metadata and app icons.
-///
-/// Uses pure Swift ZIP reading to avoid C function crashes on older iOS.
+/// Parses IPA files by reading ZIP entries directly — no full extraction.
 enum IPAParser {
 
     /// Parses an IPA file and extracts its metadata and icon.
-    ///
-    /// - Parameter ipaURL: Path to the IPA file.
-    /// - Returns: Parsed metadata, or `nil` if parsing fails.
     static func parse(ipaURL: URL) -> IPAMetadata? {
         let log = FileLogger.shared
         log.log("Parsing IPA: \(ipaURL.lastPathComponent)")
@@ -42,51 +39,36 @@ enum IPAParser {
         let fm = FileManager.default
         let fileSize = (try? fm.attributesOfItem(atPath: ipaURL.path)[.size] as? Int64) ?? 0
 
-        // Ensure source file still exists
         guard fm.fileExists(atPath: ipaURL.path) else {
             log.log("ERROR: IPA file no longer exists at \(ipaURL.path)")
             return nil
         }
 
-        // Use Swift-native extraction
-        let tempDir = fm.temporaryDirectory.appendingPathComponent("ipa_parse_\(UUID().uuidString)")
-        try? fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
-        defer { try? fm.removeItem(at: tempDir) }
-
-        // Try Swift-native unzip first, then fall back to C ipa_extract
-        var extractOK = false
-
-        // Swift-native: use /usr/bin/ditto or NSFileCoordinator
-        // On iOS, we use the minizip-based approach via ipa_extract but wrapped safely
-        // Actually, just try the C function — if it fails gracefully (returns non-zero), we handle it
-        // But if it segfaults, the process dies. So let's do a fork-like approach:
-        // We'll read the ZIP entries manually using Foundation.
-
-        // Pure Swift ZIP extraction: read the IPA as a ZIP file
-        extractOK = extractIPASwift(from: ipaURL, to: tempDir)
-
-        if !extractOK {
-            log.log("ERROR: Swift IPA extraction failed")
+        // Read specific entries from the ZIP without full extraction
+        guard let entries = readZIPEntries(from: ipaURL) else {
+            log.log("ERROR: Cannot read ZIP entries")
             return nil
         }
 
-        // Find .app directory inside Payload/
-        let payloadPath = tempDir.appendingPathComponent("Payload")
-        guard let contents = try? fm.contentsOfDirectory(atPath: payloadPath.path),
-              let appDirName = contents.first(where: { $0.hasSuffix(".app") }) else {
-            log.log("ERROR: No .app in Payload")
+        // Find Info.plist
+        guard let plistEntry = entries.first(where: {
+            $0.name.hasSuffix("/Info.plist") && $0.name.hasPrefix("Payload/") &&
+            $0.name.components(separatedBy: "/").count == 3 // Payload/App.app/Info.plist
+        }) else {
+            log.log("ERROR: No Info.plist found in ZIP")
             return nil
         }
 
-        let appPath = payloadPath.appendingPathComponent(appDirName)
+        // Extract the .app directory name from the path
+        let pathParts = plistEntry.name.components(separatedBy: "/")
+        let appDirName = pathParts.count >= 2 ? pathParts[1] : "Unknown.app"
 
-        // Parse Info.plist
-        let plistURL = appPath.appendingPathComponent("Info.plist")
-        guard let plistData = try? Data(contentsOf: plistURL),
+        // Decompress Info.plist
+        guard let plistData = decompressEntry(plistEntry, from: ipaURL),
               let plist = try? PropertyListSerialization.propertyList(
                 from: plistData, format: nil
               ) as? [String: Any] else {
-            log.log("ERROR: Cannot parse Info.plist")
+            log.log("ERROR: Cannot parse Info.plist from ZIP")
             return nil
         }
 
@@ -106,7 +88,10 @@ enum IPAParser {
         // Extract icon
         let iconNames = extractIconNames(from: plist)
         log.log("Icon names: \(iconNames)")
-        let iconData = extractLargestIcon(appPath: appPath, iconNames: iconNames)
+        let iconData = extractLargestIconFromZIP(
+            entries: entries, ipaURL: ipaURL,
+            appPrefix: "Payload/\(appDirName)/", iconNames: iconNames
+        )
 
         return IPAMetadata(
             appName: appName,
@@ -118,61 +103,154 @@ enum IPAParser {
         )
     }
 
-    // MARK: - Swift-Native ZIP Extraction
+    // MARK: - ZIP Entry Reading (No Full Extraction)
 
-    /// Extracts an IPA (ZIP) file using pure Swift — no C dependencies.
-    /// Only extracts Info.plist and icon PNGs to minimize work.
-    private static func extractIPASwift(from ipaURL: URL, to destDir: URL) -> Bool {
-        let log = FileLogger.shared
-        let fm = FileManager.default
+    private struct ZIPEntry {
+        let name: String
+        let compressedSize: UInt32
+        let uncompressedSize: UInt32
+        let method: UInt16        // 0 = stored, 8 = deflate
+        let localHeaderOffset: UInt32
+    }
 
-        guard let ipaData = try? Data(contentsOf: ipaURL) else {
-            log.log("ERROR: Cannot read IPA data")
-            return false
+    /// Reads the ZIP central directory to list all entries without extracting.
+    private static func readZIPEntries(from url: URL) -> [ZIPEntry]? {
+        guard let data = try? Data(contentsOf: url, options: .mappedIfSafe) else { return nil }
+
+        // Find end-of-central-directory record (last 22+ bytes)
+        // Signature: PK\x05\x06
+        let bytes = [UInt8](data)
+        let count = bytes.count
+        guard count > 22 else { return nil }
+
+        var eocdOffset = -1
+        for i in stride(from: count - 22, through: max(0, count - 65557), by: -1) {
+            if bytes[i] == 0x50 && bytes[i+1] == 0x4B &&
+               bytes[i+2] == 0x05 && bytes[i+3] == 0x06 {
+                eocdOffset = i
+                break
+            }
+        }
+        guard eocdOffset >= 0 else { return nil }
+
+        // Parse EOCD
+        let cdSize = UInt32(bytes[eocdOffset+12]) | UInt32(bytes[eocdOffset+13]) << 8 |
+                     UInt32(bytes[eocdOffset+14]) << 16 | UInt32(bytes[eocdOffset+15]) << 24
+        let cdOffset = UInt32(bytes[eocdOffset+16]) | UInt32(bytes[eocdOffset+17]) << 8 |
+                       UInt32(bytes[eocdOffset+18]) << 16 | UInt32(bytes[eocdOffset+19]) << 24
+
+        guard Int(cdOffset) + Int(cdSize) <= count else { return nil }
+
+        var entries: [ZIPEntry] = []
+        var pos = Int(cdOffset)
+        let endPos = pos + Int(cdSize)
+
+        while pos + 46 <= endPos {
+            // Central directory file header signature: PK\x01\x02
+            guard bytes[pos] == 0x50, bytes[pos+1] == 0x4B,
+                  bytes[pos+2] == 0x01, bytes[pos+3] == 0x02 else { break }
+
+            let method = UInt16(bytes[pos+10]) | UInt16(bytes[pos+11]) << 8
+            let compSize = UInt32(bytes[pos+20]) | UInt32(bytes[pos+21]) << 8 |
+                           UInt32(bytes[pos+22]) << 16 | UInt32(bytes[pos+23]) << 24
+            let uncompSize = UInt32(bytes[pos+24]) | UInt32(bytes[pos+25]) << 8 |
+                             UInt32(bytes[pos+26]) << 16 | UInt32(bytes[pos+27]) << 24
+            let nameLen = UInt16(bytes[pos+28]) | UInt16(bytes[pos+29]) << 8
+            let extraLen = UInt16(bytes[pos+30]) | UInt16(bytes[pos+31]) << 8
+            let commentLen = UInt16(bytes[pos+32]) | UInt16(bytes[pos+33]) << 8
+            let localHdrOff = UInt32(bytes[pos+42]) | UInt32(bytes[pos+43]) << 8 |
+                              UInt32(bytes[pos+44]) << 16 | UInt32(bytes[pos+45]) << 24
+
+            let nameStart = pos + 46
+            let nameEnd = nameStart + Int(nameLen)
+            guard nameEnd <= count else { break }
+
+            if let name = String(bytes: bytes[nameStart..<nameEnd], encoding: .utf8) {
+                entries.append(ZIPEntry(
+                    name: name,
+                    compressedSize: compSize,
+                    uncompressedSize: uncompSize,
+                    method: method,
+                    localHeaderOffset: localHdrOff
+                ))
+            }
+
+            pos = nameEnd + Int(extraLen) + Int(commentLen)
         }
 
-        // ZIP files: scan the central directory at the end
-        // Instead of full unzip, use the C ipa_extract but protect against crash
-        // by checking the ZIP header first
-        guard ipaData.count > 4 else { return false }
+        return entries
+    }
 
-        let header = ipaData.prefix(4)
-        // ZIP magic: PK\x03\x04
-        guard header[header.startIndex] == 0x50,
-              header[header.startIndex + 1] == 0x4B,
-              header[header.startIndex + 2] == 0x03,
-              header[header.startIndex + 3] == 0x04 else {
-            log.log("ERROR: Not a valid ZIP file")
-            return false
+    /// Decompresses a single ZIP entry from the file.
+    private static func decompressEntry(_ entry: ZIPEntry, from url: URL) -> Data? {
+        guard let fileHandle = try? FileHandle(forReadingFrom: url) else { return nil }
+        defer { fileHandle.closeFile() }
+
+        // Seek to local file header
+        fileHandle.seek(toFileOffset: UInt64(entry.localHeaderOffset))
+        let localHeader = fileHandle.readData(ofLength: 30)
+        guard localHeader.count == 30 else { return nil }
+
+        let localBytes = [UInt8](localHeader)
+        guard localBytes[0] == 0x50, localBytes[1] == 0x4B,
+              localBytes[2] == 0x03, localBytes[3] == 0x04 else { return nil }
+
+        let localNameLen = UInt16(localBytes[26]) | UInt16(localBytes[27]) << 8
+        let localExtraLen = UInt16(localBytes[28]) | UInt16(localBytes[29]) << 8
+
+        // Skip name and extra fields
+        fileHandle.seek(toFileOffset: UInt64(entry.localHeaderOffset) + 30 +
+                       UInt64(localNameLen) + UInt64(localExtraLen))
+
+        let compressedData = fileHandle.readData(ofLength: Int(entry.compressedSize))
+
+        if entry.method == 0 {
+            // Stored — no compression
+            return compressedData
+        } else if entry.method == 8 {
+            // Deflate
+            return decompressDeflate(compressedData, expectedSize: Int(entry.uncompressedSize))
         }
 
-        // Use ipa_extract C function — the ZIP file is valid
-        let result = ipa_extract(ipaURL.path, destDir.path)
-        if result != 0 {
-            log.log("ERROR: ipa_extract returned \(result)")
-            return false
+        return nil
+    }
+
+    /// Decompresses deflate-compressed data using Apple's Compression framework.
+    private static func decompressDeflate(_ data: Data, expectedSize: Int) -> Data? {
+        // Use raw deflate (no zlib header)
+        let capacity = max(expectedSize, data.count * 4)
+        var output = Data(count: capacity)
+
+        let decompressed = output.withUnsafeMutableBytes { outBuf -> Int in
+            data.withUnsafeBytes { inBuf -> Int in
+                guard let src = inBuf.baseAddress?.assumingMemoryBound(to: UInt8.self),
+                      let dst = outBuf.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return 0 }
+                let size = compression_decode_buffer(
+                    dst, capacity,
+                    src, data.count,
+                    nil,
+                    COMPRESSION_ZLIB
+                )
+                return size
+            }
         }
 
-        return true
+        guard decompressed > 0 else { return nil }
+        output.count = decompressed
+        return output
     }
 
     // MARK: - Icon Extraction
 
-    /// Extracts icon file names from the `Info.plist` dictionary.
     private static func extractIconNames(from plist: [String: Any]) -> [String] {
         var names = [String]()
 
-        // CFBundleIconFiles (array)
         if let arr = plist["CFBundleIconFiles"] as? [String] {
             names.append(contentsOf: arr)
         }
-
-        // CFBundleIconFile (single)
         if let icon = plist["CFBundleIconFile"] as? String, !names.contains(icon) {
             names.append(icon)
         }
-
-        // Modern: CFBundleIcons → CFBundlePrimaryIcon → CFBundleIconFiles
         if let icons = plist["CFBundleIcons"] as? [String: Any],
            let primary = icons["CFBundlePrimaryIcon"] as? [String: Any],
            let files = primary["CFBundleIconFiles"] as? [String] {
@@ -180,8 +258,6 @@ enum IPAParser {
                 names.append(file)
             }
         }
-
-        // iPad variant
         if let icons = plist["CFBundleIcons~ipad"] as? [String: Any],
            let primary = icons["CFBundlePrimaryIcon"] as? [String: Any],
            let files = primary["CFBundleIconFiles"] as? [String] {
@@ -189,52 +265,48 @@ enum IPAParser {
                 names.append(file)
             }
         }
-
         return names
     }
 
-    /// Finds the largest icon PNG in the `.app` directory.
-    private static func extractLargestIcon(appPath: URL, iconNames: [String]) -> Data? {
-        let fm = FileManager.default
-        guard let files = try? fm.contentsOfDirectory(atPath: appPath.path) else { return nil }
+    /// Finds the largest icon PNG from ZIP entries (no full extraction).
+    private static func extractLargestIconFromZIP(
+        entries: [ZIPEntry], ipaURL: URL,
+        appPrefix: String, iconNames: [String]
+    ) -> Data? {
+        // Find icon entries in the ZIP
+        let pngEntries = entries.filter { entry in
+            guard entry.name.hasPrefix(appPrefix),
+                  entry.name.hasSuffix(".png"),
+                  entry.uncompressedSize > 0 else { return false }
 
-        var bestIcon: (data: Data, size: Int)?
+            let fileName = (entry.name as NSString).lastPathComponent
 
-        for file in files where file.hasSuffix(".png") {
             let matches = iconNames.contains { name in
                 let baseName = name.replacingOccurrences(of: ".png", with: "")
-                return file == name || file.hasPrefix(baseName)
+                return fileName == name || fileName.hasPrefix(baseName)
             }
 
-            if matches || (iconNames.isEmpty && file.lowercased().contains("appicon")) {
-                let filePath = appPath.appendingPathComponent(file)
-                guard let data = try? Data(contentsOf: filePath) else { continue }
-
-                if bestIcon == nil || data.count > bestIcon!.size {
-                    bestIcon = (data: data, size: data.count)
-                }
-            }
+            return matches || (iconNames.isEmpty && fileName.lowercased().contains("appicon"))
         }
 
-        // Fallback: any PNG with "icon" in the name
-        if bestIcon == nil {
-            for file in files where file.lowercased().contains("icon") && file.hasSuffix(".png") {
-                let filePath = appPath.appendingPathComponent(file)
-                guard let data = try? Data(contentsOf: filePath) else { continue }
-                if bestIcon == nil || data.count > bestIcon!.size {
-                    bestIcon = (data: data, size: data.count)
-                }
-            }
+        // Fallback to any icon-like PNG
+        let candidates = pngEntries.isEmpty ?
+            entries.filter { $0.name.hasPrefix(appPrefix) &&
+                           ($0.name as NSString).lastPathComponent.lowercased().contains("icon") &&
+                           $0.name.hasSuffix(".png") && $0.uncompressedSize > 0 } :
+            pngEntries
+
+        // Pick the largest
+        guard let bestEntry = candidates.max(by: { $0.uncompressedSize < $1.uncompressedSize }) else {
+            return nil
         }
 
-        guard let iconRaw = bestIcon?.data else { return nil }
-
-        return normalizePNG(iconRaw)
+        guard let rawData = decompressEntry(bestEntry, from: ipaURL) else { return nil }
+        return normalizePNG(rawData)
     }
 
     // MARK: - PNG Normalization
 
-    /// Normalizes Apple's CgBI PNG format to standard PNG.
     private static func normalizePNG(_ data: Data) -> Data {
         data.withUnsafeBytes { rawBuf -> Data in
             guard let ptr = rawBuf.baseAddress?.assumingMemoryBound(to: UInt8.self) else {
