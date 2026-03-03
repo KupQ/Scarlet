@@ -20,10 +20,9 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
     var backgroundCompletionHandler: (() -> Void)?
 
     private lazy var session: URLSession = {
-        let config = URLSessionConfiguration.background(withIdentifier: "com.scarlet.download")
-        config.isDiscretionary = false
-        config.sessionSendsLaunchEvents = true
+        let config = URLSessionConfiguration.default
         config.allowsCellularAccess = true
+        config.timeoutIntervalForResource = 600  // 10 min for large IPAs
         return URLSession(configuration: config, delegate: self, delegateQueue: .main)
     }()
 
