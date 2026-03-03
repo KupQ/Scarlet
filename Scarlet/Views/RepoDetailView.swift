@@ -207,22 +207,15 @@ struct RepoDetailView: View {
                     .font(.system(size: 15, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(1)
-                HStack(spacing: 4) {
-                    if let v = app.resolvedVersion {
-                        Text("v\(v)")
-                            .font(.system(size: 11, weight: .medium))
-                    }
-                    Text("•")
-                    Text(app.sizeString)
+
+                // Subtitle line — only show items that exist
+                let parts = buildSubtitle(app)
+                if !parts.isEmpty {
+                    Text(parts)
                         .font(.system(size: 11, weight: .medium))
-                    if let dev = app.developerName {
-                        Text("•")
-                        Text(dev)
-                            .font(.system(size: 11, weight: .medium))
-                            .lineLimit(1)
-                    }
+                        .foregroundColor(.white.opacity(0.25))
+                        .lineLimit(1)
                 }
-                .foregroundColor(.white.opacity(0.25))
             }
 
             Spacer()
@@ -245,11 +238,21 @@ struct RepoDetailView: View {
                 .buttonStyle(.plain)
             }
         }
+        .frame(minHeight: 52)
         .padding(.vertical, 10)
         .padding(.horizontal, 14)
         .background(
             RoundedRectangle(cornerRadius: 14).fill(Color.white.opacity(0.02))
         )
+    }
+
+    private func buildSubtitle(_ app: RepoApp) -> String {
+        var items: [String] = []
+        if let v = app.resolvedVersion, !v.isEmpty { items.append("v\(v)") }
+        let size = app.sizeString
+        if size != "—" { items.append(size) }
+        if let dev = app.developerName, !dev.isEmpty { items.append(dev) }
+        return items.joined(separator: " • ")
     }
 
     private func downloadApp(_ app: RepoApp) {
