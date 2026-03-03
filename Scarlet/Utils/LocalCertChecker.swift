@@ -69,11 +69,11 @@ final class LocalCertChecker: ObservableObject {
         return URLSession(configuration: config, delegate: PermissiveDelegate(), delegateQueue: nil)
     }()
 
-    /// Cached issuer DER (cached remote → bundled fallback)
-    private lazy var cachedIssuerDER: Data? = {
+    /// Issuer DER — reloads each time so it picks up newly-downloaded WWDR cert
+    private var cachedIssuerDER: Data? {
         guard let url = CertFetcher.wwdrURL else { return nil }
         return try? Data(contentsOf: url)
-    }()
+    }
 
     // MARK: - Check a single local cert (used after import)
 
