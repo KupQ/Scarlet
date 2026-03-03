@@ -164,7 +164,7 @@ struct RepoDetailView: View {
 
                 // Lazy app list
                 ScrollView {
-                    LazyVStack(spacing: 10) {
+                    LazyVStack(spacing: 8) {
                         ForEach(apps) { app in
                             repoAppRow(app)
                         }
@@ -238,8 +238,7 @@ struct RepoDetailView: View {
                 .buttonStyle(.plain)
             }
         }
-        .frame(minHeight: 52)
-        .padding(.vertical, 10)
+        .frame(height: 72)
         .padding(.horizontal, 14)
         .background(
             RoundedRectangle(cornerRadius: 14).fill(Color.white.opacity(0.02))
