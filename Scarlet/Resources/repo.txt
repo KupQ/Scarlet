@@ -1,2 +1,1 @@
-https://raw.githubusercontent.com/vizunchik/AltSourceRepo/main/Apps/apps.json
 https://repository.apptesters.org
