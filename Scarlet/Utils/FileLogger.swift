@@ -36,7 +36,7 @@ final class FileLogger {
     /// - Parameter message: The message to log.
     func log(_ message: String) {
         let line = "[\(ISO8601DateFormatter().string(from: Date()))] \(message)\n"
-        queue.async { [logURL] in
+        queue.sync { [logURL] in
             if let handle = try? FileHandle(forWritingTo: logURL) {
                 handle.seekToEndOfFile()
                 handle.write(line.data(using: .utf8)!)
