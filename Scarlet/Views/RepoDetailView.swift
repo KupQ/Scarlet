@@ -10,28 +10,57 @@ struct PendingDownload: Identifiable {
     var progress: Double  // 0.0-1.0
 }
 
-class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
+class DownloadManager: NSObject, ObservableObject, URLSessionDataDelegate {
     static let shared = DownloadManager()
 
     @Published var activeDownloads: [String: Double] = [:]  // id -> progress 0.0-1.0
     @Published var pendingDownloads: [PendingDownload] = []
-    private var tasks: [URLSessionDownloadTask: String] = [:]  // task -> app id
+    private var tasks: [URLSessionDataTask: String] = [:]  // task -> app id
     private var completions: [String: (URL) -> Void] = [:]
+    private var fileHandles: [String: FileHandle] = [:]   // id -> open file handle
+    private var destURLs: [String: URL] = [:]             // id -> destination path
+    private var expectedBytes: [String: Int64] = [:]
+    private var receivedBytes: [String: Int64] = [:]
     var backgroundCompletionHandler: (() -> Void)?
 
     private lazy var session: URLSession = {
         let config = URLSessionConfiguration.default
         config.allowsCellularAccess = true
-        config.timeoutIntervalForResource = 600  // 10 min for large IPAs
+        config.timeoutIntervalForResource = 600
         return URLSession(configuration: config, delegate: self, delegateQueue: .main)
     }()
 
+    /// Downloads directory inside Documents — always writable
+    private var downloadsDir: URL {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let dir = docs.appendingPathComponent("Downloads")
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }
+
     func download(id: String, url: URL, appName: String = "", iconURL: String? = nil, sizeString: String = "", completion: @escaping (URL) -> Void) {
         guard activeDownloads[id] == nil else { return }
+
+        let log = FileLogger.shared
+        let dest = downloadsDir.appendingPathComponent(UUID().uuidString + ".ipa")
+        log.log("[DL] Starting download '\(appName)' -> \(dest.lastPathComponent)")
+
+        // Create the destination file immediately
+        FileManager.default.createFile(atPath: dest.path, contents: nil)
+        guard let handle = try? FileHandle(forWritingTo: dest) else {
+            log.log("[DL] ERROR: cannot create file handle at \(dest.path)")
+            return
+        }
+
         activeDownloads[id] = 0.0
         pendingDownloads.append(PendingDownload(id: id, appName: appName, iconURL: iconURL, sizeString: sizeString, progress: 0.0))
         completions[id] = completion
-        let task = session.downloadTask(with: url)
+        fileHandles[id] = handle
+        destURLs[id] = dest
+        expectedBytes[id] = 0
+        receivedBytes[id] = 0
+
+        let task = session.dataTask(with: url)
         tasks[task] = id
         task.resume()
     }
@@ -41,88 +70,78 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
             entry.key.cancel()
             tasks.removeValue(forKey: entry.key)
         }
-        completions.removeValue(forKey: id)
-        activeDownloads.removeValue(forKey: id)
-        pendingDownloads.removeAll { $0.id == id }
+        cleanupDownload(id: id)
+        // Delete partial file
+        if let dest = destURLs[id] {
+            try? FileManager.default.removeItem(at: dest)
+        }
+        destURLs.removeValue(forKey: id)
     }
 
-    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask,
-                    didWriteData bytesWritten: Int64, totalBytesWritten: Int64,
-                    totalBytesExpectedToWrite: Int64) {
-        guard let id = tasks[downloadTask], totalBytesExpectedToWrite > 0 else { return }
-        let p = Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
+    // Called when we receive the response headers — get expected size
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask,
+                    didReceive response: URLResponse,
+                    completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
+        guard let id = tasks[dataTask] else {
+            completionHandler(.cancel)
+            return
+        }
+        expectedBytes[id] = response.expectedContentLength
+        FileLogger.shared.log("[DL] Response received, expected bytes: \(response.expectedContentLength)")
+        completionHandler(.allow)
+    }
+
+    // Called as data chunks arrive — write directly to file
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        guard let id = tasks[dataTask], let handle = fileHandles[id] else { return }
+        handle.write(data)
+        receivedBytes[id] = (receivedBytes[id] ?? 0) + Int64(data.count)
+
+        let total = expectedBytes[id] ?? 0
+        let received = receivedBytes[id] ?? 0
+        let p = total > 0 ? Double(received) / Double(total) : 0.0
         activeDownloads[id] = p
         if let idx = pendingDownloads.firstIndex(where: { $0.id == id }) {
             pendingDownloads[idx].progress = p
         }
     }
 
-    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask,
-                    didFinishDownloadingTo location: URL) {
-        guard let id = tasks[downloadTask] else { return }
-        let appName = pendingDownloads.first(where: { $0.id == id })?.appName ?? "App"
+    // Called when download completes or errors
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        guard let dataTask = task as? URLSessionDataTask, let id = tasks[dataTask] else { return }
         let log = FileLogger.shared
 
-        log.log("[DL-1] didFinishDownloadingTo for '\(appName)' thread=\(Thread.isMainThread ? "main" : "bg")")
-        log.log("[DL-2] temp location: \(location.path)")
-        log.log("[DL-3] temp file exists: \(FileManager.default.fileExists(atPath: location.path))")
+        // Close file handle
+        fileHandles[id]?.closeFile()
+        fileHandles.removeValue(forKey: id)
 
-        let fm = FileManager.default
-        let appSupport = fm.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let downloadsDir = appSupport.appendingPathComponent("Downloads")
-        try? fm.createDirectory(at: downloadsDir, withIntermediateDirectories: true)
-
-        let dest = downloadsDir.appendingPathComponent(UUID().uuidString + ".ipa")
-        log.log("[DL-4] dest path: \(dest.path)")
-
-        var saved = false
-        // iOS 15: background URLSession temp files can be MOVED but not copied
-        do {
-            try fm.moveItem(at: location, to: dest)
-            saved = true
-            let size = (try? fm.attributesOfItem(atPath: dest.path)[.size] as? Int64) ?? -1
-            log.log("[DL-5] moveItem OK, saved size=\(size) bytes")
-        } catch {
-            log.log("[DL-5] ERROR moveItem: \(error)")
-            // Fallback: try copy
-            do {
-                try fm.copyItem(at: location, to: dest)
-                saved = true
-                log.log("[DL-5b] copyItem fallback OK")
-            } catch {
-                log.log("[DL-5b] ERROR copyItem: \(error)")
-                // Last resort: read data
-                if let data = try? Data(contentsOf: location) {
-                    do {
-                        try data.write(to: dest)
-                        saved = true
-                        log.log("[DL-6] data fallback OK (\(data.count) bytes)")
-                    } catch {
-                        log.log("[DL-6] ERROR data write: \(error)")
-                    }
-                } else {
-                    log.log("[DL-6] ERROR cannot read temp file data")
-                }
+        if let error = error {
+            log.log("[DL] ERROR: \(error.localizedDescription)")
+            // Delete partial file
+            if let dest = destURLs[id] {
+                try? FileManager.default.removeItem(at: dest)
             }
-        }
-
-        tasks.removeValue(forKey: downloadTask)
-        let completion = completions.removeValue(forKey: id)
-        activeDownloads.removeValue(forKey: id)
-        pendingDownloads.removeAll { $0.id == id }
-
-        guard saved, fm.fileExists(atPath: dest.path) else {
-            log.log("[DL-7] ABORT: file not saved, skipping import")
+            cleanupDownload(id: id)
+            destURLs.removeValue(forKey: id)
             return
         }
 
-        log.log("[DL-7] file verified, dispatching import to main")
-
-        DispatchQueue.main.async {
-            log.log("[DL-8] main dispatch fired, calling completion")
-            completion?(dest)
-            log.log("[DL-9] completion returned")
+        guard let dest = destURLs[id] else {
+            log.log("[DL] ERROR: no dest URL for id \(id)")
+            cleanupDownload(id: id)
+            return
         }
+
+        let size = (try? FileManager.default.attributesOfItem(atPath: dest.path)[.size] as? Int64) ?? 0
+        log.log("[DL] Download complete: \(dest.lastPathComponent) (\(size) bytes)")
+
+        let appName = pendingDownloads.first(where: { $0.id == id })?.appName ?? "App"
+        let completion = completions[id]
+        cleanupDownload(id: id)
+        destURLs.removeValue(forKey: id)
+
+        // Call completion with the file we already wrote
+        completion?(dest)
 
         // Notify if backgrounded
         if UIApplication.shared.applicationState != .active {
@@ -133,21 +152,14 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
         }
     }
 
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        guard let dlTask = task as? URLSessionDownloadTask, let id = tasks[dlTask] else { return }
-        if error != nil {
-            print("[DownloadManager] Error for \(id): \(error!)")
-            tasks.removeValue(forKey: dlTask)
-            completions.removeValue(forKey: id)
-            activeDownloads.removeValue(forKey: id)
-            pendingDownloads.removeAll { $0.id == id }
-        }
-    }
-
-    func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
-        DispatchQueue.main.async { [weak self] in
-            self?.backgroundCompletionHandler?()
-            self?.backgroundCompletionHandler = nil
+    private func cleanupDownload(id: String) {
+        completions.removeValue(forKey: id)
+        activeDownloads.removeValue(forKey: id)
+        pendingDownloads.removeAll { $0.id == id }
+        expectedBytes.removeValue(forKey: id)
+        receivedBytes.removeValue(forKey: id)
+        if let entry = tasks.first(where: { $0.value == id }) {
+            tasks.removeValue(forKey: entry.key)
         }
     }
 }
