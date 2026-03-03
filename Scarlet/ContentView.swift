@@ -1407,7 +1407,7 @@ struct ContentView: View {
                             .font(.system(size: 15))
                             .foregroundColor(.scarletRed)
                         Text(L("Hold to open"))
-                            .font(.system(size: 14, weight: .medium))
+                            .font(.system(size: 14, weight: .regular))
                             .foregroundColor(.white)
                             .fixedSize()
                     }
@@ -1487,8 +1487,8 @@ struct ContentView: View {
                 }
                 .onEnded { _ in
                     if settingsDragActive {
-                        // Dismiss hint forever after a real hold+drag
-                        if showSettingsHint {
+                        // Dismiss hint only after a real hold+drag that selected an option
+                        if showSettingsHint, hoveredSettingsOption != nil {
                             withAnimation { showSettingsHint = false }
                             UserDefaults.standard.set(true, forKey: "settingsHintDismissed")
                         }
