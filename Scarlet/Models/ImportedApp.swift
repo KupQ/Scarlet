@@ -184,47 +184,89 @@ final class ImportedAppsManager: ObservableObject {
                 )
             }
 
-            let appId = UUID()
-            let ipaName = "\(appId.uuidString).ipa"
-            let iconName = metadata.iconData != nil ? "\(appId.uuidString).png" : nil
+            self.finishImport(from: url, metadata: metadata, fileSize: fileSize)
+        }
+    }
 
-            let accessing = url.startAccessingSecurityScopedResource()
-            let destIPA = Self.appsDirectory.appendingPathComponent(ipaName)
-            do {
-                try fm.copyItem(at: url, to: destIPA)
-                log.log("Copied IPA to storage (\(fileSize) bytes)")
-            } catch {
-                log.log("ERROR: Failed to copy IPA: \(error)")
-                if accessing { url.stopAccessingSecurityScopedResource() }
-                DispatchQueue.main.async { self.isImporting = false }
-                return
+    /// Imports an IPA with pre-known metadata — skips ipa_extract parsing entirely.
+    /// Use this for repo downloads where we already know app name/version/icon.
+    func importIPAWithKnownMetadata(from url: URL, appName: String, iconURL: String?) {
+        importingFileName = appName
+        isImporting = true
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else { return }
+
+            let log = FileLogger.shared
+            log.log("Importing IPA (known metadata): \(appName)")
+
+            let fm = FileManager.default
+            let fileSize = (try? fm.attributesOfItem(atPath: url.path)[.size] as? Int64) ?? 0
+
+            // Download icon from URL if available
+            var iconData: Data? = nil
+            if let iconStr = iconURL, let icoURL = URL(string: iconStr) {
+                iconData = try? Data(contentsOf: icoURL)
             }
-            if accessing { url.stopAccessingSecurityScopedResource() }
 
-            if let iconData = metadata.iconData, let iconName {
-                let destIcon = Self.appsDirectory.appendingPathComponent(iconName)
-                try? iconData.write(to: destIcon)
-                log.log("Saved icon")
-            }
-
-            let app = ImportedApp(
-                id: appId,
-                appName: metadata.appName,
-                bundleIdentifier: metadata.bundleIdentifier,
-                version: metadata.version,
-                fileName: metadata.fileName,
-                fileSize: metadata.fileSize,
-                importDate: Date(),
-                iconFileName: iconName,
-                ipaFileName: ipaName
+            let metadata = IPAMetadata(
+                appName: appName,
+                bundleIdentifier: appName,
+                version: "1.0",
+                iconData: iconData,
+                fileSize: fileSize,
+                fileName: url.lastPathComponent
             )
 
-            DispatchQueue.main.async {
-                self.apps.insert(app, at: 0)
-                self.saveApps()
-                self.isImporting = false
-                log.log("Import complete: \(metadata.appName)")
-            }
+            self.finishImport(from: url, metadata: metadata, fileSize: fileSize)
+        }
+    }
+
+    /// Shared import finalization: copies IPA, saves icon, adds to library.
+    private func finishImport(from url: URL, metadata: IPAMetadata, fileSize: Int64) {
+        let log = FileLogger.shared
+        let fm = FileManager.default
+
+        let appId = UUID()
+        let ipaName = "\(appId.uuidString).ipa"
+        let iconName = metadata.iconData != nil ? "\(appId.uuidString).png" : nil
+
+        let accessing = url.startAccessingSecurityScopedResource()
+        let destIPA = Self.appsDirectory.appendingPathComponent(ipaName)
+        do {
+            try fm.copyItem(at: url, to: destIPA)
+            log.log("Copied IPA to storage (\(fileSize) bytes)")
+        } catch {
+            log.log("ERROR: Failed to copy IPA: \(error)")
+            if accessing { url.stopAccessingSecurityScopedResource() }
+            DispatchQueue.main.async { self.isImporting = false }
+            return
+        }
+        if accessing { url.stopAccessingSecurityScopedResource() }
+
+        if let iconData = metadata.iconData, let iconName {
+            let destIcon = Self.appsDirectory.appendingPathComponent(iconName)
+            try? iconData.write(to: destIcon)
+            log.log("Saved icon")
+        }
+
+        let app = ImportedApp(
+            id: appId,
+            appName: metadata.appName,
+            bundleIdentifier: metadata.bundleIdentifier,
+            version: metadata.version,
+            fileName: metadata.fileName,
+            fileSize: metadata.fileSize,
+            importDate: Date(),
+            iconFileName: iconName,
+            ipaFileName: ipaName
+        )
+
+        DispatchQueue.main.async {
+            self.apps.insert(app, at: 0)
+            self.saveApps()
+            self.isImporting = false
+            log.log("Import complete: \(metadata.appName)")
         }
     }
 

@@ -267,8 +267,12 @@ struct RepoDetailView: View {
             id: app.id, url: url,
             appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString
         ) { savedURL in
-            // File is already saved in Application Support/Downloads by DownloadManager
-            ImportedAppsManager.shared.importIPA(from: savedURL)
+            // Use known metadata — skip ipa_extract parsing (crashes on iOS 15)
+            ImportedAppsManager.shared.importIPAWithKnownMetadata(
+                from: savedURL,
+                appName: app.displayName,
+                iconURL: app.resolvedIconURL
+            )
         }
 
         // Switch to Library tab without leaving repo
