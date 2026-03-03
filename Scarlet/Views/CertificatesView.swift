@@ -82,7 +82,7 @@ struct CertificatesView: View {
 
     var body: some View {
         ZStack {
-            Color.bgPrimary.ignoresSafeArea()
+            Color.clear
 
             VStack(spacing: 0) {
                 headerSection
