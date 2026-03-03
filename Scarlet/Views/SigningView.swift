@@ -14,7 +14,10 @@ struct SigningView: View {
 
     @StateObject private var appsManager = ImportedAppsManager.shared
     @StateObject private var signedManager = SignedAppsManager.shared
+    @StateObject private var downloadManager = DownloadManager.shared
     @State private var showIPAImportPicker = false
+    @State private var showURLInput = false
+    @State private var urlInputText = ""
     @State private var signIconPulse = false
     @State private var libraryTab: Int = 0  // 0 = Unsigned, 1 = Signed
     @State private var installServer: LocalIPAServer?
@@ -113,6 +116,27 @@ struct SigningView: View {
                 appsManager.importIPA(from: url)
             }
         }
+        .alert(L("Download from URL"), isPresented: $showURLInput) {
+            TextField("https://example.com/app.ipa", text: $urlInputText)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+            Button(L("Download")) {
+                let trimmed = urlInputText.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard let url = URL(string: trimmed), !trimmed.isEmpty else { return }
+                let fileName = url.lastPathComponent.isEmpty ? "App" : url.deletingPathExtension().lastPathComponent
+                let dlId = "url_" + UUID().uuidString
+                downloadManager.download(
+                    id: dlId, url: url,
+                    appName: fileName, iconURL: nil, sizeString: "—"
+                ) { savedURL in
+                    ImportedAppsManager.shared.importIPA(from: savedURL)
+                }
+                urlInputText = ""
+            }
+            Button(L("Cancel"), role: .cancel) { urlInputText = "" }
+        } message: {
+            Text(L("Paste a direct link to an IPA file"))
+        }
     }
 
     // MARK: - Header
@@ -128,10 +152,21 @@ struct SigningView: View {
                     .foregroundColor(.white.opacity(0.3))
             }
             Spacer()
-            Button { showIPAImportPicker = true } label: {
+            Menu {
+                Button {
+                    showIPAImportPicker = true
+                } label: {
+                    Label(L("Import from Files"), systemImage: "doc.badge.plus")
+                }
+                Button {
+                    showURLInput = true
+                } label: {
+                    Label(L("Download from URL"), systemImage: "link")
+                }
+            } label: {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                                                        .fill(Color.white.opacity(0.03))
+                        .fill(Color.white.opacity(0.03))
                         .frame(width: 40, height: 40)
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
@@ -268,7 +303,6 @@ struct SigningView: View {
     // MARK: - Apps List (split into installed + all)
 
     @StateObject private var installedManager = InstalledAppsManager.shared
-    @ObservedObject private var downloadManager = DownloadManager.shared
 
     private var allAppsSorted: [ImportedApp] {
         appsManager.apps.sorted { $0.importDate > $1.importDate }
