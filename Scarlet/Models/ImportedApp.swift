@@ -102,7 +102,7 @@ struct ImportedApp: Identifiable, Codable {
     /// Absolute URL for the app icon, or `nil` if no icon was extracted.
     var iconURL: URL? {
         guard let name = iconFileName else { return nil }
-        return ImportedAppsManager.appsDirectory.appendingPathComponent(name)
+        return ImportedAppsManager.iconsDirectory.appendingPathComponent(name)
     }
 
     /// Absolute URL for the IPA file in local storage.
@@ -131,10 +131,18 @@ final class ImportedAppsManager: ObservableObject {
 
     // MARK: Storage
 
-    /// Root directory for all unsigned IPA files and icons.
+    /// Root directory for all unsigned IPA files.
     static let appsDirectory: URL = {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let dir = docs.appendingPathComponent("unsigned")
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }()
+
+    /// Icons directory (hidden from Files app)
+    static let iconsDirectory: URL = {
+        let lib = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
+        let dir = lib.appendingPathComponent("AppIcons")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
     }()
@@ -199,12 +207,19 @@ final class ImportedAppsManager: ObservableObject {
 
             let accessing = url.startAccessingSecurityScopedResource()
             let destIPA = Self.appsDirectory.appendingPathComponent(ipaName)
-            log.log("[IMP-7] copying to \(destIPA.lastPathComponent)")
+
+            // If file is already in our unsigned/ dir (from download), just rename it
+            let alreadyInPlace = url.deletingLastPathComponent().path == Self.appsDirectory.path
+            log.log("[IMP-7] \(alreadyInPlace ? "renaming" : "copying") to \(destIPA.lastPathComponent)")
             do {
-                try fm.copyItem(at: url, to: destIPA)
-                log.log("[IMP-8] copy OK")
+                if alreadyInPlace {
+                    try fm.moveItem(at: url, to: destIPA)
+                } else {
+                    try fm.copyItem(at: url, to: destIPA)
+                }
+                log.log("[IMP-8] \(alreadyInPlace ? "move" : "copy") OK")
             } catch {
-                log.log("[IMP-8] ERROR copy: \(error)")
+                log.log("[IMP-8] ERROR: \(error)")
                 if accessing { url.stopAccessingSecurityScopedResource() }
                 DispatchQueue.main.async { self.isImporting = false }
                 return
@@ -212,7 +227,7 @@ final class ImportedAppsManager: ObservableObject {
             if accessing { url.stopAccessingSecurityScopedResource() }
 
             if let iconData = metadata.iconData, let iconName {
-                let destIcon = Self.appsDirectory.appendingPathComponent(iconName)
+                let destIcon = Self.iconsDirectory.appendingPathComponent(iconName)
                 try? iconData.write(to: destIcon)
                 log.log("[IMP-9] icon saved")
             }
