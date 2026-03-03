@@ -42,6 +42,7 @@ struct SplashView: View {
                     )
                     .frame(width: 140, height: 140)
                     .rotationEffect(.degrees(ringRotation))
+                    .animation(.linear(duration: 1.2).repeatForever(autoreverses: false), value: ringRotation)
 
                 // Inner ring
                 Circle()
@@ -65,6 +66,7 @@ struct SplashView: View {
                         )
                         .frame(width: 72, height: 72)
                         .rotationEffect(.degrees(ringRotation))
+                        .animation(.linear(duration: 1.2).repeatForever(autoreverses: false), value: ringRotation)
 
                     // Outer glass ring
                     Circle()
@@ -124,9 +126,7 @@ struct SplashView: View {
         withAnimation(.easeOut(duration: 0.5)) {
             showContent = true
         }
-        withAnimation(.linear(duration: 1.2).repeatForever(autoreverses: false)) {
-            ringRotation = 360
-        }
+        ringRotation = 360
 
         // Phase 1: UDID
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

@@ -820,11 +820,10 @@ struct PulseGlow: View {
         RoundedRectangle(cornerRadius: cornerRadius)
             .stroke(Color.white.opacity(0.25), lineWidth: 0.5)
             .opacity(on ? 1 : 0)
+            .animation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true), value: on)
             .allowsHitTesting(false)
             .onAppear {
-                withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
-                    on = true
-                }
+                on = true
             }
     }
 }

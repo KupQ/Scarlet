@@ -1407,6 +1407,7 @@ struct ContentView: View {
                                     .stroke(Color.scarletRed.opacity(hintPulse ? 0.5 : 0.2), lineWidth: 1)
                             )
                             .shadow(color: .scarletRed.opacity(hintPulse ? 0.25 : 0.08), radius: hintPulse ? 12 : 5)
+                            .animation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true), value: hintPulse)
                     )
 
                     // Arrow pointing down
@@ -1422,9 +1423,7 @@ struct ContentView: View {
                     handPhase = 0
                     handLoopId += 1
                     let currentLoopId = handLoopId
-                    withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
-                        hintPulse = true
-                    }
+                    hintPulse = true
                     func runHandLoop() {
                         guard showSettingsHint, handLoopId == currentLoopId else { return }
                         handPhase = 0
@@ -1957,6 +1956,7 @@ struct SlideToActionView: View {
                                 )
                                 .frame(width: 50)
                                 .offset(x: shimmer * textGeo.size.width)
+                                .animation(.linear(duration: 2.5).repeatForever(autoreverses: false), value: shimmer)
                                 .mask(
                                     Text(text)
                                         .font(.system(size: 13, weight: .medium))
@@ -2025,9 +2025,7 @@ struct SlideToActionView: View {
         }
         .frame(height: h)
         .onAppear {
-            withAnimation(.linear(duration: 2.5).repeatForever(autoreverses: false)) {
-                shimmer = 1
-            }
+            shimmer = 1
         }
     }
 }
@@ -2054,6 +2052,7 @@ struct ScarletSignButton: View {
                     .frame(width: size + 16, height: size + 16)
                     .blur(radius: 12)
                     .scaleEffect(pulseScale)
+                    .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: pulseScale)
 
                 // Spinning scarlet arc
                 Circle()
@@ -2067,6 +2066,7 @@ struct ScarletSignButton: View {
                     )
                     .frame(width: size + 2, height: size + 2)
                     .rotationEffect(.degrees(arcRotation))
+                    .animation(.linear(duration: 2.5).repeatForever(autoreverses: false), value: arcRotation)
 
                 // Flat dark fill
                 Circle()
@@ -2086,12 +2086,8 @@ struct ScarletSignButton: View {
         }
         .buttonStyle(.plain)
         .onAppear {
-            withAnimation(.linear(duration: 2.5).repeatForever(autoreverses: false)) {
-                arcRotation = 360
-            }
-            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                pulseScale = 1.15
-            }
+            arcRotation = 360
+            pulseScale = 1.15
         }
     }
 }
