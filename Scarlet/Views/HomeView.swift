@@ -383,13 +383,6 @@ struct HomeView: View {
                         .tracking(1.5)
                         .foregroundColor(.white.opacity(0.25))
                     Spacer()
-                    Button {
-                        showAddRepo = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(.scarletRed.opacity(0.7))
-                    }
                 }
                 .padding(.horizontal, 20)
 
