@@ -21,6 +21,7 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDataDelegate {
     private var destURLs: [String: URL] = [:]             // id -> destination path
     private var expectedBytes: [String: Int64] = [:]
     private var receivedBytes: [String: Int64] = [:]
+    private var bgTaskIds: [String: UIBackgroundTaskIdentifier] = [:] // keep alive in bg
     var backgroundCompletionHandler: (() -> Void)?
 
     private lazy var session: URLSession = {
@@ -48,6 +49,12 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDataDelegate {
             log.log("[DL] ERROR: cannot create file handle at \(dest.path)")
             return
         }
+
+        // Request background execution time so download survives backgrounding
+        let bgTask = UIApplication.shared.beginBackgroundTask(withName: "IPA Download \(id)") { [weak self] in
+            self?.cancelDownload(id: id)
+        }
+        bgTaskIds[id] = bgTask
 
         activeDownloads[id] = 0.0
         pendingDownloads.append(PendingDownload(id: id, appName: appName, iconURL: iconURL, sizeString: sizeString, progress: 0.0))
@@ -157,6 +164,10 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDataDelegate {
         receivedBytes.removeValue(forKey: id)
         if let entry = tasks.first(where: { $0.value == id }) {
             tasks.removeValue(forKey: entry.key)
+        }
+        // End background execution
+        if let bgTask = bgTaskIds.removeValue(forKey: id), bgTask != .invalid {
+            UIApplication.shared.endBackgroundTask(bgTask)
         }
     }
 }
