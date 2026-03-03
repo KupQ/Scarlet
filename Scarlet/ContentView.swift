@@ -29,6 +29,8 @@ struct ContentView: View {
     @State private var prefsDragOffset: CGFloat = 0
     @State private var settingsDragActive = false
     @State private var hoveredSettingsOption: Int? = nil
+    @State private var showSettingsHint = !UserDefaults.standard.bool(forKey: "settingsHintDismissed")
+    @State private var hintPulse = false
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -1384,6 +1386,40 @@ struct ContentView: View {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 showSettingsCard.toggle()
                 hoveredSettingsOption = nil
+                // Dismiss hint forever on first tap
+                if showSettingsHint {
+                    showSettingsHint = false
+                    UserDefaults.standard.set(true, forKey: "settingsHintDismissed")
+                }
+            }
+        }
+        .overlay(alignment: .top) {
+            if showSettingsHint {
+                VStack(spacing: 4) {
+                    Text(L("Tap for Settings"))
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule()
+                                .fill(Color.scarletRed)
+                                .shadow(color: .scarletRed.opacity(hintPulse ? 0.6 : 0.2), radius: hintPulse ? 8 : 4)
+                        )
+
+                    // Arrow pointing down
+                    Image(systemName: "arrowtriangle.down.fill")
+                        .font(.system(size: 8))
+                        .foregroundColor(.scarletRed)
+                        .offset(y: -3)
+                }
+                .offset(y: -45)
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+                        hintPulse = true
+                    }
+                }
             }
         }
         .simultaneousGesture(
