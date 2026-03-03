@@ -111,7 +111,6 @@ final class LocalCertChecker: ObservableObject {
 
     func checkAllLocalCerts(certs: [(name: String, password: String)]) async {
         for cert in certs {
-            guard !checkedLocalCerts.contains(cert.name) else { continue }
             await checkLocalCert(name: cert.name, password: cert.password)
         }
     }
