@@ -46,6 +46,7 @@
              'A10053' = {isa = PBXBuildFile; fileRef = B10053; };
              'A10055' = {isa = PBXBuildFile; fileRef = B10055; };
              'A10060' = {isa = PBXBuildFile; fileRef = 'B10060'; };
+             'A10070' = {isa = PBXBuildFile; fileRef = 'B10070'; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -93,6 +94,7 @@
 		'B10032' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCertChecker.swift; sourceTree = "<group>"; };
 		'B10033' = {isa = PBXFileReference; lastKnownFileType = file; path = AppleWWDRCAG3.cer; sourceTree = "<group>"; };
 		'B10060' = {isa = PBXFileReference; lastKnownFileType = text; path = repo.txt; sourceTree = "<group>"; };
+		'B10070' = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		'B10099' = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Scarlet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0BA443991662CB3224DFAD9 /* RepoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RepoService.swift; path = Scarlet/RepoService.swift; sourceTree = SOURCE_ROOT; };
              B10040 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
@@ -143,6 +145,7 @@
 				D10007,
 				B10024,
 				D10008,
+				'B10070',
 			);
 			path = Scarlet;
 			sourceTree = "<group>";
@@ -216,6 +219,7 @@
 			children = (
 				B10033,
 				'B10060',
+				'B10070',
 			);
 			path = Resources;
 			sourceTree = "<group>";
