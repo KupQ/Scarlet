@@ -1389,22 +1389,15 @@ struct ContentView: View {
             }
         }
         .overlay(alignment: .top) {
-            if showSettingsHint {
-                VStack(spacing: 6) {
-                    VStack(spacing: 4) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "hand.tap.fill")
-                                .font(.system(size: 12))
-                                .foregroundColor(.scarletRed)
-                            Text(L("Hold to open"))
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(.white)
-                        }
-                        Text(L("Press & hold the gear icon to access Settings, Certificates & Language"))
-                            .font(.system(size: 10, weight: .medium))
-                            .foregroundColor(.white.opacity(0.5))
-                            .multilineTextAlignment(.center)
-                            .lineLimit(2)
+            if showSettingsHint && !showSettingsCard {
+                VStack(spacing: 5) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "hand.tap.fill")
+                            .font(.system(size: 13))
+                            .foregroundColor(.scarletRed)
+                        Text(L("Hold to open"))
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
@@ -1425,8 +1418,7 @@ struct ContentView: View {
                         .foregroundColor(.white.opacity(0.25))
                         .offset(y: -4)
                 }
-                .frame(width: 200)
-                .offset(y: -70)
+                .offset(y: -58)
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 .onAppear {
                     withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
@@ -1446,11 +1438,6 @@ struct ContentView: View {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 showSettingsCard = true
                                 settingsDragActive = true
-                                // Dismiss hint forever on hold
-                                if showSettingsHint {
-                                    showSettingsHint = false
-                                    UserDefaults.standard.set(true, forKey: "settingsHintDismissed")
-                                }
                             }
                             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                             impactFeedback.impactOccurred()
@@ -1485,6 +1472,11 @@ struct ContentView: View {
                 }
                 .onEnded { _ in
                     if settingsDragActive {
+                        // Dismiss hint forever after a real hold+drag
+                        if showSettingsHint {
+                            withAnimation { showSettingsHint = false }
+                            UserDefaults.standard.set(true, forKey: "settingsHintDismissed")
+                        }
                         // Fire the hovered option
                         if let option = hoveredSettingsOption {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
