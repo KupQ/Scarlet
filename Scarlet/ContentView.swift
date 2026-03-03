@@ -1410,7 +1410,7 @@ struct ContentView: View {
                             .foregroundColor(.scarletRed)
                             .offset(
                                 x: handPhase == 3 ? -5 : (handPhase == 5 ? 5 : 0),
-                                y: handPhase == 1 ? 2 : (handPhase >= 2 && handPhase <= 6 ? -4 : 0)
+                                y: handPhase == 1 ? 1 : (handPhase >= 2 && handPhase <= 6 ? -3 : 0)
                             )
                             .scaleEffect(handPhase == 1 ? 0.9 : 1.0)
                             .animation(.easeInOut(duration: 0.4), value: handPhase)
@@ -1439,7 +1439,7 @@ struct ContentView: View {
                         .foregroundColor(.white.opacity(0.25))
                 }
                 .fixedSize()
-                .offset(y: -90)
+                .offset(y: -75)
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 .onAppear {
                     hintPulse = false
@@ -1509,10 +1509,12 @@ struct ContentView: View {
                 }
                 .onEnded { _ in
                     if settingsDragActive {
-                        // Dismiss hint after any successful hold
+                        // Dismiss hint after a delay so user sees it worked
                         if showSettingsHint {
-                            withAnimation { showSettingsHint = false }
-                            UserDefaults.standard.set(true, forKey: "settingsHintDismissed")
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                withAnimation { showSettingsHint = false }
+                                UserDefaults.standard.set(true, forKey: "settingsHintDismissed")
+                            }
                         }
                         // Fire the hovered option
                         if let option = hoveredSettingsOption {
