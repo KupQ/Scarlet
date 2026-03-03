@@ -47,6 +47,14 @@
              'A10055' = {isa = PBXBuildFile; fileRef = B10055; };
              'A10060' = {isa = PBXBuildFile; fileRef = 'B10060'; };
              'A10070' = {isa = PBXBuildFile; fileRef = 'B10070'; };
+             'A10080' = {isa = PBXBuildFile; fileRef = 'B10080'; };
+             'A10081' = {isa = PBXBuildFile; fileRef = 'B10081'; };
+             'A10082' = {isa = PBXBuildFile; fileRef = 'B10082'; };
+             'A10083' = {isa = PBXBuildFile; fileRef = 'B10083'; };
+             'A10084' = {isa = PBXBuildFile; fileRef = 'B10084'; };
+             'A10085' = {isa = PBXBuildFile; fileRef = 'B10085'; };
+             'A10086' = {isa = PBXBuildFile; fileRef = 'B10086'; };
+             'A10087' = {isa = PBXBuildFile; fileRef = 'B10087'; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -95,6 +103,14 @@
 		'B10033' = {isa = PBXFileReference; lastKnownFileType = file; path = AppleWWDRCAG3.cer; sourceTree = "<group>"; };
 		'B10060' = {isa = PBXFileReference; lastKnownFileType = text; path = repo.txt; sourceTree = "<group>"; };
 		'B10070' = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		'B10080' = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon60x60@2x.png"; sourceTree = "<group>"; };
+		'B10081' = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon60x60@3x.png"; sourceTree = "<group>"; };
+		'B10082' = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon40x40@2x.png"; sourceTree = "<group>"; };
+		'B10083' = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon40x40@3x.png"; sourceTree = "<group>"; };
+		'B10084' = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon29x29@2x.png"; sourceTree = "<group>"; };
+		'B10085' = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon29x29@3x.png"; sourceTree = "<group>"; };
+		'B10086' = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon20x20@2x.png"; sourceTree = "<group>"; };
+		'B10087' = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon20x20@3x.png"; sourceTree = "<group>"; };
 		'B10099' = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Scarlet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0BA443991662CB3224DFAD9 /* RepoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RepoService.swift; path = Scarlet/RepoService.swift; sourceTree = SOURCE_ROOT; };
              B10040 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
@@ -145,7 +161,15 @@
 				D10007,
 				B10024,
 				D10008,
-				'B10070',
+				B10070,
+				B10080,
+				B10081,
+				B10082,
+				B10083,
+				B10084,
+				B10085,
+				B10086,
+				B10087,
 			);
 			path = Scarlet;
 			sourceTree = "<group>";
@@ -219,7 +243,14 @@
 			children = (
 				B10033,
 				'B10060',
-				'B10070',
+				'B10080',
+				'B10081',
+				'B10082',
+				'B10083',
+				'B10084',
+				'B10085',
+				'B10086',
+				'B10087',
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -243,6 +274,7 @@
 				C10001,
 				E10003,
 				E10004,
+				'S10001',
 			);
 			buildRules = (
 			);
@@ -300,6 +332,20 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		'S10001' = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			inputPaths = ();
+			name = "Copy App Icons";
+			outputPaths = ();
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cp \"${SRCROOT}/Scarlet/Resources/AppIcon\"*.png \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		'E10002' = {
