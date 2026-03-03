@@ -267,11 +267,8 @@ struct RepoDetailView: View {
             ImportedAppsManager.shared.importIPA(from: savedURL)
         }
 
-        // Navigate back and switch to Library tab
-        dismiss()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            NotificationCenter.default.post(name: .switchToLibrary, object: nil)
-        }
+        // Switch to Library tab without leaving repo
+        NotificationCenter.default.post(name: .switchToLibrary, object: nil)
     }
 }
 
