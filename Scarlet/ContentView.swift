@@ -1446,23 +1446,19 @@ struct ContentView: View {
                     withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
                         hintPulse = true
                     }
-                    // Hand gesture demo loop
+                    // Hand gesture demo loop: hold longer so they see the press
                     func runHandLoop() {
                         guard showSettingsHint else { return }
                         handPhase = 0
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { handPhase = 1 } // press
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { handPhase = 2 } // up
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { handPhase = 3 } // left
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { handPhase = 4 } // right
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { handPhase = 0 } // rest
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { runHandLoop() } // repeat
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { handPhase = 1 } // press down
+                        // Hold for 1.5s so they see it
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.1) { handPhase = 2 } // sweep up
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.6) { handPhase = 3 } // left
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.1) { handPhase = 4 } // right
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.6) { handPhase = 0 } // rest
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 4.2) { runHandLoop() } // repeat
                     }
                     runHandLoop()
-                    // Auto-dismiss after 8 seconds
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
-                        withAnimation { showSettingsHint = false }
-                        UserDefaults.standard.set(true, forKey: "settingsHintDismissed")
-                    }
                 }
             }
         }
