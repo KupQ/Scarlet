@@ -71,15 +71,22 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
         try? fm.createDirectory(at: downloadsDir, withIntermediateDirectories: true)
 
         let dest = downloadsDir.appendingPathComponent(UUID().uuidString + ".ipa")
+        var saved = false
         do {
             try fm.copyItem(at: location, to: dest)
+            saved = true
             FileLogger.shared.log("Download saved: \(dest.lastPathComponent) (\(appName))")
         } catch {
-            FileLogger.shared.log("ERROR saving download: \(error)")
+            FileLogger.shared.log("ERROR saving download (copy): \(error)")
             // Try reading data directly as a last resort
             if let data = try? Data(contentsOf: location) {
-                try? data.write(to: dest)
-                FileLogger.shared.log("Saved via data read fallback (\(data.count) bytes)")
+                do {
+                    try data.write(to: dest)
+                    saved = true
+                    FileLogger.shared.log("Saved via data read fallback (\(data.count) bytes)")
+                } catch {
+                    FileLogger.shared.log("ERROR saving download (data write): \(error)")
+                }
             }
         }
 
@@ -87,6 +94,12 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
         let completion = completions.removeValue(forKey: id)
         activeDownloads.removeValue(forKey: id)
         pendingDownloads.removeAll { $0.id == id }
+
+        // Only call completion if the file was actually saved
+        guard saved, fm.fileExists(atPath: dest.path) else {
+            FileLogger.shared.log("ERROR: Download file NOT saved — skipping import for \(appName)")
+            return
+        }
 
         // Dispatch to main thread — ImportedAppsManager is @MainActor
         DispatchQueue.main.async {
@@ -267,12 +280,7 @@ struct RepoDetailView: View {
             id: app.id, url: url,
             appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString
         ) { savedURL in
-            // Use known metadata — skip ipa_extract parsing (crashes on iOS 15)
-            ImportedAppsManager.shared.importIPAWithKnownMetadata(
-                from: savedURL,
-                appName: app.displayName,
-                iconURL: app.resolvedIconURL
-            )
+            ImportedAppsManager.shared.importIPA(from: savedURL)
         }
 
         // Switch to Library tab without leaving repo
