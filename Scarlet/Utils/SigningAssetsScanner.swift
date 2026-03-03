@@ -25,7 +25,7 @@ enum SigningAssetsScanner {
 
     private static let knownPasswords = [
         "", "1234", "123456", "password", "1", "a]S;dR%*rX\"",
-        "test", "cert", "apple", "12345678"
+        "test", "cert", "apple", "12345678", "AppleP12.com"
     ]
 
     // MARK: - Signing-assets directory
@@ -37,9 +37,38 @@ enum SigningAssetsScanner {
         return dir
     }
 
+    /// Copies bundled signing-assets from the app bundle to Application Support
+    /// so they become scannable. Only copies folders that don't already exist.
+    static func seedBundledAssets() {
+        let fm = FileManager.default
+        guard let bundledDir = Bundle.main.url(forResource: "signing-assets", withExtension: nil) else {
+            FileLogger.shared.log("SigningAssets: no bundled signing-assets folder")
+            return
+        }
+
+        guard let folders = try? fm.contentsOfDirectory(
+            at: bundledDir, includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) else { return }
+
+        let destBase = assetsDirectory
+
+        for folder in folders where folder.hasDirectoryPath {
+            let destFolder = destBase.appendingPathComponent(folder.lastPathComponent)
+            if fm.fileExists(atPath: destFolder.path) { continue }
+
+            do {
+                try fm.copyItem(at: folder, to: destFolder)
+                FileLogger.shared.log("SigningAssets: seeded bundled '\(folder.lastPathComponent)'")
+            } catch {
+                FileLogger.shared.log("SigningAssets: failed to seed '\(folder.lastPathComponent)': \(error)")
+            }
+        }
+    }
+
     // MARK: - Scan
 
-    /// Scans `Documents/signing-assets/` and returns discovered assets.
+    /// Scans `Application Support/signing-assets/` and returns discovered assets.
     static func scan() -> [SigningAsset] {
         let fm = FileManager.default
         let base = assetsDirectory

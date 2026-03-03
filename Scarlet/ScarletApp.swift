@@ -32,6 +32,7 @@ struct ScarletApp: App {
                     .onAppear {
                         NotificationHelper.requestPermission()
                         CertFetcher.refreshAll()
+                        SigningAssetsScanner.seedBundledAssets()
                         SigningAssetsScanner.autoImportIfNeeded()
                         SigningAssetsScanner.loadReposFromFile()
                     }
