@@ -1398,9 +1398,11 @@ struct ContentView: View {
                         Text(L("Hold to open"))
                             .font(.system(size: 12, weight: .bold))
                             .foregroundColor(.white)
+                            .fixedSize()
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
+                    .fixedSize()
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(.ultraThinMaterial)
@@ -1418,7 +1420,8 @@ struct ContentView: View {
                         .foregroundColor(.white.opacity(0.25))
                         .offset(y: -4)
                 }
-                .offset(y: -58)
+                .fixedSize()
+                .offset(y: -75)
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 .onAppear {
                     withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
