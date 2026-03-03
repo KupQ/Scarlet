@@ -1439,7 +1439,7 @@ struct ContentView: View {
                         .foregroundColor(.white.opacity(0.25))
                 }
                 .fixedSize()
-                .offset(y: -85)
+                .offset(y: -80)
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 .onAppear {
                     hintPulse = false
@@ -1509,8 +1509,8 @@ struct ContentView: View {
                 }
                 .onEnded { _ in
                     if settingsDragActive {
-                        // Dismiss hint only after a real hold+drag that selected an option
-                        if showSettingsHint, hoveredSettingsOption != nil {
+                        // Dismiss hint after any successful hold
+                        if showSettingsHint {
                             withAnimation { showSettingsHint = false }
                             UserDefaults.standard.set(true, forKey: "settingsHintDismissed")
                         }
