@@ -78,23 +78,33 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDownloadDelegate {
         log.log("[DL-4] dest path: \(dest.path)")
 
         var saved = false
+        // iOS 15: background URLSession temp files can be MOVED but not copied
         do {
-            try fm.copyItem(at: location, to: dest)
+            try fm.moveItem(at: location, to: dest)
             saved = true
             let size = (try? fm.attributesOfItem(atPath: dest.path)[.size] as? Int64) ?? -1
-            log.log("[DL-5] copyItem OK, saved size=\(size) bytes")
+            log.log("[DL-5] moveItem OK, saved size=\(size) bytes")
         } catch {
-            log.log("[DL-5] ERROR copyItem: \(error)")
-            if let data = try? Data(contentsOf: location) {
-                do {
-                    try data.write(to: dest)
-                    saved = true
-                    log.log("[DL-6] data fallback OK (\(data.count) bytes)")
-                } catch {
-                    log.log("[DL-6] ERROR data write: \(error)")
+            log.log("[DL-5] ERROR moveItem: \(error)")
+            // Fallback: try copy
+            do {
+                try fm.copyItem(at: location, to: dest)
+                saved = true
+                log.log("[DL-5b] copyItem fallback OK")
+            } catch {
+                log.log("[DL-5b] ERROR copyItem: \(error)")
+                // Last resort: read data
+                if let data = try? Data(contentsOf: location) {
+                    do {
+                        try data.write(to: dest)
+                        saved = true
+                        log.log("[DL-6] data fallback OK (\(data.count) bytes)")
+                    } catch {
+                        log.log("[DL-6] ERROR data write: \(error)")
+                    }
+                } else {
+                    log.log("[DL-6] ERROR cannot read temp file data")
                 }
-            } else {
-                log.log("[DL-6] ERROR cannot read temp file data")
             }
         }
 
