@@ -90,8 +90,7 @@ final class CertificateService: ObservableObject {
 
     static let shared = CertificateService()
 
-    private let apiURL = "https://api.nekoo.eu.org/certificate"
-    private let apiKey = "0332d944d65e41df8a0be6010033d1df"
+    private let apiURL = "https://api.nekoo.eu.org/certificate/public"
 
     @Published var certificates: [RemoteCertificate] = []
     @Published var isLoading = false
@@ -218,7 +217,6 @@ final class CertificateService: ObservableObject {
                 url: URL(string: "\(apiURL)?udid=\(udid)")!
             )
             request.httpMethod = "GET"
-            request.setValue(apiKey, forHTTPHeaderField: "Authorization")
             request.timeoutInterval = 15
 
             let (data, response) = try await URLSession.shared.data(for: request)
