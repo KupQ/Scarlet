@@ -43,13 +43,20 @@ enum IPAParser {
         let fm = FileManager.default
         let fileSize = (try? fm.attributesOfItem(atPath: ipaURL.path)[.size] as? Int64) ?? 0
 
+        // Ensure source file still exists (background downloads clean up temp files quickly)
+        guard fm.fileExists(atPath: ipaURL.path) else {
+            log.log("ERROR: IPA file no longer exists at \(ipaURL.path)")
+            return nil
+        }
+
         // Extract to a temp directory
         let tempDir = fm.temporaryDirectory.appendingPathComponent("ipa_parse_\(UUID().uuidString)")
+        try? fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? fm.removeItem(at: tempDir) }
 
         let result = ipa_extract(ipaURL.path, tempDir.path)
         guard result == 0 else {
-            log.log("ERROR: ipa_extract failed for metadata parsing")
+            log.log("ERROR: ipa_extract failed for metadata parsing (code: \(result))")
             return nil
         }
 
