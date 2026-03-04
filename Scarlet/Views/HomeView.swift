@@ -24,18 +24,6 @@ struct HomeView: View {
     @ObservedObject var signingState: SigningState
     var switchToLibrary: () -> Void
 
-    init(signingState: SigningState, switchToLibrary: @escaping () -> Void) {
-        self.signingState = signingState
-        self.switchToLibrary = switchToLibrary
-        // Fix: force transparent page control background on all iOS versions
-        UIPageControl.appearance().currentPageIndicatorTintColor = .clear
-        UIPageControl.appearance().pageIndicatorTintColor = .clear
-        if #available(iOS 16.0, *) {
-            UIPageControl.appearance().backgroundStyle = .minimal
-        }
-        UIPageControl.appearance().isHidden = true
-    }
-
     @ObservedObject private var repoService = RepoService.shared
     @ObservedObject private var appsManager = ImportedAppsManager.shared
     @State private var animatePulse = false
@@ -45,6 +33,7 @@ struct HomeView: View {
     @State private var repoURLInput = ""
     @State private var bulkRepoInput = ""
     @State private var currentSlide = 0
+    @State private var dragOffset: CGFloat = 0
     @State private var showcaseList: [RepoApp] = []
     private let slideTimer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
 
@@ -261,14 +250,37 @@ struct HomeView: View {
                             .drawingGroup()
                         }
 
-                        // Layer 2: TabView with transparent background
-                        TabView(selection: $currentSlide) {
-                            ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
-                                appShowcaseCard(app)
-                                    .tag(index)
+                        // Layer 2: Custom pager — no TabView, no UIPageControl
+                        GeometryReader { geo in
+                            let w = geo.size.width
+                            HStack(spacing: 0) {
+                                ForEach(Array(apps.enumerated()), id: \.element.id) { _, app in
+                                    appShowcaseCard(app)
+                                        .frame(width: w)
+                                }
                             }
+                            .offset(x: -CGFloat(currentSlide) * w + dragOffset)
+                            .gesture(
+                                DragGesture()
+                                    .onChanged { value in
+                                        dragOffset = value.translation.width
+                                    }
+                                    .onEnded { value in
+                                        let threshold: CGFloat = w * 0.25
+                                        var newSlide = currentSlide
+                                        if value.translation.width < -threshold {
+                                            newSlide = min(currentSlide + 1, apps.count - 1)
+                                        } else if value.translation.width > threshold {
+                                            newSlide = max(currentSlide - 1, 0)
+                                        }
+                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                            currentSlide = newSlide
+                                            dragOffset = 0
+                                        }
+                                    }
+                            )
+                            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: dragOffset)
                         }
-                        .tabViewStyle(.page(indexDisplayMode: .never))
 
                         // Layer 3: Custom dots on top
                         if apps.count > 1 {
