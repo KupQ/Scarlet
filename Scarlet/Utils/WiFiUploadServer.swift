@@ -370,27 +370,36 @@ final class WiFiUploadServer: ObservableObject {
     // MARK: - Process Uploaded File
 
     private func processUploadFile(headerData: Data, rawFile: URL, connection: NWConnection, connId: Int) {
-        defer { try? FileManager.default.removeItem(at: rawFile) }
 
-        guard let rawData = try? Data(contentsOf: rawFile, options: .mappedIfSafe) else {
+        // Read file eagerly before deleting (don't use mappedIfSafe — file gets deleted)
+        guard let rawData = try? Data(contentsOf: rawFile) else {
+            log("#\(connId) PARSE ERROR: can't read raw file")
             let resp = httpResponse(status: "500 Internal Server Error", contentType: "text/html; charset=utf-8",
                                     body: Data(Self.responseHTML(success: false, message: "Failed to read upload").utf8))
             connection.send(content: resp, completion: .contentProcessed { _ in connection.cancel() })
             return
         }
+        // Safe to delete now — data is in RAM
+        try? FileManager.default.removeItem(at: rawFile)
+
+        log("#\(connId) processing \(rawData.count)B of body data")
 
         guard let headerStr = String(data: headerData, encoding: .utf8),
               let boundaryLine = headerStr.components(separatedBy: "\r\n").first(where: { $0.lowercased().contains("boundary=") }),
               let boundary = boundaryLine.components(separatedBy: "boundary=").last?.trimmingCharacters(in: .whitespaces) else {
+            log("#\(connId) PARSE ERROR: no boundary found")
             let resp = httpResponse(status: "400 Bad Request", contentType: "text/html; charset=utf-8",
                                     body: Data(Self.responseHTML(success: false, message: "Invalid upload").utf8))
             connection.send(content: resp, completion: .contentProcessed { _ in connection.cancel() })
             return
         }
 
+        log("#\(connId) boundary=\(boundary)")
+
         guard let dispositionRange = rawData.range(of: Data("Content-Disposition:".utf8)),
               let dispLineEnd = rawData[dispositionRange.lowerBound...].range(of: Data("\r\n".utf8)),
               let dispLine = String(data: rawData[dispositionRange.lowerBound..<dispLineEnd.lowerBound], encoding: .utf8) else {
+            log("#\(connId) PARSE ERROR: no Content-Disposition")
             let resp = httpResponse(status: "400 Bad Request", contentType: "text/html; charset=utf-8",
                                     body: Data(Self.responseHTML(success: false, message: "Could not parse upload").utf8))
             connection.send(content: resp, completion: .contentProcessed { _ in connection.cancel() })
@@ -660,7 +669,7 @@ final class WiFiUploadServer: ObservableObject {
 
       try{
         const xhr=new XMLHttpRequest();
-        xhr.timeout=0;
+        xhr.timeout=300000;
         const fd=new FormData();
         fd.append('file',file);
 
@@ -671,15 +680,14 @@ final class WiFiUploadServer: ObservableObject {
             statusEl.textContent='Uploading... '+pct+'%';
           }
         };
-        // Upload bytes fully sent — server has received everything
         xhr.upload.onload=()=>{
+          barFill.style.width='100%';
           statusEl.textContent='Processing...';
-          // Give server a moment to process, then show success
-          setTimeout(showSuccess,2000);
         };
         xhr.onload=()=>{showSuccess()};
-        xhr.onerror=()=>{if(!done)showErr('Network error')};
+        xhr.onerror=()=>{if(!done)showErr('Upload failed — check /logs')};
         xhr.onabort=()=>{if(!done)showErr('Upload aborted')};
+        xhr.ontimeout=()=>{if(!done)showErr('Upload timed out')};
         xhr.open('POST',window.location.origin+'/');
         xhr.send(fd);
       }catch(e){
