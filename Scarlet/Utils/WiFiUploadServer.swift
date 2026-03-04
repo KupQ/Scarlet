@@ -71,7 +71,6 @@ final class WiFiUploadServer: ObservableObject {
     private func handleConnection(_ conn: NWConnection) {
         conn.start(queue: .global(qos: .userInitiated))
 
-        // First read: get headers + initial body
         conn.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, _, error in
             guard let self, error == nil, let data else {
                 conn.cancel()
@@ -80,7 +79,6 @@ final class WiFiUploadServer: ObservableObject {
 
             let headerPeek = String(data: data.prefix(16), encoding: .utf8) ?? ""
 
-            // Handle CORS preflight
             if headerPeek.hasPrefix("OPTIONS") {
                 let resp = self.corsPreflightResponse()
                 conn.send(content: resp, completion: .contentProcessed { _ in conn.cancel() })
@@ -88,7 +86,6 @@ final class WiFiUploadServer: ObservableObject {
             }
 
             if headerPeek.hasPrefix("POST") {
-                // Parse Content-Length from headers
                 let headerStr = String(data: data.prefix(min(data.count, 8192)), encoding: .utf8) ?? ""
                 var contentLength = 0
                 for line in headerStr.components(separatedBy: "\r\n") {
@@ -98,27 +95,38 @@ final class WiFiUploadServer: ObservableObject {
                     }
                 }
 
-                // Find where headers end and body begins
                 guard let headerEnd = data.range(of: Data("\r\n\r\n".utf8)) else {
                     conn.cancel()
                     return
                 }
 
-                let bodyStart = headerEnd.upperBound
-                let initialBody = Data(data[bodyStart...])
+                let headerData = Data(data[data.startIndex..<headerEnd.upperBound])
+                let initialBody = Data(data[headerEnd.upperBound...])
                 let remaining = contentLength - initialBody.count
 
+                // Stream to a temp file instead of accumulating in RAM
+                let tmpRaw = FileManager.default.temporaryDirectory.appendingPathComponent("upload_\(UUID().uuidString).raw")
+                FileManager.default.createFile(atPath: tmpRaw.path, contents: nil)
+
+                guard let fh = try? FileHandle(forWritingTo: tmpRaw) else {
+                    conn.cancel()
+                    return
+                }
+
+                // Write initial body chunk
+                fh.write(initialBody)
+
                 if remaining <= 0 {
-                    self.processUpload(headerData: Data(data[data.startIndex..<bodyStart]),
-                                       bodyData: initialBody, connection: conn)
+                    fh.closeFile()
+                    self.processUploadFile(headerData: headerData, rawFile: tmpRaw, connection: conn)
                 } else {
-                    self.readRemainingBody(connection: conn,
-                                          headerData: Data(data[data.startIndex..<bodyStart]),
-                                          accumulated: initialBody,
-                                          remaining: remaining)
+                    self.streamToFile(connection: conn,
+                                     headerData: headerData,
+                                     fileHandle: fh,
+                                     rawFile: tmpRaw,
+                                     remaining: remaining)
                 }
             } else {
-                // GET — serve the upload page
                 let html = Self.uploadPageHTML
                 let response = self.httpResponse(status: "200 OK", contentType: "text/html; charset=utf-8", body: Data(html.utf8))
                 conn.send(content: response, completion: .contentProcessed { _ in conn.cancel() })
@@ -126,50 +134,70 @@ final class WiFiUploadServer: ObservableObject {
         }
     }
 
-    /// Recursively reads body data until we have all `remaining` bytes.
-    private func readRemainingBody(connection: NWConnection,
-                                    headerData: Data,
-                                    accumulated: Data,
-                                    remaining: Int) {
-        let chunkSize = min(remaining, 1024 * 1024)
+    /// Streams upload body chunks directly to disk — no RAM accumulation.
+    private func streamToFile(connection: NWConnection,
+                               headerData: Data,
+                               fileHandle: FileHandle,
+                               rawFile: URL,
+                               remaining: Int) {
+        let chunkSize = min(remaining, 512 * 1024) // 512 KB chunks
         connection.receive(minimumIncompleteLength: 1, maximumLength: chunkSize) { [weak self] data, _, _, error in
-            guard let self, error == nil, let data else {
+            guard let self else {
+                fileHandle.closeFile()
+                try? FileManager.default.removeItem(at: rawFile)
                 connection.cancel()
                 return
             }
 
-            var newAccumulated = accumulated
-            newAccumulated.append(data)
+            guard error == nil, let data else {
+                fileHandle.closeFile()
+                try? FileManager.default.removeItem(at: rawFile)
+                connection.cancel()
+                return
+            }
+
+            fileHandle.write(data)
             let newRemaining = remaining - data.count
 
             if newRemaining <= 0 {
-                self.processUpload(headerData: headerData, bodyData: newAccumulated, connection: connection)
+                fileHandle.closeFile()
+                self.processUploadFile(headerData: headerData, rawFile: rawFile, connection: connection)
             } else {
-                self.readRemainingBody(connection: connection,
-                                       headerData: headerData,
-                                       accumulated: newAccumulated,
-                                       remaining: newRemaining)
+                self.streamToFile(connection: connection,
+                                  headerData: headerData,
+                                  fileHandle: fileHandle,
+                                  rawFile: rawFile,
+                                  remaining: newRemaining)
             }
         }
     }
 
-    // MARK: - Upload Processing
+    // MARK: - Process Uploaded File
 
-    private func processUpload(headerData: Data, bodyData: Data, connection: NWConnection) {
-        guard let headerStr = String(data: headerData, encoding: .utf8),
-              let boundaryLine = headerStr.components(separatedBy: "\r\n").first(where: { $0.lowercased().contains("boundary=") }),
-              let boundary = boundaryLine.components(separatedBy: "boundary=").last?.trimmingCharacters(in: .whitespaces) else {
-            let errHTML = Self.responseHTML(success: false, message: "Invalid upload request")
-            let resp = httpResponse(status: "400 Bad Request", contentType: "text/html; charset=utf-8", body: Data(errHTML.utf8))
+    private func processUploadFile(headerData: Data, rawFile: URL, connection: NWConnection) {
+        defer { try? FileManager.default.removeItem(at: rawFile) }
+
+        guard let rawData = try? Data(contentsOf: rawFile, options: .mappedIfSafe) else {
+            let resp = httpResponse(status: "500 Internal Server Error", contentType: "text/html; charset=utf-8",
+                                    body: Data(Self.responseHTML(success: false, message: "Failed to read upload").utf8))
             connection.send(content: resp, completion: .contentProcessed { _ in connection.cancel() })
             return
         }
 
-        guard let dispositionRange = bodyData.range(of: Data("Content-Disposition:".utf8)),
-              let dispLineEnd = bodyData[dispositionRange.lowerBound...].range(of: Data("\r\n".utf8)),
-              let dispLine = String(data: bodyData[dispositionRange.lowerBound..<dispLineEnd.lowerBound], encoding: .utf8) else {
-            let errHTML = Self.responseHTML(success: false, message: "Could not parse upload")
-            let resp = httpResponse(status: "400 Bad Request", contentType: "text/html; charset=utf-8", body: Data(errHTML.utf8))
+        guard let headerStr = String(data: headerData, encoding: .utf8),
+              let boundaryLine = headerStr.components(separatedBy: "\r\n").first(where: { $0.lowercased().contains("boundary=") }),
+              let boundary = boundaryLine.components(separatedBy: "boundary=").last?.trimmingCharacters(in: .whitespaces) else {
+            let resp = httpResponse(status: "400 Bad Request", contentType: "text/html; charset=utf-8",
+                                    body: Data(Self.responseHTML(success: false, message: "Invalid upload").utf8))
+            connection.send(content: resp, completion: .contentProcessed { _ in connection.cancel() })
+            return
+        }
+
+        guard let dispositionRange = rawData.range(of: Data("Content-Disposition:".utf8)),
+              let dispLineEnd = rawData[dispositionRange.lowerBound...].range(of: Data("\r\n".utf8)),
+              let dispLine = String(data: rawData[dispositionRange.lowerBound..<dispLineEnd.lowerBound], encoding: .utf8) else {
+            let resp = httpResponse(status: "400 Bad Request", contentType: "text/html; charset=utf-8",
+                                    body: Data(Self.responseHTML(success: false, message: "Could not parse upload").utf8))
             connection.send(content: resp, completion: .contentProcessed { _ in connection.cancel() })
             return
         }
@@ -180,36 +208,36 @@ final class WiFiUploadServer: ObservableObject {
             fileName = String(dispLine[fnRange.upperBound..<fnEnd.lowerBound])
         }
 
-        guard let fileStart = bodyData[dispositionRange.lowerBound...].range(of: Data("\r\n\r\n".utf8)) else {
-            let errHTML = Self.responseHTML(success: false, message: "No file data found")
-            let resp = httpResponse(status: "400 Bad Request", contentType: "text/html; charset=utf-8", body: Data(errHTML.utf8))
+        guard let fileStart = rawData[dispositionRange.lowerBound...].range(of: Data("\r\n\r\n".utf8)) else {
+            let resp = httpResponse(status: "400 Bad Request", contentType: "text/html; charset=utf-8",
+                                    body: Data(Self.responseHTML(success: false, message: "No file data").utf8))
             connection.send(content: resp, completion: .contentProcessed { _ in connection.cancel() })
             return
         }
 
-        var fileData = bodyData[fileStart.upperBound...]
+        var fileData = rawData[fileStart.upperBound...]
 
         let closingBoundary = Data("\r\n--\(boundary)".utf8)
         if let endRange = fileData.range(of: closingBoundary) {
             fileData = fileData[fileData.startIndex..<endRange.lowerBound]
         }
 
-        let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+        let destFile = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
         do {
-            try Data(fileData).write(to: tempFile)
+            try Data(fileData).write(to: destFile)
 
             DispatchQueue.main.async {
                 self.lastUploadName = fileName
-                ImportedAppsManager.shared.importIPA(from: tempFile)
+                ImportedAppsManager.shared.importIPA(from: destFile)
             }
 
             let sizeStr = ByteCountFormatter.string(fromByteCount: Int64(fileData.count), countStyle: .file)
-            let okHTML = Self.responseHTML(success: true, message: "\(fileName) (\(sizeStr)) uploaded successfully!")
+            let okHTML = Self.responseHTML(success: true, message: "\(fileName) (\(sizeStr)) uploaded!")
             let resp = httpResponse(status: "200 OK", contentType: "text/html; charset=utf-8", body: Data(okHTML.utf8))
             connection.send(content: resp, completion: .contentProcessed { _ in connection.cancel() })
         } catch {
-            let errHTML = Self.responseHTML(success: false, message: "Failed to save: \(error.localizedDescription)")
-            let resp = httpResponse(status: "500 Internal Server Error", contentType: "text/html; charset=utf-8", body: Data(errHTML.utf8))
+            let resp = httpResponse(status: "500 Internal Server Error", contentType: "text/html; charset=utf-8",
+                                    body: Data(Self.responseHTML(success: false, message: "Save failed: \(error.localizedDescription)").utf8))
             connection.send(content: resp, completion: .contentProcessed { _ in connection.cancel() })
         }
     }
