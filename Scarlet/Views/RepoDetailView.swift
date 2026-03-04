@@ -237,7 +237,7 @@ struct RepoDetailView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
-                    .padding(.bottom, 100)
+                    .padding(.bottom, 60)
                 }
             }
         }
