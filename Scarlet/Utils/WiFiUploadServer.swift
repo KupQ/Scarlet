@@ -199,8 +199,18 @@ final class WiFiUploadServer: ObservableObject {
             }
 
             if headerPeek.hasPrefix("POST") {
-                let headerStr = String(data: data.prefix(min(data.count, 8192)), encoding: .utf8) ?? ""
-                var contentLength = -1  // -1 = not found
+                // IMPORTANT: Find header end FIRST in raw bytes, THEN parse headers.
+                // Don't convert mixed headers+binary to String — binary corrupts UTF-8.
+                guard let headerEnd = data.range(of: Data("\r\n\r\n".utf8)) else {
+                    self.log("#\(connId) ERROR: no header end found")
+                    conn.cancel()
+                    return
+                }
+
+                let headerBytes = Data(data[data.startIndex..<headerEnd.lowerBound])
+                let headerStr = String(data: headerBytes, encoding: .utf8) ?? String(data: headerBytes, encoding: .ascii) ?? ""
+
+                var contentLength = 0
                 for line in headerStr.components(separatedBy: "\r\n") {
                     if line.lowercased().hasPrefix("content-length:") {
                         contentLength = Int(line.components(separatedBy: ":").last?.trimmingCharacters(in: .whitespaces) ?? "0") ?? 0
@@ -210,14 +220,11 @@ final class WiFiUploadServer: ObservableObject {
 
                 self.log("#\(connId) POST content-length=\(contentLength)")
 
-                guard let headerEnd = data.range(of: Data("\r\n\r\n".utf8)) else {
-                    self.log("#\(connId) ERROR: no header end found")
-                    conn.cancel()
-                    return
-                }
-
                 let headerData = Data(data[data.startIndex..<headerEnd.upperBound])
                 let initialBody = Data(data[headerEnd.upperBound...])
+                let remaining = contentLength - initialBody.count
+
+                self.log("#\(connId) headers=\(headerData.count)B, initial=\(initialBody.count)B, remaining=\(remaining)B")
 
                 let tmpRaw = FileManager.default.temporaryDirectory.appendingPathComponent("upload_\(UUID().uuidString).raw")
                 FileManager.default.createFile(atPath: tmpRaw.path, contents: nil)
@@ -230,35 +237,15 @@ final class WiFiUploadServer: ObservableObject {
 
                 fh.write(initialBody)
 
-                if contentLength > 0 {
-                    // Known size — stream exact number of bytes
-                    let remaining = contentLength - initialBody.count
-                    self.log("#\(connId) known-length mode: headers=\(headerData.count)B, initial=\(initialBody.count)B, remaining=\(remaining)B")
-
-                    if remaining <= 0 {
-                        fh.closeFile()
-                        self.processUploadFile(headerData: headerData, rawFile: tmpRaw, connection: conn, connId: connId)
-                    } else {
-                        self.streamToFile(connection: conn, connId: connId,
-                                         headerData: headerData,
-                                         fileHandle: fh,
-                                         rawFile: tmpRaw,
-                                         remaining: remaining)
-                    }
+                if remaining <= 0 {
+                    fh.closeFile()
+                    self.processUploadFile(headerData: headerData, rawFile: tmpRaw, connection: conn, connId: connId)
                 } else {
-                    // No Content-Length (chunked transfer) — read until connection completes
-                    self.log("#\(connId) chunked mode: initial=\(initialBody.count)B, reading until complete...")
-                    if isComplete {
-                        fh.closeFile()
-                        self.log("#\(connId) chunked: already complete in first read")
-                        self.processUploadFile(headerData: headerData, rawFile: tmpRaw, connection: conn, connId: connId)
-                    } else {
-                        self.streamUntilComplete(connection: conn, connId: connId,
-                                                 headerData: headerData,
-                                                 fileHandle: fh,
-                                                 rawFile: tmpRaw,
-                                                 totalWritten: initialBody.count)
-                    }
+                    self.streamToFile(connection: conn, connId: connId,
+                                     headerData: headerData,
+                                     fileHandle: fh,
+                                     rawFile: tmpRaw,
+                                     remaining: remaining)
                 }
             } else {
                 self.log("#\(connId) -> serving upload page")
