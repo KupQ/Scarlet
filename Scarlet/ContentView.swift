@@ -29,14 +29,8 @@ struct ContentView: View {
     @State private var prefsDragOffset: CGFloat = 0
     @State private var infoDragOffset: CGFloat = 0
     @State private var langExpanded = false
-    @State private var settingsDragActive = false
-    @State private var hoveredSettingsOption: Int? = nil
-    @State private var showSettingsHint = !UserDefaults.standard.bool(forKey: "settingsHintDismissed")
     @State private var showDebugLog = false
     @State private var debugLogText = ""
-    @State private var hintPulse = false
-    @State private var handPhase = 0
-    @State private var handLoopId = 0
 
     // Bottom sheet phases
     enum SheetPhase {
@@ -1386,141 +1380,8 @@ struct ContentView: View {
         .onTapGesture {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 showSettingsCard.toggle()
-                hoveredSettingsOption = nil
             }
         }
-        .overlay(alignment: .top) {
-            if showSettingsHint && !showSettingsCard && !isSearching {
-                VStack(spacing: 2) {
-                    HStack(spacing: 7) {
-                        Image(systemName: "hand.tap.fill")
-                            .font(.system(size: 15))
-                            .foregroundColor(.scarletRed)
-                            .offset(
-                                x: handPhase == 3 ? -5 : (handPhase == 5 ? 5 : 0)
-                            )
-                            .scaleEffect(handPhase == 1 ? 0.88 : 1.0)
-                            .animation(.easeInOut(duration: 0.35), value: handPhase)
-                        Text(L("Hold to open"))
-                            .font(.system(size: 14, weight: .regular))
-                            .foregroundColor(.white)
-                            .fixedSize()
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
-                    .fixedSize()
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(.ultraThinMaterial)
-                            .environment(\.colorScheme, .dark)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.scarletRed.opacity(hintPulse ? 0.5 : 0.2), lineWidth: 1)
-                            )
-                            .shadow(color: .scarletRed.opacity(hintPulse ? 0.25 : 0.08), radius: hintPulse ? 12 : 5)
-                            .animation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true), value: hintPulse)
-                    )
-
-                    // Arrow pointing down
-                    Image(systemName: "arrowtriangle.down.fill")
-                        .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.25))
-                }
-                .fixedSize()
-                .offset(y: -82)
-                .transition(.opacity)
-                .onAppear {
-                    hintPulse = false
-                    handPhase = 0
-                    handLoopId += 1
-                    let currentLoopId = handLoopId
-                    hintPulse = true
-                    func runHandLoop() {
-                        guard showSettingsHint, handLoopId == currentLoopId else { return }
-                        handPhase = 0
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { guard handLoopId == currentLoopId else { return }; handPhase = 1 }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.1) { guard handLoopId == currentLoopId else { return }; handPhase = 2 }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { guard handLoopId == currentLoopId else { return }; handPhase = 5 }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.9) { guard handLoopId == currentLoopId else { return }; handPhase = 3 }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.3) { guard handLoopId == currentLoopId else { return }; handPhase = 4 }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.7) { guard handLoopId == currentLoopId else { return }; handPhase = 0 }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 4.3) { runHandLoop() }
-                    }
-                    runHandLoop()
-                }
-            }
-        }
-        .simultaneousGesture(
-             LongPressGesture(minimumDuration: 0.1)
-                .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .global))
-                .onChanged { value in
-                    switch value {
-                    case .first(true):
-                        // Long press recognized — show popup
-                        if !showSettingsCard {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                showSettingsCard = true
-                                settingsDragActive = true
-                            }
-                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                            impactFeedback.impactOccurred()
-                        }
-                    case .second(true, let drag):
-                        // Dragging — compute which option is hovered
-                        guard let drag else { return }
-                        let y = drag.location.y
-                        let x = drag.location.x
-                        let screenW = UIScreen.main.bounds.width
-                        let screenH = UIScreen.main.bounds.height
-                        // Wider detection zone
-                        let centerX = screenW / 2
-                        let startX = centerX - 105
-                        if y < screenH - 60 && y > screenH - 300 {
-                            let relX = x - startX
-                            if relX >= 0 && relX < 70 {
-                                hoveredSettingsOption = 0
-                            } else if relX >= 70 && relX < 140 {
-                                hoveredSettingsOption = 1
-                            } else if relX >= 140 && relX < 210 {
-                                hoveredSettingsOption = 2
-                            } else {
-                                hoveredSettingsOption = nil
-                            }
-                        } else {
-                            hoveredSettingsOption = nil
-                        }
-                    default:
-                        break
-                    }
-                }
-                .onEnded { _ in
-                    if settingsDragActive {
-                        // Dismiss hint after a delay so user sees it worked
-                        if showSettingsHint {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                withAnimation { showSettingsHint = false }
-                                UserDefaults.standard.set(true, forKey: "settingsHintDismissed")
-                            }
-                        }
-                        // Fire the hovered option
-                        if let option = hoveredSettingsOption {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                showSettingsCard = false
-                                switch option {
-                                case 0: showCertsCard = true
-                                case 1: showPrefsCard = true
-                                case 2: showInfoCard = true
-                                default: break
-                                }
-                            }
-                            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-                            impactFeedback.impactOccurred()
-                        }
-                        settingsDragActive = false
-                        hoveredSettingsOption = nil
-                    }
-                }
-        )
     }
 
     // MARK: - Import Overlay
@@ -1845,17 +1706,21 @@ struct ContentView: View {
     private func settingsIconButton(icon: String, index: Int, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 28, weight: hoveredSettingsOption == index ? .regular : .thin))
-                .foregroundColor(hoveredSettingsOption == index ? .white : .white.opacity(0.7))
+                .font(.system(size: 28, weight: .thin))
+                .foregroundColor(.white.opacity(0.7))
                 .frame(width: 44, height: 44)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(hoveredSettingsOption == index ? Color.scarletRed.opacity(0.4) : .clear)
-                        .shadow(color: hoveredSettingsOption == index ? .scarletRed.opacity(0.6) : .clear, radius: 10)
-                        .animation(.easeOut(duration: 0.08), value: hoveredSettingsOption)
+                        .fill(Color.clear)
                 )
         }
         .buttonStyle(.plain)
+    }
+
+    private func isAppInLibrary(_ app: RepoApp) -> Bool {
+        let bid = app.bundleID ?? app.bundleIdentifier ?? ""
+        guard !bid.isEmpty else { return false }
+        return appsManager.apps.contains { $0.bundleIdentifier == bid }
     }
 
     // MARK: - Search Results
@@ -1935,6 +1800,19 @@ struct ContentView: View {
                     .font(.system(size: 12, weight: .heavy, design: .monospaced))
                     .foregroundColor(.scarletRed)
                     .frame(width: 50)
+            } else if isAppInLibrary(app) {
+                Button {
+                    withAnimation { isSearching = false; searchText = "" }
+                    selectedTab = .sign
+                } label: {
+                    Text(L("SIGN"))
+                        .font(.system(size: 12, weight: .heavy))
+                        .foregroundColor(.scarletRed)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 7)
+                        .background(Capsule().fill(Color.scarletRed.opacity(0.12)))
+                }
+                .buttonStyle(.plain)
             } else {
                 Button { downloadFromSearch(app) } label: {
                     Text(L("GET"))

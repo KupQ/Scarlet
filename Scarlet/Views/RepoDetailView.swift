@@ -286,12 +286,12 @@ struct RepoDetailView: View {
                 Button {
                     NotificationCenter.default.post(name: .switchToLibrary, object: nil)
                 } label: {
-                    Text(L("INSTALL"))
+                    Text(L("SIGN"))
                         .font(.system(size: 12, weight: .heavy))
-                        .foregroundColor(.green)
-                        .padding(.horizontal, 12)
+                        .foregroundColor(.scarletRed)
+                        .padding(.horizontal, 14)
                         .padding(.vertical, 7)
-                        .background(Capsule().fill(Color.green.opacity(0.12)))
+                        .background(Capsule().fill(Color.scarletRed.opacity(0.12)))
                 }
                 .buttonStyle(.plain)
             } else {

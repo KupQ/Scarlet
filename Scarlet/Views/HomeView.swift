@@ -309,13 +309,13 @@ struct HomeView: View {
                         Button {
                             switchToLibrary()
                         } label: {
-                            Text("INSTALL")
+                            Text("SIGN")
                                 .font(.system(size: 11, weight: .semibold))
-                                .foregroundColor(.green)
+                                .foregroundColor(.white.opacity(0.6))
                                 .padding(.horizontal, 14).padding(.vertical, 7)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 8).fill(Color.green.opacity(0.1))
-                                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.green.opacity(0.2), lineWidth: 0.5))
+                                    RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.06))
+                                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 0.5))
                                 )
                         }.buttonStyle(.plain)
                     } else {
