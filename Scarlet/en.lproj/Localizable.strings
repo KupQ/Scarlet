@@ -207,7 +207,12 @@
 "Could not determine device UDID" = "Could not determine device UDID";
 
 // ─── Credits ───
-"Built with ❤️ for the community" = "Built with ❤️ for the community";
+"Made with" = "Made with";
+"for the community" = "for the community";
+
+// ─── About ───
+"Developer" = "Developer";
+"Website" = "Website";
 
 // ─── Misc Labels ───
 "Share" = "Share";

@@ -289,18 +289,26 @@ struct ContentView: View {
 
                         // Developer info
                         VStack(spacing: 10) {
-                            infoRow(icon: "person.fill", label: L("Developer"), value: "Scarlet Team")
-                            infoRow(icon: "globe", label: L("Website"), value: "scarlet.app")
+                            infoRow(icon: "person.fill", label: L("Developer"), value: "DebianArch64")
+                            infoRow(icon: "globe", label: L("Website"), value: "usescarlet.com")
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 14)
                         .glassCard(cornerRadius: 16)
 
                         // Credits
-                        Text(L("Built with ❤️ for the community"))
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.2))
-                            .padding(.bottom, 16)
+                        HStack(spacing: 4) {
+                            Text(L("Made with"))
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.white.opacity(0.2))
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 10))
+                                .foregroundColor(.scarletRed.opacity(0.5))
+                            Text(L("for the community"))
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.white.opacity(0.2))
+                        }
+                        .padding(.bottom, 16)
                     }
                     .padding(.horizontal, 20)
                     .background(

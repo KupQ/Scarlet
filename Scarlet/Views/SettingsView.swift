@@ -330,11 +330,15 @@ struct SettingsView: View {
             sectionHeader(icon: "info.circle.fill", title: L("About"), color: .gray)
 
             VStack(spacing: 0) {
+                aboutRow(label: L("Version"), value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.0")
+                Divider().background(Color.glassBorder).padding(.horizontal, 16)
+                aboutRow(label: L("Developer"), value: "DebianArch64")
+                Divider().background(Color.glassBorder).padding(.horizontal, 16)
+                aboutRow(label: L("Website"), value: "usescarlet.com")
+                Divider().background(Color.glassBorder).padding(.horizontal, 16)
                 aboutRow(label: L("Engine"), value: "zsign (C++)")
                 Divider().background(Color.glassBorder).padding(.horizontal, 16)
                 aboutRow(label: L("OpenSSL"), value: L("Bundled"))
-                Divider().background(Color.glassBorder).padding(.horizontal, 16)
-                aboutRow(label: L("Version"), value: "1.0")
             }
             .glassCard(cornerRadius: 18)
         }

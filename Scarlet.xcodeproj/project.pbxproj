@@ -463,7 +463,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Scarlet/libs",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
 					"-lscarlet_signing",
 					"-lzsign",
@@ -510,7 +510,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Scarlet/libs",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
 					"-lscarlet_signing",
 					"-lzsign",

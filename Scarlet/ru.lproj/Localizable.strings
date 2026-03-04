@@ -201,7 +201,12 @@
 "Could not determine device UDID" = "Не удалось определить UDID устройства";
 
 // ─── Благодарности ───
-"Built with ❤️ for the community" = "Сделано с ❤️ для сообщества";
+"Made with" = "Сделано с";
+"for the community" = "для сообщества";
+
+// ─── О приложении ───
+"Developer" = "Разработчик";
+"Website" = "Сайт";
 
 // ─── Прочие метки ───
 "Share" = "Поделиться";
