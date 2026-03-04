@@ -848,6 +848,7 @@ struct PulseGlow: View {
             .stroke(Color.white.opacity(0.25), lineWidth: 0.5)
             .opacity(on ? 1 : 0)
             .animation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true), value: on)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .allowsHitTesting(false)
             .onAppear {
                 on = true
