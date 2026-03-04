@@ -45,6 +45,7 @@
              'A10055' = {isa = PBXBuildFile; fileRef = B10055; };
              'A10056' = {isa = PBXBuildFile; fileRef = B10056; };
              'A10060' = {isa = PBXBuildFile; fileRef = 'B10060'; };
+             'A10088' = {isa = PBXBuildFile; fileRef = 'B10088'; };
              'A10070' = {isa = PBXBuildFile; fileRef = 'B10070'; };
              'A10080' = {isa = PBXBuildFile; fileRef = 'B10080'; };
              'A10081' = {isa = PBXBuildFile; fileRef = 'B10081'; };
@@ -100,6 +101,7 @@
 		'B10031' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		'B10032' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCertChecker.swift; sourceTree = "<group>"; };
 		'B10060' = {isa = PBXFileReference; lastKnownFileType = text; path = repo.txt; sourceTree = "<group>"; };
+		'B10088' = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = silence.wav; sourceTree = "<group>"; };
 		'B10070' = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		'B10080' = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon60x60@2x.png"; sourceTree = "<group>"; };
 		'B10081' = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon60x60@3x.png"; sourceTree = "<group>"; };
@@ -251,6 +253,7 @@
 				'B10085',
 				'B10086',
 				'B10087',
+				'B10088',
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -326,6 +329,7 @@
                             'A10041',
                             'A10042',
                             'A10060',
+                            'A10088',
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

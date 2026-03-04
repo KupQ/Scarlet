@@ -6,6 +6,7 @@
 //  IPA files from any device on the same WiFi network.
 //
 
+import AVFoundation
 import Foundation
 import Network
 import SwiftUI
@@ -24,6 +25,7 @@ final class WiFiUploadServer: ObservableObject {
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
     private let listenerQueue = DispatchQueue(label: "com.scarlet.wifilistener", qos: .userInitiated)
     private var connectionCount = 0
+    private var silentPlayer: AVAudioPlayer?
 
     // Debug log buffer
     private var logEntries: [String] = []
@@ -62,6 +64,7 @@ final class WiFiUploadServer: ObservableObject {
                         self?.localIP = Self.getWiFiAddress() ?? "127.0.0.1"
                         self?.isRunning = true
                         self?.beginBackgroundTask()
+                        self?.startBackgroundAudio()
                     case .failed, .cancelled:
                         self?.isRunning = false
                         self?.endBackgroundTask()
@@ -86,11 +89,41 @@ final class WiFiUploadServer: ObservableObject {
         listener = nil
         isRunning = false
         port = 0
+        stopBackgroundAudio()
         endBackgroundTask()
     }
 
     var serverURL: String {
         "http://\(localIP):\(port)"
+    }
+
+    // MARK: - Background Audio Keep-Alive
+
+    private func startBackgroundAudio() {
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback, mode: .default, options: .mixWithOthers)
+            try session.setActive(true)
+
+            guard let url = Bundle.main.url(forResource: "silence", withExtension: "wav") else {
+                log("silence.wav not found in bundle")
+                return
+            }
+            silentPlayer = try AVAudioPlayer(contentsOf: url)
+            silentPlayer?.numberOfLoops = -1  // loop forever
+            silentPlayer?.volume = 0.0
+            silentPlayer?.play()
+            log("Background audio started")
+        } catch {
+            log("Background audio error: \(error)")
+        }
+    }
+
+    private func stopBackgroundAudio() {
+        silentPlayer?.stop()
+        silentPlayer = nil
+        try? AVAudioSession.sharedInstance().setActive(false)
+        log("Background audio stopped")
     }
 
     // MARK: - Background Task
