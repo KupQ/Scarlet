@@ -25,6 +25,7 @@ struct HomeView: View {
     var switchToLibrary: () -> Void
 
     @ObservedObject private var repoService = RepoService.shared
+    @ObservedObject private var appsManager = ImportedAppsManager.shared
     @State private var animatePulse = false
     @State private var animateGlow = false
     @State private var showAddRepo = false
@@ -33,6 +34,12 @@ struct HomeView: View {
     @State private var bulkRepoInput = ""
     @State private var currentSlide = 0
     private let slideTimer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
+
+    private func isInLibrary(_ app: RepoApp) -> Bool {
+        let bid = app.bundleID ?? app.bundleIdentifier ?? ""
+        guard !bid.isEmpty else { return false }
+        return appsManager.apps.contains { $0.bundleIdentifier == bid }
+    }
 
     var body: some View {
         ZStack {
@@ -298,22 +305,37 @@ struct HomeView: View {
                         }.padding(.top, 2)
                     }
                     Spacer()
-                    Button {
-                        guard let urlStr = app.resolvedDownloadURL, let url = URL(string: urlStr) else { return }
-                        DownloadManager.shared.download(id: app.id, url: url, appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString) { fileURL in
-                            ImportedAppsManager.shared.importIPA(from: fileURL)
-                        }
-                        switchToLibrary()
-                    } label: {
-                        Text("GET")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.6))
-                            .padding(.horizontal, 14).padding(.vertical, 7)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.06))
-                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 0.5))
-                            )
-                    }.buttonStyle(.plain)
+                    if isInLibrary(app) {
+                        Button {
+                            switchToLibrary()
+                        } label: {
+                            Text("INSTALL")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(.green)
+                                .padding(.horizontal, 14).padding(.vertical, 7)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8).fill(Color.green.opacity(0.1))
+                                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.green.opacity(0.2), lineWidth: 0.5))
+                                )
+                        }.buttonStyle(.plain)
+                    } else {
+                        Button {
+                            guard let urlStr = app.resolvedDownloadURL, let url = URL(string: urlStr) else { return }
+                            DownloadManager.shared.download(id: app.id, url: url, appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString) { fileURL in
+                                ImportedAppsManager.shared.importIPA(from: fileURL)
+                            }
+                            switchToLibrary()
+                        } label: {
+                            Text("GET")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.6))
+                                .padding(.horizontal, 14).padding(.vertical, 7)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.06))
+                                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 0.5))
+                                )
+                        }.buttonStyle(.plain)
+                    }
                 }.padding(.horizontal, 22)
             }
             .clipShape(RoundedRectangle(cornerRadius: 22))

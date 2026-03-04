@@ -168,8 +168,15 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDataDelegate {
 struct RepoDetailView: View {
     let repo: LoadedRepo
     @ObservedObject private var downloadManager = DownloadManager.shared
+    @ObservedObject private var appsManager = ImportedAppsManager.shared
     @Environment(\.dismiss) private var dismiss
 
+    /// Check if a repo app is already in the local library by bundle ID
+    private func isInLibrary(_ app: RepoApp) -> Bool {
+        let bid = app.bundleID ?? app.bundleIdentifier ?? ""
+        guard !bid.isEmpty else { return false }
+        return appsManager.apps.contains { $0.bundleIdentifier == bid }
+    }
     private var apps: [RepoApp] {
         repo.manifest.apps ?? []
     }
@@ -269,12 +276,24 @@ struct RepoDetailView: View {
 
             Spacer()
 
-            // GET / progress
+            // GET / INSTALL / progress
             if let p = progress {
                 Text("\(Int(p * 100))%")
                     .font(.system(size: 12, weight: .heavy, design: .monospaced))
                     .foregroundColor(.scarletRed)
                     .frame(width: 50)
+            } else if isInLibrary(app) {
+                Button {
+                    NotificationCenter.default.post(name: .switchToLibrary, object: nil)
+                } label: {
+                    Text(L("INSTALL"))
+                        .font(.system(size: 12, weight: .heavy))
+                        .foregroundColor(.green)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(Capsule().fill(Color.green.opacity(0.12)))
+                }
+                .buttonStyle(.plain)
             } else {
                 Button { downloadApp(app) } label: {
                     Text(L("GET"))
