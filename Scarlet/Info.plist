@@ -47,6 +47,8 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleTypeIconFile</key>
+			<string>scarlet_extension</string>
 			<key>CFBundleTypeName</key>
 			<string>iOS App Archive</string>
 			<key>CFBundleTypeRole</key>
@@ -55,18 +57,7 @@
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.apple.itunes.ipa</string>
-			</array>
-			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>ipa</string>
-			</array>
-			<key>CFBundleTypeIconFiles</key>
-			<array>
-				<string>AppIcon60x60</string>
-				<string>AppIcon40x40</string>
-				<string>AppIcon29x29</string>
-				<string>AppIcon20x20</string>
+				<string>com.scarlet.app.ipa</string>
 			</array>
 		</dict>
 	</array>
@@ -74,18 +65,26 @@
 	<true/>
 	<key>UISupportsDocumentBrowser</key>
 	<false/>
-	<key>UTImportedTypeDeclarations</key>
+	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.apple.itunes.ipa</string>
-			<key>UTTypeDescription</key>
-			<string>iOS App Archive</string>
 			<key>UTTypeConformsTo</key>
 			<array>
+				<string>com.apple.itunes.ipa</string>
 				<string>public.data</string>
-				<string>public.zip-archive</string>
+				<string>public.content</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>iOS App Archive</string>
+			<key>UTTypeIconFile</key>
+			<string>scarlet_extension</string>
+			<key>UTTypeIcons</key>
+			<dict>
+				<key>UTTypeIconText</key>
+				<string>IPA</string>
+			</dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.scarlet.app.ipa</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
