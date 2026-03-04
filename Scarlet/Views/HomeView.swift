@@ -53,9 +53,6 @@ struct HomeView: View {
                         Text(L("Scarlet"))
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.white)
-                        Text(L("iOS App Signing"))
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.3))
                     }
                     Spacer()
                     Menu {
