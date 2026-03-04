@@ -57,7 +57,7 @@ struct SigningView: View {
                                     }
                                 }
                                 .frame(maxWidth: .infinity)
-                                .padding(.bottom, 60)
+                                .padding(.bottom, 80)
                             }
                         } else {
                             // Signed tab
@@ -70,7 +70,7 @@ struct SigningView: View {
                                     }
                                 }
                                 .frame(maxWidth: .infinity)
-                                .padding(.bottom, 60)
+                                .padding(.bottom, 80)
                             }
                         }
                     }
