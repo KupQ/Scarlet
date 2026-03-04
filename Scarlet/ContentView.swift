@@ -405,12 +405,7 @@ struct ContentView: View {
             let ver = notif.userInfo?["version"] as? String ?? ""
             guard !bid.isEmpty else { return }
             if let app = appsManager.apps.first(where: { $0.bundleIdentifier == bid && (ver.isEmpty || $0.version == ver) }) {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    selectedTab = .sign
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                    openConfigSheet(app)
-                }
+                openConfigSheet(app)
             }
         }
         .onChange(of: signingState.phase) { newPhase in
