@@ -32,7 +32,17 @@ class LanguageManager: ObservableObject {
     private(set) var bundle: Bundle = .main
 
     private init() {
-        self.currentLanguage = UserDefaults.standard.string(forKey: "app_language") ?? "en"
+        if let saved = UserDefaults.standard.string(forKey: "app_language") {
+            // User has explicitly chosen a language — use it
+            self.currentLanguage = saved
+        } else {
+            // First launch — detect device language, fall back to English
+            let supportedCodes = Self.supportedLanguages.map { $0.id }
+            let deviceLang = Locale.preferredLanguages.first ?? "en"
+            let langCode = String(deviceLang.prefix(2)) // e.g. "ru-US" → "ru"
+            self.currentLanguage = supportedCodes.contains(langCode) ? langCode : "en"
+            UserDefaults.standard.set(self.currentLanguage, forKey: "app_language")
+        }
         loadBundle()
     }
 
