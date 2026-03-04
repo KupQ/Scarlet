@@ -198,9 +198,13 @@ struct RepoDetailView: View {
     /// Check if a repo app is already in the local library by bundle ID + version
     private func isInLibrary(_ app: RepoApp) -> Bool {
         let bid = app.bundleID ?? app.bundleIdentifier ?? ""
-        guard !bid.isEmpty else { return false }
         let ver = app.resolvedVersion ?? ""
-        return appsManager.apps.contains { $0.bundleIdentifier == bid && (ver.isEmpty || $0.version == ver) }
+        let name = app.displayName
+        return appsManager.apps.contains {
+            if !bid.isEmpty && $0.bundleIdentifier == bid && (ver.isEmpty || $0.version == ver) { return true }
+            if $0.appName.localizedCaseInsensitiveCompare(name) == .orderedSame { return true }
+            return false
+        }
     }
     private var apps: [RepoApp] {
         repo.manifest.apps ?? []

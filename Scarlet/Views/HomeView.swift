@@ -38,9 +38,15 @@ struct HomeView: View {
 
     private func isInLibrary(_ app: RepoApp) -> Bool {
         let bid = app.bundleID ?? app.bundleIdentifier ?? ""
-        guard !bid.isEmpty else { return false }
         let ver = app.resolvedVersion ?? ""
-        return appsManager.apps.contains { $0.bundleIdentifier == bid && (ver.isEmpty || $0.version == ver) }
+        let name = app.displayName
+        return appsManager.apps.contains {
+            // Match by bundle ID (preferred)
+            if !bid.isEmpty && $0.bundleIdentifier == bid && (ver.isEmpty || $0.version == ver) { return true }
+            // Fallback: match by app name
+            if $0.appName.localizedCaseInsensitiveCompare(name) == .orderedSame { return true }
+            return false
+        }
     }
 
     var body: some View {
