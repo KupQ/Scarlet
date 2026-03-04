@@ -265,24 +265,19 @@ struct ContentView: View {
 
                         // App icon + name
                         VStack(spacing: 10) {
-                            ZStack {
-                                Circle()
-                                    .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.15), .clear],
-                                                         center: .center, startRadius: 0, endRadius: 40))
-                                    .frame(width: 80, height: 80)
-                                Image(systemName: "app.fill")
-                                    .font(.system(size: 36, weight: .light))
-                                    .foregroundStyle(
-                                        LinearGradient(colors: [.scarletRed, .scarletPink],
-                                                       startPoint: .topLeading, endPoint: .bottomTrailing)
-                                    )
+                            if let iconImage = UIImage(named: "AppIcon60x60") {
+                                Image(uiImage: iconImage)
+                                    .resizable()
+                                    .frame(width: 72, height: 72)
+                                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                                    .shadow(color: .black.opacity(0.4), radius: 10, y: 4)
                             }
 
                             Text("Scarlet")
                                 .font(.system(size: 22, weight: .bold))
                                 .foregroundColor(.white)
 
-                            Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
+                            Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.0")")
                                 .font(.system(size: 12, weight: .medium, design: .monospaced))
                                 .foregroundColor(.white.opacity(0.3))
                         }
