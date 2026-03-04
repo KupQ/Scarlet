@@ -71,19 +71,50 @@ final class WiFiUploadServer: ObservableObject {
     private func handleConnection(_ conn: NWConnection) {
         conn.start(queue: .global(qos: .userInitiated))
 
-        // Read up to 500 MB for large IPA uploads
-        conn.receive(minimumIncompleteLength: 1, maximumLength: 500 * 1024 * 1024) { [weak self] data, _, _, error in
+        // First read: get headers (up to 16KB is plenty for HTTP headers)
+        conn.receive(minimumIncompleteLength: 1, maximumLength: 16384) { [weak self] data, _, _, error in
             guard let self, error == nil, let data else {
                 conn.cancel()
                 return
             }
 
-            let request = String(data: data.prefix(2048), encoding: .utf8) ?? ""
+            let headerPeek = String(data: data.prefix(8), encoding: .utf8) ?? ""
 
-            if request.hasPrefix("POST") {
-                self.handleUpload(data: data, connection: conn)
+            if headerPeek.hasPrefix("POST") {
+                // Parse Content-Length from headers
+                let headerStr = String(data: data.prefix(min(data.count, 4096)), encoding: .utf8) ?? ""
+                var contentLength = 0
+                for line in headerStr.components(separatedBy: "\r\n") {
+                    if line.lowercased().hasPrefix("content-length:") {
+                        contentLength = Int(line.components(separatedBy: ":").last?.trimmingCharacters(in: .whitespaces) ?? "0") ?? 0
+                        break
+                    }
+                }
+
+                // Find where headers end and body begins
+                guard let headerEnd = data.range(of: Data("\r\n\r\n".utf8)) else {
+                    conn.cancel()
+                    return
+                }
+
+                let bodyStart = headerEnd.upperBound
+                let initialBody = Data(data[bodyStart...])
+                let totalBodyNeeded = contentLength
+                let remaining = totalBodyNeeded - initialBody.count
+
+                if remaining <= 0 {
+                    // Small upload — everything in first chunk
+                    self.processUpload(headerData: Data(data[data.startIndex..<bodyStart]),
+                                       bodyData: initialBody, connection: conn)
+                } else {
+                    // Large upload — need to read more chunks
+                    self.readRemainingBody(connection: conn,
+                                          headerData: Data(data[data.startIndex..<bodyStart]),
+                                          accumulated: initialBody,
+                                          remaining: remaining)
+                }
             } else {
-                // Serve the upload page
+                // GET — serve the upload page
                 let html = Self.uploadPageHTML
                 let response = self.httpResponse(status: "200 OK", contentType: "text/html; charset=utf-8", body: Data(html.utf8))
                 conn.send(content: response, completion: .contentProcessed { _ in conn.cancel() })
@@ -91,13 +122,39 @@ final class WiFiUploadServer: ObservableObject {
         }
     }
 
-    // MARK: - Upload Handler
+    /// Recursively reads body data until we have all `remaining` bytes.
+    private func readRemainingBody(connection: NWConnection,
+                                    headerData: Data,
+                                    accumulated: Data,
+                                    remaining: Int) {
+        let chunkSize = min(remaining, 1024 * 1024) // 1 MB chunks
+        connection.receive(minimumIncompleteLength: 1, maximumLength: chunkSize) { [weak self] data, _, _, error in
+            guard let self, error == nil, let data else {
+                connection.cancel()
+                return
+            }
 
-    private func handleUpload(data: Data, connection: NWConnection) {
-        // Parse multipart boundary
-        guard let headerEnd = data.range(of: Data("\r\n\r\n".utf8)),
-              let headerStr = String(data: data[data.startIndex..<headerEnd.lowerBound], encoding: .utf8),
-              let boundaryLine = headerStr.components(separatedBy: "\r\n").first(where: { $0.contains("boundary=") }),
+            var newAccumulated = accumulated
+            newAccumulated.append(data)
+            let newRemaining = remaining - data.count
+
+            if newRemaining <= 0 {
+                self.processUpload(headerData: headerData, bodyData: newAccumulated, connection: connection)
+            } else {
+                self.readRemainingBody(connection: connection,
+                                       headerData: headerData,
+                                       accumulated: newAccumulated,
+                                       remaining: newRemaining)
+            }
+        }
+    }
+
+    // MARK: - Upload Processing
+
+    private func processUpload(headerData: Data, bodyData: Data, connection: NWConnection) {
+        // Parse boundary from headers
+        guard let headerStr = String(data: headerData, encoding: .utf8),
+              let boundaryLine = headerStr.components(separatedBy: "\r\n").first(where: { $0.lowercased().contains("boundary=") }),
               let boundary = boundaryLine.components(separatedBy: "boundary=").last?.trimmingCharacters(in: .whitespaces) else {
             let errHTML = Self.responseHTML(success: false, message: "Invalid upload request")
             let resp = httpResponse(status: "400 Bad Request", contentType: "text/html; charset=utf-8", body: Data(errHTML.utf8))
@@ -105,10 +162,7 @@ final class WiFiUploadServer: ObservableObject {
             return
         }
 
-        let bodyData = data[headerEnd.upperBound...]
-
-        // Find filename from Content-Disposition
-        let boundaryData = Data("--\(boundary)".utf8)
+        // Find Content-Disposition
         guard let dispositionRange = bodyData.range(of: Data("Content-Disposition:".utf8)),
               let dispLineEnd = bodyData[dispositionRange.lowerBound...].range(of: Data("\r\n".utf8)),
               let dispLine = String(data: bodyData[dispositionRange.lowerBound..<dispLineEnd.lowerBound], encoding: .utf8) else {
@@ -125,7 +179,7 @@ final class WiFiUploadServer: ObservableObject {
             fileName = String(dispLine[fnRange.upperBound..<fnEnd.lowerBound])
         }
 
-        // Find file data (after double CRLF following headers)
+        // Find file data (after double CRLF following part headers)
         guard let fileStart = bodyData[dispositionRange.lowerBound...].range(of: Data("\r\n\r\n".utf8)) else {
             let errHTML = Self.responseHTML(success: false, message: "No file data found")
             let resp = httpResponse(status: "400 Bad Request", contentType: "text/html; charset=utf-8", body: Data(errHTML.utf8))
@@ -147,7 +201,6 @@ final class WiFiUploadServer: ObservableObject {
         do {
             try Data(fileData).write(to: tempFile)
 
-            // Import on main thread
             DispatchQueue.main.async {
                 self.lastUploadName = fileName
                 ImportedAppsManager.shared.importIPA(from: tempFile)
