@@ -258,6 +258,7 @@ struct HomeView: View {
                             }
                         }
                         .tabViewStyle(.page(indexDisplayMode: .never))
+                        .frame(height: 180)
                         .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentSlide)
                         .onReceive(slideTimer) { _ in
                             guard apps.count > 1 else { return }
