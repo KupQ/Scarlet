@@ -21,6 +21,8 @@ final class WiFiUploadServer: ObservableObject {
     @Published var lastUploadName: String = ""
 
     private var listener: NWListener?
+    private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+    private let serverQueue = DispatchQueue(label: "com.scarlet.wifiserver", qos: .userInitiated)
 
     // MARK: - Start / Stop
 
@@ -37,8 +39,11 @@ final class WiFiUploadServer: ObservableObject {
                         self?.port = l.port?.rawValue ?? 0
                         self?.localIP = Self.getWiFiAddress() ?? "127.0.0.1"
                         self?.isRunning = true
+                        // Keep app alive in background
+                        self?.beginBackgroundTask()
                     case .failed, .cancelled:
                         self?.isRunning = false
+                        self?.endBackgroundTask()
                     default: break
                     }
                 }
@@ -48,7 +53,7 @@ final class WiFiUploadServer: ObservableObject {
                 self?.handleConnection(conn)
             }
 
-            l.start(queue: .global(qos: .userInitiated))
+            l.start(queue: serverQueue)
             listener = l
         } catch {
             isRunning = false
@@ -60,16 +65,33 @@ final class WiFiUploadServer: ObservableObject {
         listener = nil
         isRunning = false
         port = 0
+        endBackgroundTask()
     }
 
     var serverURL: String {
         "http://\(localIP):\(port)"
     }
 
+    // MARK: - Background Task
+
+    private func beginBackgroundTask() {
+        endBackgroundTask()
+        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "WiFiUpload") { [weak self] in
+            self?.endBackgroundTask()
+        }
+    }
+
+    private func endBackgroundTask() {
+        if backgroundTask != .invalid {
+            UIApplication.shared.endBackgroundTask(backgroundTask)
+            backgroundTask = .invalid
+        }
+    }
+
     // MARK: - Connection Handler
 
     private func handleConnection(_ conn: NWConnection) {
-        conn.start(queue: .global(qos: .userInitiated))
+        conn.start(queue: serverQueue)
 
         conn.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, _, error in
             guard let self, error == nil, let data else {
