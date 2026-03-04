@@ -51,6 +51,7 @@
              'A10060F' = {isa = PBXBuildFile; fileRef = B10060F; };
              'A10061' = {isa = PBXBuildFile; fileRef = B10061; };
              'A10062' = {isa = PBXBuildFile; fileRef = B10062; };
+             'A10063' = {isa = PBXBuildFile; fileRef = B10063; };
              'A10050' = {isa = PBXBuildFile; fileRef = B10050; };
              'A10051' = {isa = PBXBuildFile; fileRef = B10051; };
              'A10052' = {isa = PBXBuildFile; fileRef = B10052; };
@@ -142,6 +143,7 @@
              B10060F = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
              B10061 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
              B10062 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = vi.lproj/Localizable.strings; sourceTree = "<group>"; };
+             B10063 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = hi.lproj/Localizable.strings; sourceTree = "<group>"; };
              B10050 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignedAppsManager.swift; sourceTree = "<group>"; };
              B10051 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationHelper.swift; sourceTree = "<group>"; };
              B10052 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertFetcher.swift; sourceTree = "<group>"; };
@@ -192,6 +194,7 @@
                             B10060F,
                             B10061,
                             B10062,
+                            B10063,
 				B10001,
 				B10002,
 				B10003,
@@ -380,6 +383,7 @@
                             'A10060F',
                             'A10061',
                             'A10062',
+                            'A10063',
                             'A10060',
                             'A10088',
 			);

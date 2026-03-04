@@ -1577,8 +1577,6 @@ struct ContentView: View {
                                     }
                                 } label: {
                                     HStack {
-                                        Text(lang.flag)
-                                            .font(.system(size: 18))
                                         Text(lang.name)
                                             .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
                                             .foregroundColor(isSelected ? .white : .white.opacity(0.5))

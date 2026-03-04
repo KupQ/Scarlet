@@ -24,6 +24,7 @@ class LanguageManager: ObservableObject {
         AppLanguage(id: "es", name: "Español", flag: "🇪🇸"),
         AppLanguage(id: "fa", name: "فارسی", flag: "🇮🇷"),
         AppLanguage(id: "fr", name: "Français", flag: "🇫🇷"),
+        AppLanguage(id: "hi", name: "हिन्दी", flag: "🇮🇳"),
         AppLanguage(id: "id", name: "Indonesia", flag: "🇮🇩"),
         AppLanguage(id: "ja", name: "日本語", flag: "🇯🇵"),
         AppLanguage(id: "ko", name: "한국어", flag: "🇰🇷"),

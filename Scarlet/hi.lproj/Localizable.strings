@@ -1,0 +1,243 @@
+/* ============================================
+   Scarlet — हिन्दी (Hindi)
+   ============================================ */
+
+// ─── सामान्य / बटन ───
+"OK" = "ठीक है";
+"Cancel" = "रद्द करें";
+"Delete" = "हटाएं";
+"Add" = "जोड़ें";
+"Done" = "हो गया";
+"Open" = "खोलें";
+"Sign" = "साइन करें";
+"Import" = "आयात करें";
+
+// ─── होम ───
+"Scarlet" = "Scarlet";
+"iOS App Signing" = "iOS ऐप साइनिंग";
+"Sign & Install" = "साइन करें और इंस्टॉल करें";
+"Powered by zsign" = "zsign द्वारा संचालित";
+"Start Signing" = "साइनिंग शुरू करें";
+"Import IPA & sign with certificate" = "IPA आयात करें और प्रमाणपत्र से साइन करें";
+"REPOSITORIES" = "रिपॉज़िटरी";
+
+// ─── मेनू ───
+"Add Repo" = "रिपो जोड़ें";
+"Add Multiple" = "कई जोड़ें";
+"Add from Clipboard" = "क्लिपबोर्ड से जोड़ें";
+
+// ─── अलर्ट ───
+"Add Repository" = "रिपॉज़िटरी जोड़ें";
+"Enter the repo JSON URL" = "रिपो JSON URL दर्ज करें";
+"Add Multiple Repos" = "कई रिपो जोड़ें";
+"One URL per line" = "प्रति पंक्ति एक URL";
+"Enter repo URLs, one per line" = "रिपो URL दर्ज करें, प्रति पंक्ति एक";
+"Add All" = "सभी जोड़ें";
+"Repo Error" = "रिपो त्रुटि";
+
+// ─── लाइब्रेरी ───
+"Library" = "लाइब्रेरी";
+"Imported Apps" = "आयातित ऐप्स";
+"Importing..." = "आयात हो रहा है...";
+"Extracting metadata and icon" = "मेटाडेटा और आइकन निकाला जा रहा है";
+"No Apps Imported" = "कोई ऐप आयातित नहीं";
+"Tap + to import an IPA file" = "IPA फ़ाइल आयात करने के लिए + दबाएं";
+"Import IPA" = "IPA आयात करें";
+"Downloading" = "डाउनलोड हो रहा है";
+"All Apps" = "सभी ऐप्स";
+
+// ─── रिपो विवरण ───
+"GET" = "प्राप्त करें";
+
+// ─── प्रमाणपत्र ───
+"Certificates" = "प्रमाणपत्र";
+"Loading certificates..." = "प्रमाणपत्र लोड हो रहे हैं...";
+"No Certificates Yet" = "अभी कोई प्रमाणपत्र नहीं";
+"Import a P12 certificate to get started" = "शुरू करने के लिए P12 प्रमाणपत्र आयात करें";
+"Import Certificate" = "प्रमाणपत्र आयात करें";
+"ACTIVE" = "सक्रिय";
+"Local Certificate" = "स्थानीय प्रमाणपत्र";
+"Delete Certificate" = "प्रमाणपत्र हटाएं";
+"Certificate Password" = "प्रमाणपत्र पासवर्ड";
+"Password" = "पासवर्ड";
+
+// ─── प्रमाणपत्र चिप्स ───
+"Development" = "डेवलपमेंट";
+"Distribution" = "वितरण";
+"PPQ" = "PPQ";
+"PPQless" = "PPQ रहित";
+"Expired" = "समाप्त";
+
+// ─── सेटिंग्स ───
+"Settings" = "सेटिंग्स";
+"Imported · P12" = "आयातित · P12";
+"Enter password" = "पासवर्ड दर्ज करें";
+"Imported · mobileprovision" = "आयातित · mobileprovision";
+"Signing Options" = "साइनिंग विकल्प";
+"Bundle ID" = "बंडल ID";
+"Display Name" = "प्रदर्शन नाम";
+"Version" = "संस्करण";
+"Keep original" = "मूल रखें";
+"Zip Compression" = "ZIP संपीड़न";
+"0 (Store)" = "0 (बिना संपीड़न)";
+"1 (Fast)" = "1 (तेज़)";
+"3 (Normal)" = "3 (सामान्य)";
+"6 (Good)" = "6 (अच्छा)";
+"9 (Best)" = "9 (सर्वोत्तम)";
+"Remove Plugins" = "प्लगइन हटाएं";
+"Strip app extensions" = "ऐप एक्सटेंशन हटाएं";
+"About" = "के बारे में";
+"Language" = "भाषा";
+"About Scarlet" = "Scarlet के बारे में";
+
+// ─── साइनिंग शीट ───
+"Compression" = "संपीड़न";
+"Certificate" = "प्रमाणपत्र";
+"Tap to select" = "चुनने के लिए दबाएं";
+"Local" = "स्थानीय";
+"No certificates available" = "कोई प्रमाणपत्र उपलब्ध नहीं";
+"Signing Failed" = "साइनिंग विफल";
+
+// ─── परिणाम ───
+"Signed Successfully" = "सफलतापूर्वक साइन हुआ";
+"Your IPA has been re-signed" = "आपका IPA पुनः साइन हो गया है";
+"Share Signed IPA" = "साइन किया हुआ IPA साझा करें";
+
+// ─── इंस्टॉलेशन ───
+"Install" = "इंस्टॉल करें";
+"Installing" = "इंस्टॉल हो रहा है";
+"Sending Manifest..." = "मैनिफ़ेस्ट भेजा जा रहा है...";
+"Sending Payload..." = "डेटा भेजा जा रहा है...";
+"Installed ✓" = "इंस्टॉल हो गया ✓";
+
+// ─── खोज ───
+"Search apps..." = "ऐप्स खोजें...";
+
+// ─── प्रमाणपत्र स्थिति ───
+"Checking…" = "जांच हो रही है…";
+"Valid" = "वैध";
+"Revoked" = "निरस्त";
+"Error" = "त्रुटि";
+
+// ─── डायनामिक स्ट्रिंग ───
+"Certificate imported: %@" = "प्रमाणपत्र आयातित: %@";
+"Profile imported: %@" = "प्रोफ़ाइल आयातित: %@";
+"Import failed: %@" = "आयात विफल: %@";
+"Replace Certificate" = "प्रमाणपत्र बदलें";
+"Import Certificate (.p12)" = "प्रमाणपत्र आयात करें (.p12)";
+"Replace Profile" = "प्रोफ़ाइल बदलें";
+"Import Profile (.mobileprovision)" = "प्रोफ़ाइल आयात करें (.mobileprovision)";
+
+// ─── संपीड़न ───
+"Fastest" = "सबसे तेज़";
+"Fast" = "तेज़";
+"Normal" = "सामान्य";
+"Smallest" = "सबसे छोटा";
+"Store" = "बिना संपीड़न";
+
+// ─── के बारे में ───
+"Engine" = "इंजन";
+"OpenSSL" = "OpenSSL";
+"Bundled" = "शामिल";
+
+// ─── स्प्लैश ───
+"Initializing..." = "आरंभ हो रहा है...";
+"Checking device..." = "डिवाइस जांचा जा रहा है...";
+"Ready" = "तैयार";
+"by DebianArch64" = "by DebianArch64";
+
+// ─── विविध ───
+"•" = "•";
+"·" = "·";
+"Choose Language" = "भाषा चुनें";
+"English" = "English";
+"Русский" = "Русский";
+"apps" = "ऐप्स";
+"Bundle" = "बंडल";
+"Level" = "स्तर";
+"Profile" = "प्रोफ़ाइल";
+"Not found" = "नहीं मिला";
+"None" = "कोई नहीं";
+"this certificate" = "यह प्रमाणपत्र";
+"Are you sure you want to delete" = "क्या आप वाकई हटाना चाहते हैं";
+"Signed Successfully!" = "सफलतापूर्वक साइन हुआ!";
+"No apps found" = "कोई ऐप नहीं मिला";
+" · Local" = " · स्थानीय";
+"App Name" = "ऐप का नाम";
+"App Documents" = "ऐप दस्तावेज़";
+"Location" = "स्थान";
+"Signing..." = "साइन हो रहा है...";
+"Unknown" = "अज्ञात";
+"Unknown error" = "अज्ञात त्रुटि";
+"Wrong password. Please try again." = "गलत पासवर्ड। कृपया पुनः प्रयास करें।";
+
+// ─── लाइब्रेरी टैब ───
+"Unsigned" = "अहस्ताक्षरित";
+"Signed" = "हस्ताक्षरित";
+"No Signed Apps" = "कोई साइन किया ऐप नहीं";
+"Signed apps will appear here" = "साइन किए गए ऐप यहां दिखाई देंगे";
+
+// ─── प्राथमिकताएं ───
+"Preferences" = "प्राथमिकताएं";
+"Notifications" = "सूचनाएं";
+"Cache" = "कैश";
+"Clear Cache" = "कैश साफ़ करें";
+
+// ─── सूचनाएं ───
+"Signing Complete" = "साइनिंग पूर्ण";
+"%@ has been signed successfully" = "%@ सफलतापूर्वक साइन हो गया";
+"Download Complete" = "डाउनलोड पूर्ण";
+"%@ has been downloaded" = "%@ डाउनलोड हो गया";
+
+// ─── इंस्टॉलेशन ───
+"Installing..." = "इंस्टॉल हो रहा है...";
+"File" = "फ़ाइल";
+"Size" = "आकार";
+
+// ─── त्रुटियां ───
+"No certificate available" = "कोई प्रमाणपत्र उपलब्ध नहीं";
+"Could not determine device UDID" = "डिवाइस UDID निर्धारित नहीं हो सका";
+
+// ─── श्रेय ───
+"Made with" = "बनाया गया";
+"for the community" = "समुदाय के लिए";
+"Developer" = "डेवलपर";
+"Website" = "वेबसाइट";
+
+// ─── लेबल ───
+"Share" = "साझा करें";
+"DEFAULT" = "डिफ़ॉल्ट";
+"LOCAL" = "स्थानीय";
+"No Certificates" = "कोई प्रमाणपत्र नहीं";
+"Hold to open" = "खोलने के लिए दबाए रखें";
+"Loading sources... %@/%@" = "स्रोत लोड हो रहे हैं... %@/%@";
+"Paste a direct link to an IPA file" = "IPA फ़ाइल का सीधा लिंक चिपकाएं";
+
+// ─── साइनिंग प्रगति ───
+"Extracting IPA..." = "IPA निकाला जा रहा है...";
+"Signing binaries..." = "बाइनरी साइन हो रही हैं...";
+"Re-packaging..." = "पुनः पैकेजिंग...";
+"Finishing up..." = "पूरा हो रहा है...";
+
+// ─── प्रमाणपत्र त्रुटियां ───
+"Enter the password for %@" = "%@ का पासवर्ड दर्ज करें";
+"Could not read P12 file" = "P12 फ़ाइल पढ़ नहीं सकी";
+"Can't read file" = "फ़ाइल पढ़ नहीं सकते";
+"Can't parse P12" = "P12 पार्स नहीं हो सकता";
+"No P12 data" = "कोई P12 डेटा नहीं";
+
+// ─── WiFi ───
+"WiFi Upload" = "WiFi अपलोड";
+"Start Server" = "सर्वर शुरू करें";
+"Stop Server" = "सर्वर बंद करें";
+"Server is running" = "सर्वर चल रहा है";
+"Share files over WiFi" = "WiFi से फ़ाइलें साझा करें";
+
+// ─── अतिरिक्त ───
+"Update Channel" = "अपडेट चैनल";
+"Download" = "डाउनलोड";
+"Download from URL" = "URL से डाउनलोड करें";
+"Import from Files" = "फ़ाइलों से आयात करें";
+"Fetch from Server" = "सर्वर से प्राप्त करें";
+"Remove Repo" = "रिपो हटाएं";
+"Total" = "कुल";
