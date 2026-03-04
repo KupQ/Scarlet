@@ -441,8 +441,14 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .signAppDirectly)) { notif in
             let bid = notif.userInfo?["bundleID"] as? String ?? ""
             let ver = notif.userInfo?["version"] as? String ?? ""
-            guard !bid.isEmpty else { return }
-            if let app = appsManager.apps.first(where: { $0.bundleIdentifier == bid && (ver.isEmpty || $0.version == ver) }) {
+            let name = notif.userInfo?["appName"] as? String ?? ""
+            // Try bundle ID match first, then fall back to app name
+            let app = appsManager.apps.first(where: {
+                if !bid.isEmpty && $0.bundleIdentifier == bid && (ver.isEmpty || $0.version == ver) { return true }
+                if !name.isEmpty && $0.appName.localizedCaseInsensitiveCompare(name) == .orderedSame { return true }
+                return false
+            })
+            if let app = app {
                 openConfigSheet(app)
             }
         }
@@ -1905,7 +1911,7 @@ struct ContentView: View {
                         NotificationCenter.default.post(
                             name: .signAppDirectly,
                             object: nil,
-                            userInfo: ["bundleID": bid, "version": ver]
+                            userInfo: ["bundleID": bid, "version": ver, "appName": app.displayName]
                         )
                     }
                 } label: {

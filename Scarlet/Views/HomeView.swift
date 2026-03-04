@@ -341,7 +341,8 @@ struct HomeView: View {
                             name: .signAppDirectly,
                             object: nil,
                             userInfo: ["bundleID": app.bundleID ?? app.bundleIdentifier ?? "",
-                                       "version": app.resolvedVersion ?? ""]
+                                       "version": app.resolvedVersion ?? "",
+                                       "appName": app.displayName]
                         )
                     } label: {
                         Text("Sign")
