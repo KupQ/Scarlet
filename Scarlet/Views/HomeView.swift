@@ -7,19 +7,6 @@
 
 import SwiftUI
 
-/// Simple seeded RNG for deterministic shuffling
-private struct SeededRNG: RandomNumberGenerator {
-    private var state: UInt64
-    init(seed: UInt64) { state = seed }
-    mutating func next() -> UInt64 {
-        state &+= 0x9E3779B97F4A7C15
-        var z = state
-        z = (z ^ (z >> 30)) &* 0xBF58476D1CE4E5B9
-        z = (z ^ (z >> 27)) &* 0x94D049BB133111EB
-        return z ^ (z >> 31)
-    }
-}
-
 struct HomeView: View {
     @ObservedObject var signingState: SigningState
     var switchToLibrary: () -> Void
@@ -32,10 +19,7 @@ struct HomeView: View {
     @State private var showBulkAdd = false
     @State private var repoURLInput = ""
     @State private var bulkRepoInput = ""
-    @State private var currentSlide = 0
-    @State private var dragOffset: CGFloat = 0
-    @State private var showcaseList: [RepoApp] = []
-    private let slideTimer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
+
 
     private func isInLibrary(_ app: RepoApp) -> Bool {
         let bid = app.bundleID ?? app.bundleIdentifier ?? ""
@@ -105,11 +89,7 @@ struct HomeView: View {
                 .padding(.bottom, 16)
                 .background(Color.bgPrimary)
 
-                // Pinned hero slideshow (does not scroll)
-                heroBanner
-                    .padding(.horizontal, 20)
-                    .padding(.top, 4)
-                    .padding(.bottom, 4)
+
 
             // ZStack so blur overlays the top of scroll content
             ZStack(alignment: .top) {
@@ -152,10 +132,6 @@ struct HomeView: View {
         .onAppear {
             animateGlow = true
             animatePulse = true
-            refreshShowcase()
-        }
-        .onChange(of: repoService.isLoading) { loading in
-            if !loading { refreshShowcase() }
         }
         .alert(L("Add Repository"), isPresented: $showAddRepo) {
             TextField(L("https://example.com/repo.json"), text: $repoURLInput)
@@ -193,214 +169,6 @@ struct HomeView: View {
             Text(repoService.lastError ?? L("Unknown error"))
         }
     }
-
-    // MARK: - App Showcase Banner
-
-    /// Refreshes the showcase list with a random sample of 8 apps.
-    /// Called once when repos finish loading, not on every render.
-    private func refreshShowcase() {
-        let apps = repoService.allApps
-        guard !apps.isEmpty else { showcaseList = []; return }
-        showcaseList = Array(apps.shuffled().prefix(8))
-        currentSlide = 0
-    }
-
-    private var heroBanner: some View {
-        let apps = showcaseList
-        return Group {
-            if apps.isEmpty {
-                EmptyView()
-            } else {
-                VStack(spacing: 8) {
-                    ZStack(alignment: .bottom) {
-                        // Layer 1: Animated background — covers entire card area
-                        TimelineView(.animation(minimumInterval: 1.0 / 8.0)) { timeline in
-                            let t = timeline.date.timeIntervalSinceReferenceDate
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 22)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [
-                                                Color(hue: 0.98, saturation: 0.75, brightness: 0.38),
-                                                Color(hue: 0.0, saturation: 0.55, brightness: 0.18),
-                                                Color(white: 0.06)
-                                            ],
-                                            startPoint: .topLeading, endPoint: .bottomTrailing
-                                        )
-                                    )
-
-                                Circle()
-                                    .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.65), Color.scarletRed.opacity(0.15), .clear], center: .center, startRadius: 10, endRadius: 110))
-                                    .frame(width: 220, height: 220)
-                                    .offset(x: CGFloat(sin(t * 0.6)) * 80 + 30, y: CGFloat(cos(t * 0.45)) * 50 - 20)
-                                    .blur(radius: 20)
-
-                                Circle()
-                                    .fill(RadialGradient(colors: [Color(hue: 0.95, saturation: 0.9, brightness: 0.6).opacity(0.45), .clear], center: .center, startRadius: 5, endRadius: 90))
-                                    .frame(width: 180, height: 180)
-                                    .offset(x: CGFloat(cos(t * 0.5)) * 70 - 20, y: CGFloat(sin(t * 0.7)) * 45 + 10)
-                                    .blur(radius: 16)
-
-                                Circle()
-                                    .fill(RadialGradient(colors: [Color(hue: 0.02, saturation: 1.0, brightness: 0.8).opacity(0.3), .clear], center: .center, startRadius: 3, endRadius: 50))
-                                    .frame(width: 100, height: 100)
-                                    .offset(x: CGFloat(sin(t * 0.9 + 2.0)) * 90, y: CGFloat(cos(t * 0.65 + 1.0)) * 40)
-                                    .blur(radius: 12)
-                            }
-                            .drawingGroup()
-                        }
-
-                        // Layer 2: Custom pager — no TabView, no UIPageControl
-                        GeometryReader { geo in
-                            let w = geo.size.width
-                            HStack(spacing: 0) {
-                                ForEach(Array(apps.enumerated()), id: \.element.id) { _, app in
-                                    appShowcaseCard(app)
-                                        .frame(width: w)
-                                }
-                            }
-                            .offset(x: -CGFloat(currentSlide) * w + dragOffset)
-                            .gesture(
-                                DragGesture()
-                                    .onChanged { value in
-                                        dragOffset = value.translation.width
-                                    }
-                                    .onEnded { value in
-                                        let threshold: CGFloat = w * 0.25
-                                        var newSlide = currentSlide
-                                        if value.translation.width < -threshold {
-                                            newSlide = min(currentSlide + 1, apps.count - 1)
-                                        } else if value.translation.width > threshold {
-                                            newSlide = max(currentSlide - 1, 0)
-                                        }
-                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                            currentSlide = newSlide
-                                            dragOffset = 0
-                                        }
-                                    }
-                            )
-                            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: dragOffset)
-                        }
-
-                        // Layer 3: Custom dots on top
-                        if apps.count > 1 {
-                            HStack(spacing: 5) {
-                                ForEach(0..<apps.count, id: \.self) { i in
-                                    Capsule()
-                                        .fill(i == currentSlide ? Color.scarletRed : Color.white.opacity(0.15))
-                                        .frame(width: i == currentSlide ? 18 : 5, height: 5)
-                                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentSlide)
-                                }
-                            }
-                            .padding(.bottom, 10)
-                        }
-                    }
-                    .frame(height: 180)
-                    .clipShape(RoundedRectangle(cornerRadius: 22))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 22)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [Color.scarletRed.opacity(0.25), Color.white.opacity(0.04)],
-                                    startPoint: .topLeading, endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1
-                            )
-                    )
-                    .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentSlide)
-                    .onReceive(slideTimer) { _ in
-                        guard apps.count > 1 else { return }
-                        withAnimation(.spring(response: 0.6, dampingFraction: 0.75)) {
-                            currentSlide = (currentSlide + 1) % apps.count
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private func appShowcaseCard(_ app: RepoApp) -> some View {
-        // Content only — background is provided by heroBanner .background()
-            HStack(spacing: 16) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(Color.white.opacity(0.1))
-                        .frame(width: 76, height: 76)
-                        .shadow(color: Color.scarletRed.opacity(0.25), radius: 12, y: 4)
-                    AsyncImage(url: URL(string: app.resolvedIconURL ?? "")) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image.resizable().aspectRatio(contentMode: .fill)
-                                .frame(width: 72, height: 72)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                        default:
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(LinearGradient(colors: [.scarletRed.opacity(0.3), .scarletDark.opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                                .frame(width: 72, height: 72)
-                                .overlay(Image(systemName: "app.fill").font(.system(size: 30)).foregroundColor(.white.opacity(0.25)))
-                        }
-                    }
-                }
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(app.displayName)
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white).lineLimit(1)
-                        .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
-                    HStack(spacing: 6) {
-                        Image(systemName: "tag.fill").font(.system(size: 9)).foregroundColor(.scarletRed.opacity(0.7))
-                        Text(app.resolvedVersion ?? "1.0").font(.system(size: 11, weight: .semibold)).foregroundColor(.white.opacity(0.6))
-                        if app.resolvedSize != nil {
-                            Text("·").foregroundColor(.white.opacity(0.3))
-                            Text(app.sizeString).font(.system(size: 11, weight: .semibold)).foregroundColor(.white.opacity(0.6))
-                        }
-                    }
-                    HStack(spacing: 3) {
-                        Capsule().fill(Color.scarletRed.opacity(0.6)).frame(width: 30, height: 3)
-                        Capsule().fill(Color.scarletRed.opacity(0.3)).frame(width: 16, height: 3)
-                        Capsule().fill(Color.scarletRed.opacity(0.15)).frame(width: 8, height: 3)
-                    }.padding(.top, 2)
-                }
-                Spacer()
-                if isInLibrary(app) {
-                    Button {
-                        NotificationCenter.default.post(
-                            name: .signAppDirectly,
-                            object: nil,
-                            userInfo: ["bundleID": app.bundleID ?? app.bundleIdentifier ?? "",
-                                       "version": app.resolvedVersion ?? "",
-                                       "appName": app.displayName]
-                        )
-                    } label: {
-                        Text("Sign")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.6))
-                            .padding(.horizontal, 12).padding(.vertical, 6)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.04))
-                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.08), lineWidth: 0.5))
-                            )
-                    }.buttonStyle(.plain)
-                } else {
-                    Button {
-                        guard let urlStr = app.resolvedDownloadURL, let url = URL(string: urlStr) else { return }
-                        DownloadManager.shared.download(id: app.id, url: url, appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString) { fileURL in
-                            ImportedAppsManager.shared.importIPA(from: fileURL)
-                        }
-                    } label: {
-                        Text("GET")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.6))
-                            .padding(.horizontal, 14).padding(.vertical, 7)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.06))
-                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 0.5))
-                            )
-                    }.buttonStyle(.plain)
-                }
-            }.padding(.horizontal, 22)
-    }
-
-
 
 
     // MARK: - Repo Cards
