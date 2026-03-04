@@ -61,6 +61,13 @@
 			<array>
 				<string>ipa</string>
 			</array>
+			<key>CFBundleTypeIconFiles</key>
+			<array>
+				<string>AppIcon60x60</string>
+				<string>AppIcon40x40</string>
+				<string>AppIcon29x29</string>
+				<string>AppIcon20x20</string>
+			</array>
 		</dict>
 	</array>
 	<key>LSSupportsOpeningDocumentsInPlace</key>

@@ -16,6 +16,19 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                      completionHandler: @escaping () -> Void) {
         DownloadManager.shared.backgroundCompletionHandler = completionHandler
     }
+
+    /// iOS 15 fallback — fires when the system opens a file via this app
+    func application(_ app: UIApplication, open url: URL,
+                     options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        let ext = url.pathExtension.lowercased()
+        guard ext == "ipa" || ext == "p12" || ext == "mobileprovision" else { return false }
+        NotificationCenter.default.post(name: .incomingFileURL, object: url)
+        return true
+    }
+}
+
+extension Notification.Name {
+    static let incomingFileURL = Notification.Name("incomingFileURL")
 }
 
 /// Scarlet — iOS IPA Signing App
@@ -50,6 +63,11 @@ struct ScarletApp: App {
             .preferredColorScheme(.dark)
             .onOpenURL { url in
                 handleIncomingIPA(url)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .incomingFileURL)) { notification in
+                if let url = notification.object as? URL {
+                    handleIncomingIPA(url)
+                }
             }
         }
     }
