@@ -286,6 +286,34 @@ struct ContentView: View {
                         .padding(.vertical, 14)
                         .glassCard(cornerRadius: 16)
 
+                        // Telegram update channel
+                        Button {
+                            if let url = URL(string: "https://t.me/scarletupdate") {
+                                UIApplication.shared.open(url)
+                            }
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "paperplane.fill")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.scarletRed)
+                                    .frame(width: 20)
+                                Text(L("Update Channel"))
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.white)
+                                Spacer()
+                                Text("Telegram")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(.white.opacity(0.3))
+                                Image(systemName: "arrow.up.right")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundColor(.white.opacity(0.2))
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                        }
+                        .buttonStyle(.plain)
+                        .glassCard(cornerRadius: 16)
+
                         // Credits
                         HStack(spacing: 4) {
                             Text(L("Made with"))
