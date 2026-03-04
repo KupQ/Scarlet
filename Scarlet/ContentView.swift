@@ -17,6 +17,7 @@ struct ContentView: View {
     @ObservedObject private var downloadManager = DownloadManager.shared
     @ObservedObject private var appsManager = ImportedAppsManager.shared
     @ObservedObject private var langManager = LanguageManager.shared
+    @ObservedObject private var uploadServer = WiFiUploadServer.shared
     @State private var selectedTab: Tab = .home
     @State private var isSearching = false
     @State private var searchText = ""
@@ -1735,6 +1736,69 @@ struct ContentView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
+                .glassCard(cornerRadius: 14)
+
+                // WiFi Upload
+                VStack(spacing: 0) {
+                    Button {
+                        if uploadServer.isRunning {
+                            uploadServer.stop()
+                        } else {
+                            uploadServer.start()
+                        }
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "wifi")
+                                .font(.system(size: 16))
+                                .foregroundColor(.scarletRed)
+                                .frame(width: 20)
+                            Text(L("WiFi Upload"))
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.white)
+                            Spacer()
+                            if uploadServer.isRunning {
+                                Circle()
+                                    .fill(Color.green)
+                                    .frame(width: 8, height: 8)
+                                    .shadow(color: .green.opacity(0.6), radius: 4)
+                            }
+                            Text(uploadServer.isRunning ? L("Stop Server") : L("Start Server"))
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(uploadServer.isRunning ? .scarletRed : .white.opacity(0.4))
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                    }
+                    .buttonStyle(.plain)
+
+                    if uploadServer.isRunning {
+                        Rectangle()
+                            .fill(Color.white.opacity(0.04))
+                            .frame(height: 0.5)
+                            .padding(.horizontal, 12)
+
+                        Button {
+                            UIPasteboard.general.string = uploadServer.serverURL
+                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "link")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.scarletRed)
+                                Text(uploadServer.serverURL)
+                                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                                    .foregroundColor(.scarletRed)
+                                Spacer()
+                                Image(systemName: "doc.on.doc")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(.white.opacity(0.25))
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
                 .glassCard(cornerRadius: 14)
             }
             .padding(.horizontal, 16)
