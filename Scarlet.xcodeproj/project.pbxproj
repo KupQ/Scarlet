@@ -38,6 +38,14 @@
              'A10040' = {isa = PBXBuildFile; fileRef = B10040; };
              'A10041' = {isa = PBXBuildFile; fileRef = B10041; };
              'A10042' = {isa = PBXBuildFile; fileRef = B10042; };
+             'A10043' = {isa = PBXBuildFile; fileRef = B10043; };
+             'A10044' = {isa = PBXBuildFile; fileRef = B10044; };
+             'A10045' = {isa = PBXBuildFile; fileRef = B10045; };
+             'A10046' = {isa = PBXBuildFile; fileRef = B10046; };
+             'A10047' = {isa = PBXBuildFile; fileRef = B10047; };
+             'A10048' = {isa = PBXBuildFile; fileRef = B10048; };
+             'A10049' = {isa = PBXBuildFile; fileRef = B10049; };
+             'A10057' = {isa = PBXBuildFile; fileRef = B10057; };
              'A10050' = {isa = PBXBuildFile; fileRef = B10050; };
              'A10051' = {isa = PBXBuildFile; fileRef = B10051; };
              'A10052' = {isa = PBXBuildFile; fileRef = B10052; };
@@ -116,6 +124,14 @@
              B10040 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
              B10041 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
              B10042 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+             B10043 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
+             B10044 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+             B10045 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = fa.lproj/Localizable.strings; sourceTree = "<group>"; };
+             B10046 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
+             B10047 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+             B10048 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
+             B10049 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
+             B10057 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = zh-Hans.lproj/Localizable.strings; sourceTree = "<group>"; };
              B10050 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignedAppsManager.swift; sourceTree = "<group>"; };
              B10051 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationHelper.swift; sourceTree = "<group>"; };
              B10052 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertFetcher.swift; sourceTree = "<group>"; };
@@ -153,6 +169,14 @@
 			children = (
                             B10041,
                             B10042,
+                            B10043,
+                            B10044,
+                            B10045,
+                            B10046,
+                            B10047,
+                            B10048,
+                            B10049,
+                            B10057,
 				B10001,
 				B10002,
 				B10003,
@@ -328,6 +352,14 @@
 			files = (
                             'A10041',
                             'A10042',
+                            'A10043',
+                            'A10044',
+                            'A10045',
+                            'A10046',
+                            'A10047',
+                            'A10048',
+                            'A10049',
+                            'A10057',
                             'A10060',
                             'A10088',
 			);
