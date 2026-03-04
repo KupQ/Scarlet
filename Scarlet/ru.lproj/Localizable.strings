@@ -141,7 +141,10 @@
 "Bundled" = "Встроенный";
 
 // ─── Splash ───
-
+"Initializing..." = "Инициализация...";
+"Checking device..." = "Проверка устройства...";
+"Ready" = "Готово";
+"by DebianArch64" = "by DebianArch64";
 // ─── Misc ───
 "•" = "•";
 "·" = "·";

@@ -2,108 +2,110 @@
 //  SplashView.swift
 //  Scarlet
 //
-//  Premium splash screen — identifies device, transitions smoothly.
+//  Elegant launch screen — app icon, version, status line.
 //
 
 import SwiftUI
+import UIKit
 
 struct SplashView: View {
 
-    @State private var phase = 0          // 0=boot 1=identified 2=ready
-    @State private var ringRotation: Double = 0
+    @State private var phase = 0           // 0=init 1=checking 2=ready
     @State private var showContent = false
     @State private var exitOpacity: Double = 1
+    @State private var iconScale: CGFloat = 0.8
+    @State private var glowPulse = false
 
     let onFinish: () -> Void
 
+    private let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.0"
+
     var body: some View {
         ZStack {
+            // Background
             Color.bgPrimary.ignoresSafeArea()
 
-            // Ambient glow
-            ZStack {
-                Circle()
+            // Subtle top glow
+            VStack {
+                Ellipse()
                     .fill(
                         RadialGradient(
-                            colors: [Color.scarletRed.opacity(0.12), Color.scarletRed.opacity(0.03), .clear],
-                            center: .center, startRadius: 20, endRadius: 180
+                            colors: [Color.scarletRed.opacity(glowPulse ? 0.08 : 0.04), .clear],
+                            center: .center,
+                            startRadius: 10,
+                            endRadius: 200
                         )
                     )
-                    .frame(width: 360, height: 360)
-                    .blur(radius: 40)
-
-                // Outer rotating ring
-                Circle()
-                    .stroke(
-                        AngularGradient(
-                            colors: [.scarletRed.opacity(0.3), .clear, .scarletRed.opacity(0.1), .clear, .scarletRed.opacity(0.2)],
-                            center: .center
-                        ), lineWidth: 1
-                    )
-                    .frame(width: 140, height: 140)
-                    .rotationEffect(.degrees(ringRotation))
-                    .animation(.linear(duration: 1.2).repeatForever(autoreverses: false), value: ringRotation)
-
-                // Inner ring
-                Circle()
-                    .stroke(Color.white.opacity(0.04), lineWidth: 0.5)
-                    .frame(width: 100, height: 100)
+                    .frame(width: 400, height: 200)
+                    .blur(radius: 60)
+                Spacer()
             }
-            .opacity(showContent ? 1 : 0)
+            .ignoresSafeArea()
 
-            VStack(spacing: 28) {
-                // App icon area
-                ZStack {
-                    // Spinning arc
-                    Circle()
-                        .trim(from: 0, to: phase < 2 ? 0.25 : 0)
-                        .stroke(
-                            LinearGradient(
-                                colors: [.scarletRed, .scarletRed.opacity(0.1)],
-                                startPoint: .leading, endPoint: .trailing
-                            ),
-                            style: StrokeStyle(lineWidth: 2, lineCap: .round)
-                        )
-                        .frame(width: 72, height: 72)
-                        .rotationEffect(.degrees(ringRotation))
-                        .animation(.linear(duration: 1.2).repeatForever(autoreverses: false), value: ringRotation)
+            // Main content
+            VStack(spacing: 0) {
+                Spacer()
 
-                    // Outer glass ring
-                    Circle()
-                        .stroke(Color.white.opacity(0.06), lineWidth: 1)
-                        .frame(width: 72, height: 72)
-
-                    // Center icon
-                    if phase < 2 {
-                        Image(systemName: "cpu")
-                            .font(.system(size: 22, weight: .light))
-                            .foregroundStyle(
-                                LinearGradient(colors: [.scarletRed.opacity(0.8), .scarletPink.opacity(0.5)],
-                                               startPoint: .top, endPoint: .bottom)
-                            )
-                            .transition(.opacity)
-                    } else {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 22, weight: .medium))
-                            .foregroundColor(.scarletRed)
-                            .transition(.scale.combined(with: .opacity))
+                // App Icon
+                VStack(spacing: 20) {
+                    if let iconImage = UIImage(named: "AppIcon60x60") {
+                        Image(uiImage: iconImage)
+                            .resizable()
+                            .frame(width: 88, height: 88)
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                            .shadow(color: .black.opacity(0.5), radius: 20, y: 8)
+                            .scaleEffect(iconScale)
                     }
-                }
 
-                // App name + status
-                VStack(spacing: 10) {
-                    Text("Scarlet")
-                        .font(.system(size: 26, weight: .bold))
+                    // App name
+                    Text(L("Scarlet"))
+                        .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
 
-                    Text(statusText)
+                    // Version
+                    Text("v\(version)")
                         .font(.system(size: 12, weight: .medium, design: .monospaced))
-                        .foregroundColor(.white.opacity(0.25))
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                        .frame(maxWidth: 260)
-                        .animation(.easeOut(duration: 0.2), value: phase)
+                        .foregroundColor(.white.opacity(0.2))
                 }
+
+                Spacer()
+
+                // Bottom status
+                VStack(spacing: 16) {
+                    // Status text
+                    HStack(spacing: 8) {
+                        if phase < 2 {
+                            ProgressView()
+                                .scaleEffect(0.6)
+                                .tint(.white.opacity(0.3))
+                        } else {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 12))
+                                .foregroundColor(.scarletRed)
+                        }
+
+                        Text(statusText)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.35))
+                            .lineLimit(1)
+                            .animation(.easeOut(duration: 0.2), value: phase)
+                    }
+                    .frame(height: 20)
+
+                    // Footer
+                    HStack(spacing: 4) {
+                        Text(L("Made with"))
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.white.opacity(0.12))
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 8))
+                            .foregroundColor(.scarletRed.opacity(0.3))
+                        Text(L("by DebianArch64"))
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.white.opacity(0.12))
+                    }
+                }
+                .padding(.bottom, 50)
             }
             .opacity(showContent ? 1 : 0)
         }
@@ -113,40 +115,45 @@ struct SplashView: View {
 
     private var statusText: String {
         switch phase {
-        case 0:  return L("Identifying device...")
-        case 1:  return CertificateService.shared.deviceUDID ?? "..."
+        case 0:  return L("Initializing...")
+        case 1:  return L("Checking device...")
         default: return L("Ready")
         }
     }
 
-    // MARK: - Boot
+    // MARK: - Boot Sequence
 
     private func boot() {
-        // Fade in
-        withAnimation(.easeOut(duration: 0.5)) {
+        // Fade in + scale up
+        withAnimation(.easeOut(duration: 0.6)) {
             showContent = true
+            iconScale = 1.0
         }
-        ringRotation = 360
 
-        // Phase 1: UDID
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        // Start glow pulse
+        withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+            glowPulse = true
+        }
+
+        // Phase 1: Check device
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             _ = CertificateService.getDeviceUDID()
             withAnimation(.easeOut(duration: 0.3)) {
                 phase = 1
             }
 
             // Phase 2: Ready
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                withAnimation(.easeOut(duration: 0.3)) {
                     phase = 2
                 }
 
                 // Exit
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                    withAnimation(.easeIn(duration: 0.3)) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    withAnimation(.easeIn(duration: 0.25)) {
                         exitOpacity = 0
                     }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         UserDefaults.standard.set(true, forKey: "splashShown")
                         onFinish()
                     }

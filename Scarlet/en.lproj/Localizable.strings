@@ -146,7 +146,10 @@
 "Bundled" = "Bundled";
 
 // ─── Splash ───
-"Scarlet" = "Scarlet";
+"Initializing..." = "Initializing...";
+"Checking device..." = "Checking device...";
+"Ready" = "Ready";
+"by DebianArch64" = "by DebianArch64";
 
 // ─── Misc ───
 "•" = "•";
