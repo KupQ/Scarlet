@@ -15,10 +15,10 @@ enum NotificationHelper {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
     }
 
-    /// Whether notifications are enabled in user preferences.
+    /// Whether notifications are enabled in user preferences (defaults to true).
     static var isEnabled: Bool {
-        get { UserDefaults.standard.bool(forKey: "notifications_enabled") }
-        set { UserDefaults.standard.set(newValue, forKey: "notifications_enabled") }
+        get { !UserDefaults.standard.bool(forKey: "notifications_disabled") }
+        set { UserDefaults.standard.set(!newValue, forKey: "notifications_disabled") }
     }
 
     /// Send a local notification (only if enabled in prefs).

@@ -345,7 +345,7 @@
 			outputPaths = ();
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cp \"${SRCROOT}/Scarlet/Resources/AppIcon\"*.png \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/\"\nif [ -d \"${SRCROOT}/Scarlet/Resources/signing-assets\" ]; then\n  cp -R \"${SRCROOT}/Scarlet/Resources/signing-assets\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/\"\nfi\n";
+			shellScript = "cp \"${SRCROOT}/Scarlet/Resources/AppIcon\"*.png \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
