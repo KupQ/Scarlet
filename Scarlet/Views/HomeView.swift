@@ -33,6 +33,7 @@ struct HomeView: View {
     @State private var repoURLInput = ""
     @State private var bulkRepoInput = ""
     @State private var currentSlide = 0
+    @State private var showcaseList: [RepoApp] = []
     private let slideTimer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
 
     private func isInLibrary(_ app: RepoApp) -> Bool {
@@ -144,6 +145,10 @@ struct HomeView: View {
         .onAppear {
             animateGlow = true
             animatePulse = true
+            refreshShowcase()
+        }
+        .onChange(of: repoService.isLoading) { loading in
+            if !loading { refreshShowcase() }
         }
         .alert(L("Add Repository"), isPresented: $showAddRepo) {
             TextField(L("https://example.com/repo.json"), text: $repoURLInput)
@@ -184,16 +189,17 @@ struct HomeView: View {
 
     // MARK: - App Showcase Banner
 
-    private var showcaseApps: [RepoApp] {
+    /// Refreshes the showcase list with a random sample of 8 apps.
+    /// Called once when repos finish loading, not on every render.
+    private func refreshShowcase() {
         let apps = repoService.allApps
-        guard !apps.isEmpty else { return [] }
-        let seed = UInt64(arc4random())
-        var rng = SeededRNG(seed: seed)
-        return Array(apps.shuffled(using: &rng).prefix(8))
+        guard !apps.isEmpty else { showcaseList = []; return }
+        showcaseList = Array(apps.shuffled().prefix(8))
+        currentSlide = 0
     }
 
     private var heroBanner: some View {
-        let apps = showcaseApps
+        let apps = showcaseList
         return Group {
             if apps.isEmpty {
                 EmptyView()
