@@ -342,6 +342,15 @@ struct ContentView: View {
 
             // Preferences card overlay
             if showPrefsCard {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .zIndex(98)
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            showPrefsCard = false
+                        }
+                    }
+
                 VStack {
                     Spacer()
                     preferencesCard
