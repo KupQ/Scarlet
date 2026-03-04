@@ -25,6 +25,27 @@ final class WiFiUploadServer: ObservableObject {
     private let listenerQueue = DispatchQueue(label: "com.scarlet.wifilistener", qos: .userInitiated)
     private var connectionCount = 0
 
+    // Debug log buffer
+    private var logEntries: [String] = []
+    private let logLock = NSLock()
+
+    private func log(_ msg: String) {
+        let ts = ISO8601DateFormatter().string(from: Date())
+        let entry = "[\(ts)] \(msg)"
+        logLock.lock()
+        logEntries.append(entry)
+        if logEntries.count > 200 { logEntries.removeFirst() }
+        logLock.unlock()
+        print("[WiFiUpload] \(msg)")
+    }
+
+    var debugLogs: String {
+        logLock.lock()
+        let copy = logEntries.joined(separator: "\n")
+        logLock.unlock()
+        return copy
+    }
+
     // MARK: - Start / Stop
 
     func start() {
@@ -91,24 +112,55 @@ final class WiFiUploadServer: ObservableObject {
     // MARK: - Connection Handler
 
     private func handleConnection(_ conn: NWConnection) {
-        // Each connection gets its own queue — prevents blocking the listener
         connectionCount += 1
-        let connQueue = DispatchQueue(label: "com.scarlet.conn.\(connectionCount)", qos: .userInitiated)
-        conn.start(queue: connQueue)
+        let connId = connectionCount
+        let connQueue = DispatchQueue(label: "com.scarlet.conn.\(connId)", qos: .userInitiated)
 
-        // Renew background task for each connection
+        log("#\(connId) NEW connection from \(conn.endpoint)")
+
+        // Track connection state
+        conn.stateUpdateHandler = { [weak self] state in
+            self?.log("#\(connId) state -> \(state)")
+        }
+
+        conn.start(queue: connQueue)
         beginBackgroundTask()
 
-        conn.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, _, error in
-            guard let self, error == nil, let data else {
+        conn.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
+            guard let self else {
                 conn.cancel()
                 return
             }
 
-            let headerPeek = String(data: data.prefix(16), encoding: .utf8) ?? ""
+            if let error {
+                self.log("#\(connId) receive ERROR: \(error)")
+                conn.cancel()
+                return
+            }
+
+            guard let data else {
+                self.log("#\(connId) receive nil data, isComplete=\(isComplete)")
+                conn.cancel()
+                return
+            }
+
+            self.log("#\(connId) received \(data.count) bytes")
+
+            let headerPeek = String(data: data.prefix(32), encoding: .utf8) ?? ""
+            let firstLine = headerPeek.components(separatedBy: "\r\n").first ?? headerPeek
+            self.log("#\(connId) request: \(firstLine)")
 
             if headerPeek.hasPrefix("OPTIONS") {
+                self.log("#\(connId) -> CORS preflight")
                 let resp = self.corsPreflightResponse()
+                conn.send(content: resp, completion: .contentProcessed { _ in conn.cancel() })
+                return
+            }
+
+            // Serve logs page
+            if headerPeek.contains("/logs") {
+                let body = "<pre>" + self.debugLogs.replacingOccurrences(of: "<", with: "&lt;") + "</pre>"
+                let resp = self.httpResponse(status: "200 OK", contentType: "text/html; charset=utf-8", body: Data(body.utf8))
                 conn.send(content: resp, completion: .contentProcessed { _ in conn.cancel() })
                 return
             }
@@ -123,7 +175,10 @@ final class WiFiUploadServer: ObservableObject {
                     }
                 }
 
+                self.log("#\(connId) POST content-length=\(contentLength)")
+
                 guard let headerEnd = data.range(of: Data("\r\n\r\n".utf8)) else {
+                    self.log("#\(connId) ERROR: no header end found")
                     conn.cancel()
                     return
                 }
@@ -132,43 +187,48 @@ final class WiFiUploadServer: ObservableObject {
                 let initialBody = Data(data[headerEnd.upperBound...])
                 let remaining = contentLength - initialBody.count
 
-                // Stream to a temp file instead of accumulating in RAM
+                self.log("#\(connId) headers=\(headerData.count)B, initialBody=\(initialBody.count)B, remaining=\(remaining)B")
+
                 let tmpRaw = FileManager.default.temporaryDirectory.appendingPathComponent("upload_\(UUID().uuidString).raw")
                 FileManager.default.createFile(atPath: tmpRaw.path, contents: nil)
 
                 guard let fh = try? FileHandle(forWritingTo: tmpRaw) else {
+                    self.log("#\(connId) ERROR: can't open temp file")
                     conn.cancel()
                     return
                 }
 
-                // Write initial body chunk
                 fh.write(initialBody)
 
                 if remaining <= 0 {
                     fh.closeFile()
-                    self.processUploadFile(headerData: headerData, rawFile: tmpRaw, connection: conn)
+                    self.log("#\(connId) small upload, processing immediately")
+                    self.processUploadFile(headerData: headerData, rawFile: tmpRaw, connection: conn, connId: connId)
                 } else {
-                    self.streamToFile(connection: conn,
+                    self.streamToFile(connection: conn, connId: connId,
                                      headerData: headerData,
                                      fileHandle: fh,
                                      rawFile: tmpRaw,
                                      remaining: remaining)
                 }
             } else {
+                self.log("#\(connId) -> serving upload page")
                 let html = Self.uploadPageHTML
                 let response = self.httpResponse(status: "200 OK", contentType: "text/html; charset=utf-8", body: Data(html.utf8))
-                conn.send(content: response, completion: .contentProcessed { _ in conn.cancel() })
+                conn.send(content: response, completion: .contentProcessed { [weak self] sendErr in
+                    if let sendErr { self?.log("#\(connId) send page ERROR: \(sendErr)") }
+                    conn.cancel()
+                })
             }
         }
     }
 
-    /// Streams upload body chunks directly to disk — no RAM accumulation.
-    private func streamToFile(connection: NWConnection,
+    private func streamToFile(connection: NWConnection, connId: Int,
                                headerData: Data,
                                fileHandle: FileHandle,
                                rawFile: URL,
                                remaining: Int) {
-        let chunkSize = min(remaining, 512 * 1024) // 512 KB chunks
+        let chunkSize = min(remaining, 512 * 1024)
         connection.receive(minimumIncompleteLength: 1, maximumLength: chunkSize) { [weak self] data, _, _, error in
             guard let self else {
                 fileHandle.closeFile()
@@ -177,7 +237,16 @@ final class WiFiUploadServer: ObservableObject {
                 return
             }
 
-            guard error == nil, let data else {
+            if let error {
+                self.log("#\(connId) stream ERROR: \(error) (remaining=\(remaining))")
+                fileHandle.closeFile()
+                try? FileManager.default.removeItem(at: rawFile)
+                connection.cancel()
+                return
+            }
+
+            guard let data else {
+                self.log("#\(connId) stream nil data (remaining=\(remaining))")
                 fileHandle.closeFile()
                 try? FileManager.default.removeItem(at: rawFile)
                 connection.cancel()
@@ -189,9 +258,13 @@ final class WiFiUploadServer: ObservableObject {
 
             if newRemaining <= 0 {
                 fileHandle.closeFile()
-                self.processUploadFile(headerData: headerData, rawFile: rawFile, connection: connection)
+                self.log("#\(connId) stream complete, processing file")
+                self.processUploadFile(headerData: headerData, rawFile: rawFile, connection: connection, connId: connId)
             } else {
-                self.streamToFile(connection: connection,
+                if newRemaining % (5 * 1024 * 1024) < data.count {
+                    self.log("#\(connId) streaming... \(remaining - newRemaining)B received, \(newRemaining)B left")
+                }
+                self.streamToFile(connection: connection, connId: connId,
                                   headerData: headerData,
                                   fileHandle: fileHandle,
                                   rawFile: rawFile,
@@ -202,7 +275,7 @@ final class WiFiUploadServer: ObservableObject {
 
     // MARK: - Process Uploaded File
 
-    private func processUploadFile(headerData: Data, rawFile: URL, connection: NWConnection) {
+    private func processUploadFile(headerData: Data, rawFile: URL, connection: NWConnection, connId: Int) {
         defer { try? FileManager.default.removeItem(at: rawFile) }
 
         guard let rawData = try? Data(contentsOf: rawFile, options: .mappedIfSafe) else {
@@ -253,6 +326,7 @@ final class WiFiUploadServer: ObservableObject {
         let destFile = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
         do {
             try Data(fileData).write(to: destFile)
+            log("#\(connId) saved \(fileName) (\(fileData.count) bytes)")
 
             DispatchQueue.main.async {
                 self.lastUploadName = fileName
@@ -262,8 +336,13 @@ final class WiFiUploadServer: ObservableObject {
             let sizeStr = ByteCountFormatter.string(fromByteCount: Int64(fileData.count), countStyle: .file)
             let okHTML = Self.responseHTML(success: true, message: "\(fileName) (\(sizeStr)) uploaded!")
             let resp = httpResponse(status: "200 OK", contentType: "text/html; charset=utf-8", body: Data(okHTML.utf8))
-            connection.send(content: resp, completion: .contentProcessed { _ in connection.cancel() })
+            connection.send(content: resp, completion: .contentProcessed { [weak self] sendErr in
+                if let sendErr { self?.log("#\(connId) send response ERROR: \(sendErr)") }
+                else { self?.log("#\(connId) SUCCESS response sent") }
+                connection.cancel()
+            })
         } catch {
+            log("#\(connId) save ERROR: \(error)")
             let resp = httpResponse(status: "500 Internal Server Error", contentType: "text/html; charset=utf-8",
                                     body: Data(Self.responseHTML(success: false, message: "Save failed: \(error.localizedDescription)").utf8))
             connection.send(content: resp, completion: .contentProcessed { _ in connection.cancel() })
