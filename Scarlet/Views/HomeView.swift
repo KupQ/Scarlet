@@ -258,7 +258,7 @@ struct HomeView: View {
                             }
                         }
                         .tabViewStyle(.page(indexDisplayMode: .never))
-                        .frame(height: 180)
+                        .frame(height: 150)
                         .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentSlide)
                         .onReceive(slideTimer) { _ in
                             guard apps.count > 1 else { return }
@@ -268,7 +268,7 @@ struct HomeView: View {
                         }
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 22))
-                    .frame(height: 180)
+                    .frame(height: 150)
 
                     if apps.count > 1 {
                         HStack(spacing: 5) {
