@@ -126,7 +126,7 @@ struct HomeView: View {
 
                     Spacer().frame(height: 80)
                 }
-                .padding(.top, 5)            }
+                .padding(.top, 7)            }
 
             // Blur overlay on top of scroll — fades out downward
             LinearGradient(
