@@ -223,16 +223,8 @@ struct HomeView: View {
                 EmptyView()
             } else {
                 VStack(spacing: 8) {
-                    TabView(selection: $currentSlide) {
-                        ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
-                            appShowcaseCard(app)
-                                .tag(index)
-                        }
-                    }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    .frame(height: 180)
-                    .background(
-                        // Fixed animated background — stays in place while apps swipe
+                    ZStack(alignment: .bottom) {
+                        // Layer 1: Animated background — covers entire card area
                         TimelineView(.animation(minimumInterval: 1.0 / 8.0)) { timeline in
                             let t = timeline.date.timeIntervalSinceReferenceDate
                             ZStack {
@@ -268,19 +260,17 @@ struct HomeView: View {
                             }
                             .drawingGroup()
                         }
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 22)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [Color.scarletRed.opacity(0.25), Color.white.opacity(0.04)],
-                                    startPoint: .topLeading, endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1
-                            )
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 22))
-                    .overlay(alignment: .bottom) {
+
+                        // Layer 2: TabView with transparent background
+                        TabView(selection: $currentSlide) {
+                            ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
+                                appShowcaseCard(app)
+                                    .tag(index)
+                            }
+                        }
+                        .tabViewStyle(.page(indexDisplayMode: .never))
+
+                        // Layer 3: Custom dots on top
                         if apps.count > 1 {
                             HStack(spacing: 5) {
                                 ForEach(0..<apps.count, id: \.self) { i in
@@ -293,6 +283,18 @@ struct HomeView: View {
                             .padding(.bottom, 10)
                         }
                     }
+                    .frame(height: 180)
+                    .clipShape(RoundedRectangle(cornerRadius: 22))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 22)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color.scarletRed.opacity(0.25), Color.white.opacity(0.04)],
+                                    startPoint: .topLeading, endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
+                    )
                     .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentSlide)
                     .onReceive(slideTimer) { _ in
                         guard apps.count > 1 else { return }
