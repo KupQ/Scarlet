@@ -24,6 +24,18 @@ struct HomeView: View {
     @ObservedObject var signingState: SigningState
     var switchToLibrary: () -> Void
 
+    init(signingState: SigningState, switchToLibrary: @escaping () -> Void) {
+        self.signingState = signingState
+        self.switchToLibrary = switchToLibrary
+        // Fix: force transparent page control background on all iOS versions
+        UIPageControl.appearance().currentPageIndicatorTintColor = .clear
+        UIPageControl.appearance().pageIndicatorTintColor = .clear
+        if #available(iOS 16.0, *) {
+            UIPageControl.appearance().backgroundStyle = .minimal
+        }
+        UIPageControl.appearance().isHidden = true
+    }
+
     @ObservedObject private var repoService = RepoService.shared
     @ObservedObject private var appsManager = ImportedAppsManager.shared
     @State private var animatePulse = false
