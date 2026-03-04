@@ -1609,36 +1609,55 @@ struct ContentView: View {
 
                 // WiFi Upload
                 VStack(spacing: 0) {
-                    Button {
-                        if uploadServer.isRunning {
-                            uploadServer.stop()
-                        } else {
-                            uploadServer.start()
-                        }
-                    } label: {
-                        HStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        // WiFi icon with glow when active
+                        ZStack {
                             Image(systemName: "wifi")
                                 .font(.system(size: 16))
-                                .foregroundColor(.scarletRed)
-                                .frame(width: 20)
-                            Text(L("WiFi Upload"))
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.white)
-                            Spacer()
+                                .foregroundColor(uploadServer.isRunning ? .green : .white.opacity(0.35))
                             if uploadServer.isRunning {
-                                Circle()
-                                    .fill(Color.green)
-                                    .frame(width: 8, height: 8)
-                                    .shadow(color: .green.opacity(0.6), radius: 4)
+                                Image(systemName: "wifi")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.green.opacity(0.4))
+                                    .blur(radius: 6)
                             }
-                            Text(uploadServer.isRunning ? L("Stop Server") : L("Start Server"))
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundColor(uploadServer.isRunning ? .scarletRed : .white.opacity(0.4))
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
+                        .frame(width: 20)
+
+                        Text(L("WiFi Upload"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+
+                        if uploadServer.isRunning {
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 6, height: 6)
+                                .shadow(color: .green.opacity(0.6), radius: 4)
+                        }
+
+                        Spacer()
+
+                        // Power toggle button
+                        Button {
+                            if uploadServer.isRunning {
+                                uploadServer.stop()
+                            } else {
+                                uploadServer.start()
+                            }
+                        } label: {
+                            Image(systemName: uploadServer.isRunning ? "stop.circle.fill" : "play.circle.fill")
+                                .font(.system(size: 26, weight: .light))
+                                .foregroundStyle(
+                                    uploadServer.isRunning
+                                        ? LinearGradient(colors: [.scarletRed, .scarletRed.opacity(0.7)], startPoint: .top, endPoint: .bottom)
+                                        : LinearGradient(colors: [.white.opacity(0.35), .white.opacity(0.2)], startPoint: .top, endPoint: .bottom)
+                                )
+                                .shadow(color: uploadServer.isRunning ? .scarletRed.opacity(0.3) : .clear, radius: 8)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
 
                     if uploadServer.isRunning {
                         Rectangle()
@@ -1652,15 +1671,15 @@ struct ContentView: View {
                         } label: {
                             HStack(spacing: 8) {
                                 Image(systemName: "link")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.scarletRed)
+                                    .font(.system(size: 11))
+                                    .foregroundColor(.white.opacity(0.3))
                                 Text(uploadServer.serverURL)
-                                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                                    .foregroundColor(.scarletRed)
+                                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                                    .foregroundColor(.white.opacity(0.5))
                                 Spacer()
                                 Image(systemName: "doc.on.doc")
-                                    .font(.system(size: 11))
-                                    .foregroundColor(.white.opacity(0.25))
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.white.opacity(0.2))
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
