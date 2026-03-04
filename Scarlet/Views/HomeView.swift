@@ -135,7 +135,7 @@ struct HomeView: View {
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .frame(height: 12)
+            .frame(height: 24)
             .allowsHitTesting(false)
             }
             }
