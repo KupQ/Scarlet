@@ -1236,10 +1236,10 @@ struct ContentView: View {
     }
 
     private var progressStatusText: String {
-        if signingProgress < 0.25 { return "Extracting IPA..." }
-        else if signingProgress < 0.55 { return "Signing binaries..." }
-        else if signingProgress < 0.85 { return "Re-packaging..." }
-        else { return "Finishing up..." }
+        if signingProgress < 0.25 { return L("Extracting IPA...") }
+        else if signingProgress < 0.55 { return L("Signing binaries...") }
+        else if signingProgress < 0.85 { return L("Re-packaging...") }
+        else { return L("Finishing up...") }
     }
 
     // MARK: - Helpers

@@ -225,3 +225,19 @@
 "Hold to open" = "Hold to open";
 "Loading sources... %@/%@" = "Loading sources... %@/%@";
 "Paste a direct link to an IPA file" = "Paste a direct link to an IPA file";
+
+// ─── Signing Progress ───
+"Extracting IPA..." = "Extracting IPA...";
+"Signing binaries..." = "Signing binaries...";
+"Re-packaging..." = "Re-packaging...";
+"Finishing up..." = "Finishing up...";
+
+// ─── Certificate Errors ───
+"Enter the password for %@" = "Enter the password for %@";
+"Could not read P12 file" = "Could not read P12 file";
+"Can't read file" = "Can't read file";
+"Can't parse P12" = "Can't parse P12";
+"No P12 data" = "No P12 data";
+
+// ─── Splash ───
+"by DebianArch64" = "by DebianArch64";

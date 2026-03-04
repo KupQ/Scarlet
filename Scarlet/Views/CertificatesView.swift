@@ -124,7 +124,7 @@ struct CertificatesView: View {
             Button(L("Cancel"), role: .cancel) { importStep = .idle; importPassword = "" }
             Button(L("Import")) { validateAndImport() }
         } message: {
-            Text(passwordError ?? "Enter the password for \(importedP12Name)")
+            Text(passwordError ?? String(format: L("Enter the password for %@"), importedP12Name))
         }
         .alert(L("Delete Certificate"), isPresented: $showDeleteConfirm) {
             Button(L("Cancel"), role: .cancel) { certToDelete = nil }
@@ -621,7 +621,7 @@ struct CertificatesView: View {
 
     private func validateAndImport() {
         guard let p12Data = importedP12Data else {
-            passwordError = "Could not read P12 file"; return
+            passwordError = L("Could not read P12 file"); return
         }
 
         if PKCS12Validator.validate(data: p12Data, password: importPassword) {

@@ -84,7 +84,7 @@ final class LocalCertChecker: ObservableObject {
             localCertInfos[name] = LocalCertInfo(
                 commonName: name.replacingOccurrences(of: ".p12", with: "").replacingOccurrences(of: "local_", with: ""),
                 notBefore: "", notAfter: "", serialHex: "",
-                status: .error("Can't read file")
+                status: .error(L("Can't read file"))
             )
             return
         }
@@ -93,7 +93,7 @@ final class LocalCertChecker: ObservableObject {
         var info = getCertInfo(p12Data: p12Data, password: password) ?? LocalCertInfo(
             commonName: name.replacingOccurrences(of: ".p12", with: "").replacingOccurrences(of: "local_", with: ""),
             notBefore: "", notAfter: "", serialHex: "",
-            status: .error("Can't parse P12")
+            status: .error(L("Can't parse P12"))
         )
 
         // Calculate days left
@@ -123,7 +123,7 @@ final class LocalCertChecker: ObservableObject {
 
         for cert in certs {
             guard let p12Data = cert.p12Data else {
-                apiCertStatuses[cert.id] = .error("No P12 data")
+                apiCertStatuses[cert.id] = .error(L("No P12 data"))
                 continue
             }
             apiCertStatuses[cert.id] = .checking

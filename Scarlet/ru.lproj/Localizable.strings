@@ -219,3 +219,19 @@
 "Hold to open" = "Удерживайте для открытия";
 "Loading sources... %@/%@" = "Загрузка источников... %@/%@";
 "Paste a direct link to an IPA file" = "Вставьте прямую ссылку на IPA файл";
+
+// ─── Процесс подписи ───
+"Extracting IPA..." = "Извлечение IPA...";
+"Signing binaries..." = "Подпись файлов...";
+"Re-packaging..." = "Упаковка...";
+"Finishing up..." = "Завершение...";
+
+// ─── Ошибки сертификатов ───
+"Enter the password for %@" = "Введите пароль для %@";
+"Could not read P12 file" = "Не удалось прочитать P12 файл";
+"Can't read file" = "Не удалось прочитать файл";
+"Can't parse P12" = "Не удалось разобрать P12";
+"No P12 data" = "Нет данных P12";
+
+// ─── Заставка ───
+"by DebianArch64" = "by DebianArch64";
