@@ -1811,7 +1811,6 @@ struct ContentView: View {
                     .frame(width: 50)
             } else if isAppInLibrary(app) {
                 Button {
-                    withAnimation { isSearching = false; searchText = "" }
                     NotificationCenter.default.post(
                         name: .signAppDirectly,
                         object: nil,
