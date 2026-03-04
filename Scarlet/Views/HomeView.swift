@@ -107,6 +107,7 @@ struct HomeView: View {
             ZStack(alignment: .top) {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
+                    Spacer().frame(height: 16)
 
                     // Loading progress indicator
                     if repoService.isLoading {
@@ -370,34 +371,7 @@ struct HomeView: View {
 
     private var repoAppsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // ── Default Repos ──
-            if !repoService.defaultRepos.isEmpty {
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Text(L("DEFAULT"))
-                            .font(.system(size: 10, weight: .heavy))
-                            .tracking(1.5)
-                            .foregroundColor(.white.opacity(0.25))
-                        Spacer()
-                        if repoService.isLoading {
-                            ProgressView()
-                                .tint(.white.opacity(0.3))
-                                .scaleEffect(0.7)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-
-                    ForEach(repoService.defaultRepos) { repo in
-                        NavigationLink(destination: RepoDetailView(repo: repo)) {
-                            repoCard(repo)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.horizontal, 20)
-                    }
-                }
-            }
-
-            // ── Local Repos ──
+            // ── Local Repos (user-added, on top) ──
             if !repoService.localRepos.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
@@ -422,6 +396,33 @@ struct HomeView: View {
                                 Label(L("Remove Repo"), systemImage: "trash")
                             }
                         }
+                    }
+                }
+            }
+
+            // ── Default Repos ──
+            if !repoService.defaultRepos.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text(L("DEFAULT"))
+                            .font(.system(size: 10, weight: .heavy))
+                            .tracking(1.5)
+                            .foregroundColor(.white.opacity(0.25))
+                        Spacer()
+                        if repoService.isLoading {
+                            ProgressView()
+                                .tint(.white.opacity(0.3))
+                                .scaleEffect(0.7)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+
+                    ForEach(repoService.defaultRepos) { repo in
+                        NavigationLink(destination: RepoDetailView(repo: repo)) {
+                            repoCard(repo)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, 20)
                     }
                 }
             }
