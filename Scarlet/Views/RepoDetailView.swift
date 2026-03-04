@@ -203,6 +203,15 @@ struct RepoDetailView: View {
                         }
                         .frame(width: 36, height: 36)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
+                    } else {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(LinearGradient(colors: [.scarletRed, .scarletDark], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                .frame(width: 36, height: 36)
+                            Text(String(repo.manifest.displayName.prefix(1)))
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundColor(.white)
+                        }
                     }
 
                     VStack(alignment: .leading, spacing: 2) {

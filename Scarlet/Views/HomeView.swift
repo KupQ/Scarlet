@@ -427,13 +427,14 @@ struct HomeView: View {
                 .frame(width: 48, height: 48)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.white.opacity(0.05))
-                    .frame(width: 48, height: 48)
-                    .overlay(
-                        Image(systemName: "square.stack.3d.up.fill")
-                            .foregroundColor(.white.opacity(0.2))
-                    )
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(LinearGradient(colors: [.scarletRed, .scarletDark], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 48, height: 48)
+                    Text(String(repo.manifest.displayName.prefix(1)))
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundColor(.white)
+                }
             }
 
             VStack(alignment: .leading, spacing: 3) {
