@@ -107,7 +107,6 @@ struct HomeView: View {
             ZStack(alignment: .top) {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
-                    Spacer().frame(height: 4)
                     // Loading progress indicator
                     if repoService.isLoading {
                         VStack(spacing: 10) {
@@ -135,7 +134,7 @@ struct HomeView: View {
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .frame(height: 14)
+            .frame(height: 17)
             .allowsHitTesting(false)
             }
             }
