@@ -308,7 +308,12 @@ struct HomeView: View {
                     Spacer()
                     if isInLibrary(app) {
                         Button {
-                            switchToLibrary()
+                            NotificationCenter.default.post(
+                                name: .signAppDirectly,
+                                object: nil,
+                                userInfo: ["bundleID": app.bundleID ?? app.bundleIdentifier ?? "",
+                                           "version": app.resolvedVersion ?? ""]
+                            )
                         } label: {
                             Text("Sign")
                                 .font(.system(size: 11, weight: .semibold))

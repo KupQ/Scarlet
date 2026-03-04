@@ -400,6 +400,19 @@ struct ContentView: View {
                 selectedTab = .sign
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .signAppDirectly)) { notif in
+            let bid = notif.userInfo?["bundleID"] as? String ?? ""
+            let ver = notif.userInfo?["version"] as? String ?? ""
+            guard !bid.isEmpty else { return }
+            if let app = appsManager.apps.first(where: { $0.bundleIdentifier == bid && (ver.isEmpty || $0.version == ver) }) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    selectedTab = .sign
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    openConfigSheet(app)
+                }
+            }
+        }
         .onChange(of: signingState.phase) { newPhase in
             switch newPhase {
             case .success(let url):
@@ -1804,7 +1817,12 @@ struct ContentView: View {
             } else if isAppInLibrary(app) {
                 Button {
                     withAnimation { isSearching = false; searchText = "" }
-                    selectedTab = .sign
+                    NotificationCenter.default.post(
+                        name: .signAppDirectly,
+                        object: nil,
+                        userInfo: ["bundleID": app.bundleID ?? app.bundleIdentifier ?? "",
+                                   "version": app.resolvedVersion ?? ""]
+                    )
                 } label: {
                     Text(L("Sign"))
                         .font(.system(size: 11, weight: .semibold))

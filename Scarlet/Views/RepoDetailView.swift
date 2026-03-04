@@ -285,7 +285,12 @@ struct RepoDetailView: View {
                     .frame(width: 50)
             } else if isInLibrary(app) {
                 Button {
-                    NotificationCenter.default.post(name: .switchToLibrary, object: nil)
+                    NotificationCenter.default.post(
+                        name: .signAppDirectly,
+                        object: nil,
+                        userInfo: ["bundleID": app.bundleID ?? app.bundleIdentifier ?? "",
+                                   "version": app.resolvedVersion ?? ""]
+                    )
                 } label: {
                     Text(L("Sign"))
                         .font(.system(size: 11, weight: .semibold))
@@ -347,4 +352,5 @@ struct RepoDetailView: View {
 
 extension Notification.Name {
     static let switchToLibrary = Notification.Name("switchToLibrary")
+    static let signAppDirectly = Notification.Name("signAppDirectly")
 }
