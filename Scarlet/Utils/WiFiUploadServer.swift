@@ -404,6 +404,8 @@ final class WiFiUploadServer: ObservableObject {
     dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('drag-over');if(e.dataTransfer.files.length)uploadFile(e.dataTransfer.files[0])});
     fileInput.addEventListener('change',()=>{if(fileInput.files.length)uploadFile(fileInput.files[0])});
 
+    function showErr(msg){statusEl.textContent=msg;statusEl.style.color='#ff6b6b'}
+
     function uploadFile(file){
       document.getElementById('fileName').textContent=file.name;
       document.getElementById('fileSize').textContent=formatSize(file.size);
@@ -411,32 +413,51 @@ final class WiFiUploadServer: ObservableObject {
       dropZone.style.display='none';
       barFill.style.width='0%';
       statusEl.textContent='Uploading...';
+      statusEl.style.color='';
 
-      const xhr=new XMLHttpRequest();
-      const fd=new FormData();
-      fd.append('file',file);
+      try{
+        const xhr=new XMLHttpRequest();
+        xhr.timeout=0;
+        const fd=new FormData();
+        fd.append('file',file);
 
-      xhr.upload.onprogress=e=>{
-        if(e.lengthComputable){
-          const pct=Math.round(e.loaded/e.total*100);
-          barFill.style.width=pct+'%';
-          statusEl.textContent='Uploading... '+pct+'%';
-        }
-      };
-      xhr.onload=()=>{
-        barFill.style.width='100%';
-        statusEl.textContent='✓ Upload complete!';
-        statusEl.style.color='#e63946';
-        setTimeout(()=>{
-          progressWrap.classList.remove('active');
-          dropZone.style.display='';
-          statusEl.style.color='';
-          fileInput.value='';
-        },2500);
-      };
-      xhr.onerror=()=>{statusEl.textContent='Upload failed. Try again.'};
-      xhr.open('POST','/upload');
-      xhr.send(fd);
+        xhr.upload.onprogress=e=>{
+          if(e.lengthComputable){
+            const pct=Math.round(e.loaded/e.total*100);
+            barFill.style.width=pct+'%';
+            statusEl.textContent='Uploading... '+pct+'%';
+          }
+        };
+        xhr.onload=()=>{
+          if(xhr.status>=200&&xhr.status<300){
+            barFill.style.width='100%';
+            statusEl.textContent='\\u2713 Upload complete!';
+            statusEl.style.color='#e63946';
+            setTimeout(()=>{
+              progressWrap.classList.remove('active');
+              dropZone.style.display='';
+              statusEl.style.color='';
+              fileInput.value='';
+            },2500);
+          }else{
+            showErr('Server error: '+xhr.status+' '+xhr.statusText);
+          }
+        };
+        xhr.onerror=()=>{
+          showErr('Network error (readyState='+xhr.readyState+', status='+xhr.status+')');
+        };
+        xhr.onabort=()=>{showErr('Upload aborted')};
+        xhr.ontimeout=()=>{showErr('Upload timed out')};
+        xhr.onreadystatechange=()=>{
+          if(xhr.readyState===4&&xhr.status===0){
+            showErr('Connection refused/reset (state=4,status=0)');
+          }
+        };
+        xhr.open('POST',window.location.origin+'/');
+        xhr.send(fd);
+      }catch(e){
+        showErr('JS Error: '+e.message);
+      }
     }
 
     function formatSize(b){
