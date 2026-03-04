@@ -1720,7 +1720,8 @@ struct ContentView: View {
     private func isAppInLibrary(_ app: RepoApp) -> Bool {
         let bid = app.bundleID ?? app.bundleIdentifier ?? ""
         guard !bid.isEmpty else { return false }
-        return appsManager.apps.contains { $0.bundleIdentifier == bid }
+        let ver = app.resolvedVersion ?? ""
+        return appsManager.apps.contains { $0.bundleIdentifier == bid && (ver.isEmpty || $0.version == ver) }
     }
 
     // MARK: - Search Results
@@ -1805,12 +1806,19 @@ struct ContentView: View {
                     withAnimation { isSearching = false; searchText = "" }
                     selectedTab = .sign
                 } label: {
-                    Text(L("SIGN"))
-                        .font(.system(size: 12, weight: .heavy))
-                        .foregroundColor(.scarletRed)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 7)
-                        .background(Capsule().fill(Color.scarletRed.opacity(0.12)))
+                    Text(L("Sign"))
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.6))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.white.opacity(0.04))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                                )
+                        )
                 }
                 .buttonStyle(.plain)
             } else {
