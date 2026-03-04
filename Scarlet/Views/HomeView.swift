@@ -107,7 +107,7 @@ struct HomeView: View {
             ZStack(alignment: .top) {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
-                    Spacer().frame(height: 2)
+
 
                     // Loading progress indicator
                     if repoService.isLoading {
@@ -258,22 +258,24 @@ struct HomeView: View {
                             )
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 22))
+                    .overlay(alignment: .bottom) {
+                        if apps.count > 1 {
+                            HStack(spacing: 5) {
+                                ForEach(0..<apps.count, id: \.self) { i in
+                                    Capsule()
+                                        .fill(i == currentSlide ? Color.scarletRed : Color.white.opacity(0.15))
+                                        .frame(width: i == currentSlide ? 18 : 5, height: 5)
+                                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentSlide)
+                                }
+                            }
+                            .padding(.bottom, 10)
+                        }
+                    }
                     .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentSlide)
                     .onReceive(slideTimer) { _ in
                         guard apps.count > 1 else { return }
                         withAnimation(.spring(response: 0.6, dampingFraction: 0.75)) {
                             currentSlide = (currentSlide + 1) % apps.count
-                        }
-                    }
-
-                    if apps.count > 1 {
-                        HStack(spacing: 5) {
-                            ForEach(0..<apps.count, id: \.self) { i in
-                                Capsule()
-                                    .fill(i == currentSlide ? Color.scarletRed : Color.white.opacity(0.15))
-                                    .frame(width: i == currentSlide ? 18 : 5, height: 5)
-                                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentSlide)
-                            }
                         }
                     }
                 }
