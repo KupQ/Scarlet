@@ -1,0 +1,243 @@
+/* ============================================
+   Scarlet — العربية (Arabic)
+   ============================================ */
+
+// ─── عام / أزرار ───
+"OK" = "موافق";
+"Cancel" = "إلغاء";
+"Delete" = "حذف";
+"Add" = "إضافة";
+"Done" = "تم";
+"Open" = "فتح";
+"Sign" = "توقيع";
+"Import" = "استيراد";
+
+// ─── الصفحة الرئيسية ───
+"Scarlet" = "Scarlet";
+"iOS App Signing" = "توقيع تطبيقات iOS";
+"Sign & Install" = "توقيع وتثبيت";
+"Powered by zsign" = "يعمل بواسطة zsign";
+"Start Signing" = "بدء التوقيع";
+"Import IPA & sign with certificate" = "استيراد IPA والتوقيع بشهادة";
+"REPOSITORIES" = "المستودعات";
+
+// ─── القائمة ───
+"Add Repo" = "إضافة مستودع";
+"Add Multiple" = "إضافة عدة";
+"Add from Clipboard" = "إضافة من الحافظة";
+
+// ─── التنبيهات ───
+"Add Repository" = "إضافة مستودع";
+"Enter the repo JSON URL" = "أدخل رابط JSON للمستودع";
+"Add Multiple Repos" = "إضافة عدة مستودعات";
+"One URL per line" = "رابط واحد لكل سطر";
+"Enter repo URLs, one per line" = "أدخل روابط المستودعات، واحد لكل سطر";
+"Add All" = "إضافة الكل";
+"Repo Error" = "خطأ في المستودع";
+
+// ─── المكتبة ───
+"Library" = "المكتبة";
+"Imported Apps" = "التطبيقات المستوردة";
+"Importing..." = "جاري الاستيراد...";
+"Extracting metadata and icon" = "استخراج البيانات والأيقونة";
+"No Apps Imported" = "لا توجد تطبيقات مستوردة";
+"Tap + to import an IPA file" = "اضغط + لاستيراد ملف IPA";
+"Import IPA" = "استيراد IPA";
+"Downloading" = "جاري التحميل";
+"All Apps" = "جميع التطبيقات";
+
+// ─── تفاصيل المستودع ───
+"GET" = "تحميل";
+
+// ─── الشهادات ───
+"Certificates" = "الشهادات";
+"Loading certificates..." = "تحميل الشهادات...";
+"No Certificates Yet" = "لا توجد شهادات بعد";
+"Import a P12 certificate to get started" = "استيراد شهادة P12 للبدء";
+"Import Certificate" = "استيراد شهادة";
+"ACTIVE" = "نشط";
+"Local Certificate" = "شهادة محلية";
+"Delete Certificate" = "حذف الشهادة";
+"Certificate Password" = "كلمة مرور الشهادة";
+"Password" = "كلمة المرور";
+
+// ─── رقائق الشهادة ───
+"Development" = "تطوير";
+"Distribution" = "توزيع";
+"PPQ" = "PPQ";
+"PPQless" = "بدون PPQ";
+"Expired" = "منتهية الصلاحية";
+
+// ─── الإعدادات ───
+"Settings" = "الإعدادات";
+"Imported · P12" = "مستورد · P12";
+"Enter password" = "أدخل كلمة المرور";
+"Imported · mobileprovision" = "مستورد · mobileprovision";
+"Signing Options" = "خيارات التوقيع";
+"Bundle ID" = "معرّف الحزمة";
+"Display Name" = "اسم العرض";
+"Version" = "الإصدار";
+"Keep original" = "الاحتفاظ بالأصلي";
+"Zip Compression" = "ضغط ZIP";
+"0 (Store)" = "0 (بدون ضغط)";
+"1 (Fast)" = "1 (سريع)";
+"3 (Normal)" = "3 (عادي)";
+"6 (Good)" = "6 (جيد)";
+"9 (Best)" = "9 (الأفضل)";
+"Remove Plugins" = "إزالة الإضافات";
+"Strip app extensions" = "إزالة ملحقات التطبيق";
+"About" = "حول";
+"Language" = "اللغة";
+"About Scarlet" = "حول Scarlet";
+
+// ─── ورقة التوقيع ───
+"Compression" = "الضغط";
+"Certificate" = "الشهادة";
+"Tap to select" = "اضغط للاختيار";
+"Local" = "محلي";
+"No certificates available" = "لا توجد شهادات متاحة";
+"Signing Failed" = "فشل التوقيع";
+
+// ─── النتيجة ───
+"Signed Successfully" = "تم التوقيع بنجاح";
+"Your IPA has been re-signed" = "تم إعادة توقيع ملف IPA";
+"Share Signed IPA" = "مشاركة IPA الموقع";
+
+// ─── التثبيت ───
+"Install" = "تثبيت";
+"Installing" = "جاري التثبيت";
+"Sending Manifest..." = "إرسال البيان...";
+"Sending Payload..." = "إرسال البيانات...";
+"Installed ✓" = "تم التثبيت ✓";
+
+// ─── البحث ───
+"Search apps..." = "بحث عن تطبيقات...";
+
+// ─── حالة الشهادة ───
+"Checking…" = "جاري الفحص…";
+"Valid" = "صالحة";
+"Revoked" = "ملغاة";
+"Error" = "خطأ";
+
+// ─── سلاسل ديناميكية ───
+"Certificate imported: %@" = "تم استيراد الشهادة: %@";
+"Profile imported: %@" = "تم استيراد الملف: %@";
+"Import failed: %@" = "فشل الاستيراد: %@";
+"Replace Certificate" = "استبدال الشهادة";
+"Import Certificate (.p12)" = "استيراد شهادة (.p12)";
+"Replace Profile" = "استبدال الملف";
+"Import Profile (.mobileprovision)" = "استيراد ملف (.mobileprovision)";
+
+// ─── الضغط ───
+"Fastest" = "الأسرع";
+"Fast" = "سريع";
+"Normal" = "عادي";
+"Smallest" = "الأصغر";
+"Store" = "بدون ضغط";
+
+// ─── حول ───
+"Engine" = "المحرك";
+"OpenSSL" = "OpenSSL";
+"Bundled" = "مضمّن";
+
+// ─── شاشة البداية ───
+"Initializing..." = "جاري التهيئة...";
+"Checking device..." = "فحص الجهاز...";
+"Ready" = "جاهز";
+"by DebianArch64" = "by DebianArch64";
+
+// ─── متفرقات ───
+"•" = "•";
+"·" = "·";
+"Choose Language" = "اختر اللغة";
+"English" = "English";
+"Русский" = "Русский";
+"apps" = "تطبيقات";
+"Bundle" = "حزمة";
+"Level" = "مستوى";
+"Profile" = "ملف";
+"Not found" = "غير موجود";
+"None" = "لا يوجد";
+"this certificate" = "هذه الشهادة";
+"Are you sure you want to delete" = "هل أنت متأكد أنك تريد حذف";
+"Signed Successfully!" = "تم التوقيع بنجاح!";
+"No apps found" = "لم يتم العثور على تطبيقات";
+" · Local" = " · محلي";
+"App Name" = "اسم التطبيق";
+"App Documents" = "مستندات التطبيق";
+"Location" = "الموقع";
+"Signing..." = "جاري التوقيع...";
+"Unknown" = "غير معروف";
+"Unknown error" = "خطأ غير معروف";
+"Wrong password. Please try again." = "كلمة مرور خاطئة. حاول مرة أخرى.";
+
+// ─── تبويبات المكتبة ───
+"Unsigned" = "غير موقعة";
+"Signed" = "موقعة";
+"No Signed Apps" = "لا توجد تطبيقات موقعة";
+"Signed apps will appear here" = "ستظهر التطبيقات الموقعة هنا";
+
+// ─── التفضيلات ───
+"Preferences" = "التفضيلات";
+"Notifications" = "الإشعارات";
+"Cache" = "ذاكرة التخزين";
+"Clear Cache" = "مسح ذاكرة التخزين";
+
+// ─── الإشعارات ───
+"Signing Complete" = "اكتمل التوقيع";
+"%@ has been signed successfully" = "تم توقيع %@ بنجاح";
+"Download Complete" = "اكتمل التحميل";
+"%@ has been downloaded" = "تم تحميل %@";
+
+// ─── التثبيت ───
+"Installing..." = "جاري التثبيت...";
+"File" = "ملف";
+"Size" = "الحجم";
+
+// ─── أخطاء ───
+"No certificate available" = "لا توجد شهادة متاحة";
+"Could not determine device UDID" = "تعذر تحديد UDID الجهاز";
+
+// ─── شكر ───
+"Made with" = "صنع بـ";
+"for the community" = "للمجتمع";
+"Developer" = "المطور";
+"Website" = "الموقع";
+
+// ─── تسميات ───
+"Share" = "مشاركة";
+"DEFAULT" = "افتراضي";
+"LOCAL" = "محلي";
+"No Certificates" = "لا توجد شهادات";
+"Hold to open" = "اضغط مطولاً للفتح";
+"Loading sources... %@/%@" = "تحميل المصادر... %@/%@";
+"Paste a direct link to an IPA file" = "الصق رابطاً مباشراً لملف IPA";
+
+// ─── تقدم التوقيع ───
+"Extracting IPA..." = "استخراج IPA...";
+"Signing binaries..." = "توقيع الملفات...";
+"Re-packaging..." = "إعادة التعبئة...";
+"Finishing up..." = "جاري الإنهاء...";
+
+// ─── أخطاء الشهادة ───
+"Enter the password for %@" = "أدخل كلمة المرور لـ %@";
+"Could not read P12 file" = "تعذر قراءة ملف P12";
+"Can't read file" = "تعذر قراءة الملف";
+"Can't parse P12" = "تعذر تحليل P12";
+"No P12 data" = "لا توجد بيانات P12";
+
+// ─── WiFi ───
+"WiFi Upload" = "رفع WiFi";
+"Start Server" = "بدء الخادم";
+"Stop Server" = "إيقاف الخادم";
+"Server is running" = "الخادم يعمل";
+"Share files over WiFi" = "مشاركة الملفات عبر WiFi";
+
+// ─── مفاتيح إضافية ───
+"Update Channel" = "قناة التحديث";
+"Download" = "تحميل";
+"Download from URL" = "تحميل من رابط";
+"Import from Files" = "استيراد من الملفات";
+"Fetch from Server" = "جلب من الخادم";
+"Remove Repo" = "إزالة المستودع";
+"Total" = "الإجمالي";

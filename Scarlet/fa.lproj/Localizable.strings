@@ -1,0 +1,243 @@
+/* ============================================
+   Scarlet — فارسی (Persian)
+   ============================================ */
+
+// ─── عمومی / دکمه‌ها ───
+"OK" = "تأیید";
+"Cancel" = "لغو";
+"Delete" = "حذف";
+"Add" = "افزودن";
+"Done" = "انجام شد";
+"Open" = "باز کردن";
+"Sign" = "امضا";
+"Import" = "وارد کردن";
+
+// ─── صفحه اصلی ───
+"Scarlet" = "Scarlet";
+"iOS App Signing" = "امضای برنامه‌های iOS";
+"Sign & Install" = "امضا و نصب";
+"Powered by zsign" = "با پشتیبانی zsign";
+"Start Signing" = "شروع امضا";
+"Import IPA & sign with certificate" = "وارد کردن IPA و امضا با گواهینامه";
+"REPOSITORIES" = "مخازن";
+
+// ─── منو ───
+"Add Repo" = "افزودن مخزن";
+"Add Multiple" = "افزودن چندتایی";
+"Add from Clipboard" = "افزودن از کلیپ‌بورد";
+
+// ─── هشدارها ───
+"Add Repository" = "افزودن مخزن";
+"Enter the repo JSON URL" = "آدرس JSON مخزن را وارد کنید";
+"Add Multiple Repos" = "افزودن چند مخزن";
+"One URL per line" = "هر خط یک آدرس";
+"Enter repo URLs, one per line" = "آدرس‌های مخزن را وارد کنید، هر خط یکی";
+"Add All" = "افزودن همه";
+"Repo Error" = "خطای مخزن";
+
+// ─── کتابخانه ───
+"Library" = "کتابخانه";
+"Imported Apps" = "برنامه‌های وارد شده";
+"Importing..." = "در حال وارد کردن...";
+"Extracting metadata and icon" = "استخراج اطلاعات و آیکون";
+"No Apps Imported" = "برنامه‌ای وارد نشده";
+"Tap + to import an IPA file" = "برای وارد کردن IPA روی + بزنید";
+"Import IPA" = "وارد کردن IPA";
+"Downloading" = "در حال دانلود";
+"All Apps" = "همه برنامه‌ها";
+
+// ─── جزئیات مخزن ───
+"GET" = "دریافت";
+
+// ─── گواهینامه‌ها ───
+"Certificates" = "گواهینامه‌ها";
+"Loading certificates..." = "بارگذاری گواهینامه‌ها...";
+"No Certificates Yet" = "هنوز گواهینامه‌ای نیست";
+"Import a P12 certificate to get started" = "برای شروع یک گواهینامه P12 وارد کنید";
+"Import Certificate" = "وارد کردن گواهینامه";
+"ACTIVE" = "فعال";
+"Local Certificate" = "گواهینامه محلی";
+"Delete Certificate" = "حذف گواهینامه";
+"Certificate Password" = "رمز گواهینامه";
+"Password" = "رمز عبور";
+
+// ─── برچسب‌های گواهینامه ───
+"Development" = "توسعه";
+"Distribution" = "توزیع";
+"PPQ" = "PPQ";
+"PPQless" = "بدون PPQ";
+"Expired" = "منقضی شده";
+
+// ─── تنظیمات ───
+"Settings" = "تنظیمات";
+"Imported · P12" = "وارد شده · P12";
+"Enter password" = "رمز را وارد کنید";
+"Imported · mobileprovision" = "وارد شده · mobileprovision";
+"Signing Options" = "گزینه‌های امضا";
+"Bundle ID" = "شناسه بسته";
+"Display Name" = "نام نمایشی";
+"Version" = "نسخه";
+"Keep original" = "حفظ اصلی";
+"Zip Compression" = "فشرده‌سازی ZIP";
+"0 (Store)" = "0 (بدون فشرده‌سازی)";
+"1 (Fast)" = "1 (سریع)";
+"3 (Normal)" = "3 (عادی)";
+"6 (Good)" = "6 (خوب)";
+"9 (Best)" = "9 (بهترین)";
+"Remove Plugins" = "حذف پلاگین‌ها";
+"Strip app extensions" = "حذف افزونه‌های برنامه";
+"About" = "درباره";
+"Language" = "زبان";
+"About Scarlet" = "درباره Scarlet";
+
+// ─── صفحه امضا ───
+"Compression" = "فشرده‌سازی";
+"Certificate" = "گواهینامه";
+"Tap to select" = "برای انتخاب بزنید";
+"Local" = "محلی";
+"No certificates available" = "گواهینامه‌ای موجود نیست";
+"Signing Failed" = "امضا ناموفق";
+
+// ─── نتیجه ───
+"Signed Successfully" = "با موفقیت امضا شد";
+"Your IPA has been re-signed" = "فایل IPA شما دوباره امضا شد";
+"Share Signed IPA" = "اشتراک‌گذاری IPA امضا شده";
+
+// ─── نصب ───
+"Install" = "نصب";
+"Installing" = "در حال نصب";
+"Sending Manifest..." = "ارسال مانیفست...";
+"Sending Payload..." = "ارسال داده‌ها...";
+"Installed ✓" = "نصب شد ✓";
+
+// ─── جستجو ───
+"Search apps..." = "جستجوی برنامه‌ها...";
+
+// ─── وضعیت گواهینامه ───
+"Checking…" = "در حال بررسی…";
+"Valid" = "معتبر";
+"Revoked" = "لغو شده";
+"Error" = "خطا";
+
+// ─── رشته‌های پویا ───
+"Certificate imported: %@" = "گواهینامه وارد شد: %@";
+"Profile imported: %@" = "پروفایل وارد شد: %@";
+"Import failed: %@" = "خطا در وارد کردن: %@";
+"Replace Certificate" = "جایگزینی گواهینامه";
+"Import Certificate (.p12)" = "وارد کردن گواهینامه (.p12)";
+"Replace Profile" = "جایگزینی پروفایل";
+"Import Profile (.mobileprovision)" = "وارد کردن پروفایل (.mobileprovision)";
+
+// ─── فشرده‌سازی ───
+"Fastest" = "سریع‌ترین";
+"Fast" = "سریع";
+"Normal" = "عادی";
+"Smallest" = "کوچک‌ترین";
+"Store" = "بدون فشرده‌سازی";
+
+// ─── درباره ───
+"Engine" = "موتور";
+"OpenSSL" = "OpenSSL";
+"Bundled" = "همراه";
+
+// ─── صفحه شروع ───
+"Initializing..." = "در حال آماده‌سازی...";
+"Checking device..." = "بررسی دستگاه...";
+"Ready" = "آماده";
+"by DebianArch64" = "by DebianArch64";
+
+// ─── متفرقه ───
+"•" = "•";
+"·" = "·";
+"Choose Language" = "انتخاب زبان";
+"English" = "English";
+"Русский" = "Русский";
+"apps" = "برنامه";
+"Bundle" = "بسته";
+"Level" = "سطح";
+"Profile" = "پروفایل";
+"Not found" = "یافت نشد";
+"None" = "هیچ";
+"this certificate" = "این گواهینامه";
+"Are you sure you want to delete" = "آیا مطمئنید که می‌خواهید حذف کنید";
+"Signed Successfully!" = "با موفقیت امضا شد!";
+"No apps found" = "برنامه‌ای یافت نشد";
+" · Local" = " · محلی";
+"App Name" = "نام برنامه";
+"App Documents" = "مستندات برنامه";
+"Location" = "مکان";
+"Signing..." = "در حال امضا...";
+"Unknown" = "ناشناخته";
+"Unknown error" = "خطای ناشناخته";
+"Wrong password. Please try again." = "رمز اشتباه است. دوباره تلاش کنید.";
+
+// ─── تب‌های کتابخانه ───
+"Unsigned" = "امضا نشده";
+"Signed" = "امضا شده";
+"No Signed Apps" = "برنامه امضا شده‌ای نیست";
+"Signed apps will appear here" = "برنامه‌های امضا شده اینجا نمایش داده می‌شوند";
+
+// ─── ترجیحات ───
+"Preferences" = "ترجیحات";
+"Notifications" = "اعلان‌ها";
+"Cache" = "حافظه پنهان";
+"Clear Cache" = "پاک کردن حافظه پنهان";
+
+// ─── اعلان‌ها ───
+"Signing Complete" = "امضا کامل شد";
+"%@ has been signed successfully" = "%@ با موفقیت امضا شد";
+"Download Complete" = "دانلود کامل شد";
+"%@ has been downloaded" = "%@ دانلود شد";
+
+// ─── نصب ───
+"Installing..." = "در حال نصب...";
+"File" = "فایل";
+"Size" = "حجم";
+
+// ─── خطاها ───
+"No certificate available" = "گواهینامه‌ای موجود نیست";
+"Could not determine device UDID" = "تعیین UDID دستگاه ممکن نشد";
+
+// ─── اعتبار ───
+"Made with" = "ساخته شده با";
+"for the community" = "برای جامعه";
+"Developer" = "توسعه‌دهنده";
+"Website" = "وبسایت";
+
+// ─── برچسب‌ها ───
+"Share" = "اشتراک‌گذاری";
+"DEFAULT" = "پیش‌فرض";
+"LOCAL" = "محلی";
+"No Certificates" = "بدون گواهینامه";
+"Hold to open" = "نگه دارید تا باز شود";
+"Loading sources... %@/%@" = "بارگذاری منابع... %@/%@";
+"Paste a direct link to an IPA file" = "لینک مستقیم فایل IPA را بچسبانید";
+
+// ─── پیشرفت امضا ───
+"Extracting IPA..." = "استخراج IPA...";
+"Signing binaries..." = "امضای فایل‌ها...";
+"Re-packaging..." = "بسته‌بندی مجدد...";
+"Finishing up..." = "در حال اتمام...";
+
+// ─── خطاهای گواهینامه ───
+"Enter the password for %@" = "رمز عبور %@ را وارد کنید";
+"Could not read P12 file" = "خواندن فایل P12 ممکن نشد";
+"Can't read file" = "خواندن فایل ممکن نیست";
+"Can't parse P12" = "تحلیل P12 ممکن نیست";
+"No P12 data" = "داده P12 وجود ندارد";
+
+// ─── WiFi ───
+"WiFi Upload" = "آپلود WiFi";
+"Start Server" = "شروع سرور";
+"Stop Server" = "توقف سرور";
+"Server is running" = "سرور در حال اجراست";
+"Share files over WiFi" = "اشتراک فایل از طریق WiFi";
+
+// ─── کلیدهای اضافی ───
+"Update Channel" = "کانال به‌روزرسانی";
+"Download" = "دانلود";
+"Download from URL" = "دانلود از آدرس";
+"Import from Files" = "وارد کردن از فایل‌ها";
+"Fetch from Server" = "دریافت از سرور";
+"Remove Repo" = "حذف مخزن";
+"Total" = "مجموع";

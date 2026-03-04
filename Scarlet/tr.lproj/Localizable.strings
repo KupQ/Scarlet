@@ -1,0 +1,243 @@
+/* ============================================
+   Scarlet — Türkçe (Turkish)
+   ============================================ */
+
+// ─── Genel / Düğmeler ───
+"OK" = "Tamam";
+"Cancel" = "İptal";
+"Delete" = "Sil";
+"Add" = "Ekle";
+"Done" = "Bitti";
+"Open" = "Aç";
+"Sign" = "İmzala";
+"Import" = "İçe Aktar";
+
+// ─── Ana Sayfa ───
+"Scarlet" = "Scarlet";
+"iOS App Signing" = "iOS Uygulama İmzalama";
+"Sign & Install" = "İmzala ve Kur";
+"Powered by zsign" = "zsign ile geliştirildi";
+"Start Signing" = "İmzalamayı Başlat";
+"Import IPA & sign with certificate" = "IPA içe aktar ve sertifika ile imzala";
+"REPOSITORIES" = "DEPOLAR";
+
+// ─── Menü ───
+"Add Repo" = "Depo Ekle";
+"Add Multiple" = "Birden Fazla Ekle";
+"Add from Clipboard" = "Panodan Ekle";
+
+// ─── Uyarılar ───
+"Add Repository" = "Depo Ekle";
+"Enter the repo JSON URL" = "Depo JSON URL'sini girin";
+"Add Multiple Repos" = "Birden Fazla Depo Ekle";
+"One URL per line" = "Her satıra bir URL";
+"Enter repo URLs, one per line" = "Depo URL'lerini girin, her satıra bir tane";
+"Add All" = "Tümünü Ekle";
+"Repo Error" = "Depo Hatası";
+
+// ─── Kütüphane ───
+"Library" = "Kütüphane";
+"Imported Apps" = "İçe Aktarılan Uygulamalar";
+"Importing..." = "İçe aktarılıyor...";
+"Extracting metadata and icon" = "Meta veriler ve simge çıkarılıyor";
+"No Apps Imported" = "İçe Aktarılan Uygulama Yok";
+"Tap + to import an IPA file" = "IPA dosyası içe aktarmak için + öğesine dokunun";
+"Import IPA" = "IPA İçe Aktar";
+"Downloading" = "İndiriliyor";
+"All Apps" = "Tüm Uygulamalar";
+
+// ─── Depo Detayı ───
+"GET" = "İNDİR";
+
+// ─── Sertifikalar ───
+"Certificates" = "Sertifikalar";
+"Loading certificates..." = "Sertifikalar yükleniyor...";
+"No Certificates Yet" = "Henüz Sertifika Yok";
+"Import a P12 certificate to get started" = "Başlamak için P12 sertifikası içe aktarın";
+"Import Certificate" = "Sertifika İçe Aktar";
+"ACTIVE" = "AKTİF";
+"Local Certificate" = "Yerel Sertifika";
+"Delete Certificate" = "Sertifikayı Sil";
+"Certificate Password" = "Sertifika Şifresi";
+"Password" = "Şifre";
+
+// ─── Sertifika Etiketleri ───
+"Development" = "Geliştirme";
+"Distribution" = "Dağıtım";
+"PPQ" = "PPQ";
+"PPQless" = "PPQ'suz";
+"Expired" = "Süresi Dolmuş";
+
+// ─── Ayarlar ───
+"Settings" = "Ayarlar";
+"Imported · P12" = "İçe Aktarıldı · P12";
+"Enter password" = "Şifreyi girin";
+"Imported · mobileprovision" = "İçe Aktarıldı · mobileprovision";
+"Signing Options" = "İmzalama Seçenekleri";
+"Bundle ID" = "Paket Kimliği";
+"Display Name" = "Görünen Ad";
+"Version" = "Sürüm";
+"Keep original" = "Orijinali koru";
+"Zip Compression" = "ZIP Sıkıştırma";
+"0 (Store)" = "0 (Sıkıştırmasız)";
+"1 (Fast)" = "1 (Hızlı)";
+"3 (Normal)" = "3 (Normal)";
+"6 (Good)" = "6 (İyi)";
+"9 (Best)" = "9 (En İyi)";
+"Remove Plugins" = "Eklentileri Kaldır";
+"Strip app extensions" = "Uygulama uzantılarını kaldır";
+"About" = "Hakkında";
+"Language" = "Dil";
+"About Scarlet" = "Scarlet Hakkında";
+
+// ─── İmzalama Sayfası ───
+"Compression" = "Sıkıştırma";
+"Certificate" = "Sertifika";
+"Tap to select" = "Seçmek için dokunun";
+"Local" = "Yerel";
+"No certificates available" = "Kullanılabilir sertifika yok";
+"Signing Failed" = "İmzalama Başarısız";
+
+// ─── Sonuç ───
+"Signed Successfully" = "Başarıyla İmzalandı";
+"Your IPA has been re-signed" = "IPA'nız yeniden imzalandı";
+"Share Signed IPA" = "İmzalı IPA'yı Paylaş";
+
+// ─── Kurulum ───
+"Install" = "Kur";
+"Installing" = "Kuruluyor";
+"Sending Manifest..." = "Manifesto gönderiliyor...";
+"Sending Payload..." = "Veri gönderiliyor...";
+"Installed ✓" = "Kuruldu ✓";
+
+// ─── Arama ───
+"Search apps..." = "Uygulama ara...";
+
+// ─── Sertifika Durumu ───
+"Checking…" = "Kontrol ediliyor…";
+"Valid" = "Geçerli";
+"Revoked" = "İptal Edilmiş";
+"Error" = "Hata";
+
+// ─── Dinamik Dizeler ───
+"Certificate imported: %@" = "Sertifika içe aktarıldı: %@";
+"Profile imported: %@" = "Profil içe aktarıldı: %@";
+"Import failed: %@" = "İçe aktarma başarısız: %@";
+"Replace Certificate" = "Sertifikayı Değiştir";
+"Import Certificate (.p12)" = "Sertifika İçe Aktar (.p12)";
+"Replace Profile" = "Profili Değiştir";
+"Import Profile (.mobileprovision)" = "Profil İçe Aktar (.mobileprovision)";
+
+// ─── Sıkıştırma ───
+"Fastest" = "En Hızlı";
+"Fast" = "Hızlı";
+"Normal" = "Normal";
+"Smallest" = "En Küçük";
+"Store" = "Sıkıştırmasız";
+
+// ─── Hakkında ───
+"Engine" = "Motor";
+"OpenSSL" = "OpenSSL";
+"Bundled" = "Dahili";
+
+// ─── Açılış ───
+"Initializing..." = "Başlatılıyor...";
+"Checking device..." = "Cihaz kontrol ediliyor...";
+"Ready" = "Hazır";
+"by DebianArch64" = "by DebianArch64";
+
+// ─── Çeşitli ───
+"•" = "•";
+"·" = "·";
+"Choose Language" = "Dil Seçin";
+"English" = "English";
+"Русский" = "Русский";
+"apps" = "uygulama";
+"Bundle" = "Paket";
+"Level" = "Seviye";
+"Profile" = "Profil";
+"Not found" = "Bulunamadı";
+"None" = "Yok";
+"this certificate" = "bu sertifika";
+"Are you sure you want to delete" = "Silmek istediğinize emin misiniz";
+"Signed Successfully!" = "Başarıyla İmzalandı!";
+"No apps found" = "Uygulama bulunamadı";
+" · Local" = " · Yerel";
+"App Name" = "Uygulama Adı";
+"App Documents" = "Uygulama Belgeleri";
+"Location" = "Konum";
+"Signing..." = "İmzalanıyor...";
+"Unknown" = "Bilinmeyen";
+"Unknown error" = "Bilinmeyen hata";
+"Wrong password. Please try again." = "Yanlış şifre. Lütfen tekrar deneyin.";
+
+// ─── Kütüphane Sekmeleri ───
+"Unsigned" = "İmzasız";
+"Signed" = "İmzalı";
+"No Signed Apps" = "İmzalı Uygulama Yok";
+"Signed apps will appear here" = "İmzalı uygulamalar burada görünecek";
+
+// ─── Tercihler ───
+"Preferences" = "Tercihler";
+"Notifications" = "Bildirimler";
+"Cache" = "Önbellek";
+"Clear Cache" = "Önbelleği Temizle";
+
+// ─── Bildirimler ───
+"Signing Complete" = "İmzalama Tamamlandı";
+"%@ has been signed successfully" = "%@ başarıyla imzalandı";
+"Download Complete" = "İndirme Tamamlandı";
+"%@ has been downloaded" = "%@ indirildi";
+
+// ─── Kurulum ───
+"Installing..." = "Kuruluyor...";
+"File" = "Dosya";
+"Size" = "Boyut";
+
+// ─── Hatalar ───
+"No certificate available" = "Kullanılabilir sertifika yok";
+"Could not determine device UDID" = "Cihaz UDID'si belirlenemedi";
+
+// ─── Teşekkür ───
+"Made with" = "İle yapıldı";
+"for the community" = "topluluk için";
+"Developer" = "Geliştirici";
+"Website" = "Web Sitesi";
+
+// ─── Etiketler ───
+"Share" = "Paylaş";
+"DEFAULT" = "VARSAYILAN";
+"LOCAL" = "YEREL";
+"No Certificates" = "Sertifika Yok";
+"Hold to open" = "Açmak için basılı tutun";
+"Loading sources... %@/%@" = "Kaynaklar yükleniyor... %@/%@";
+"Paste a direct link to an IPA file" = "IPA dosyasına doğrudan bir bağlantı yapıştırın";
+
+// ─── İmzalama İlerlemesi ───
+"Extracting IPA..." = "IPA çıkarılıyor...";
+"Signing binaries..." = "Dosyalar imzalanıyor...";
+"Re-packaging..." = "Yeniden paketleniyor...";
+"Finishing up..." = "Tamamlanıyor...";
+
+// ─── Sertifika Hataları ───
+"Enter the password for %@" = "%@ için şifreyi girin";
+"Could not read P12 file" = "P12 dosyası okunamadı";
+"Can't read file" = "Dosya okunamıyor";
+"Can't parse P12" = "P12 ayrıştırılamıyor";
+"No P12 data" = "P12 verisi yok";
+
+// ─── WiFi ───
+"WiFi Upload" = "WiFi Yükleme";
+"Start Server" = "Sunucuyu Başlat";
+"Stop Server" = "Sunucuyu Durdur";
+"Server is running" = "Sunucu çalışıyor";
+"Share files over WiFi" = "WiFi üzerinden dosya paylaşın";
+
+// ─── Ek Anahtarlar ───
+"Update Channel" = "Güncelleme Kanalı";
+"Download" = "İndir";
+"Download from URL" = "URL'den İndir";
+"Import from Files" = "Dosyalardan İçe Aktar";
+"Fetch from Server" = "Sunucudan Al";
+"Remove Repo" = "Depoyu Kaldır";
+"Total" = "Toplam";

@@ -1,0 +1,243 @@
+/* ============================================
+   Scarlet — 日本語 (Japanese)
+   ============================================ */
+
+// ─── 一般 / ボタン ───
+"OK" = "OK";
+"Cancel" = "キャンセル";
+"Delete" = "削除";
+"Add" = "追加";
+"Done" = "完了";
+"Open" = "開く";
+"Sign" = "署名";
+"Import" = "インポート";
+
+// ─── ホーム ───
+"Scarlet" = "Scarlet";
+"iOS App Signing" = "iOSアプリ署名";
+"Sign & Install" = "署名してインストール";
+"Powered by zsign" = "zsign搭載";
+"Start Signing" = "署名を開始";
+"Import IPA & sign with certificate" = "IPAをインポートして証明書で署名";
+"REPOSITORIES" = "リポジトリ";
+
+// ─── メニュー ───
+"Add Repo" = "リポジトリを追加";
+"Add Multiple" = "複数追加";
+"Add from Clipboard" = "クリップボードから追加";
+
+// ─── アラート ───
+"Add Repository" = "リポジトリを追加";
+"Enter the repo JSON URL" = "リポジトリのJSON URLを入力";
+"Add Multiple Repos" = "複数のリポジトリを追加";
+"One URL per line" = "1行に1つのURL";
+"Enter repo URLs, one per line" = "リポジトリURLを1行ずつ入力";
+"Add All" = "すべて追加";
+"Repo Error" = "リポジトリエラー";
+
+// ─── ライブラリ ───
+"Library" = "ライブラリ";
+"Imported Apps" = "インポート済みアプリ";
+"Importing..." = "インポート中...";
+"Extracting metadata and icon" = "メタデータとアイコンを抽出中";
+"No Apps Imported" = "インポートされたアプリはありません";
+"Tap + to import an IPA file" = "+をタップしてIPAファイルをインポート";
+"Import IPA" = "IPAをインポート";
+"Downloading" = "ダウンロード中";
+"All Apps" = "すべてのアプリ";
+
+// ─── リポジトリ詳細 ───
+"GET" = "入手";
+
+// ─── 証明書 ───
+"Certificates" = "証明書";
+"Loading certificates..." = "証明書を読み込み中...";
+"No Certificates Yet" = "証明書はまだありません";
+"Import a P12 certificate to get started" = "P12証明書をインポートして開始";
+"Import Certificate" = "証明書をインポート";
+"ACTIVE" = "有効";
+"Local Certificate" = "ローカル証明書";
+"Delete Certificate" = "証明書を削除";
+"Certificate Password" = "証明書パスワード";
+"Password" = "パスワード";
+
+// ─── 証明書チップ ───
+"Development" = "開発";
+"Distribution" = "配布";
+"PPQ" = "PPQ";
+"PPQless" = "PPQなし";
+"Expired" = "期限切れ";
+
+// ─── 設定 ───
+"Settings" = "設定";
+"Imported · P12" = "インポート済み · P12";
+"Enter password" = "パスワードを入力";
+"Imported · mobileprovision" = "インポート済み · mobileprovision";
+"Signing Options" = "署名オプション";
+"Bundle ID" = "バンドルID";
+"Display Name" = "表示名";
+"Version" = "バージョン";
+"Keep original" = "元のまま";
+"Zip Compression" = "ZIP圧縮";
+"0 (Store)" = "0（無圧縮）";
+"1 (Fast)" = "1（高速）";
+"3 (Normal)" = "3（標準）";
+"6 (Good)" = "6（良好）";
+"9 (Best)" = "9（最高）";
+"Remove Plugins" = "プラグインを削除";
+"Strip app extensions" = "アプリ拡張機能を削除";
+"About" = "情報";
+"Language" = "言語";
+"About Scarlet" = "Scarletについて";
+
+// ─── 署名シート ───
+"Compression" = "圧縮";
+"Certificate" = "証明書";
+"Tap to select" = "タップして選択";
+"Local" = "ローカル";
+"No certificates available" = "利用可能な証明書がありません";
+"Signing Failed" = "署名失敗";
+
+// ─── 結果 ───
+"Signed Successfully" = "署名成功";
+"Your IPA has been re-signed" = "IPAは再署名されました";
+"Share Signed IPA" = "署名済みIPAを共有";
+
+// ─── インストール ───
+"Install" = "インストール";
+"Installing" = "インストール中";
+"Sending Manifest..." = "マニフェストを送信中...";
+"Sending Payload..." = "データを送信中...";
+"Installed ✓" = "インストール完了 ✓";
+
+// ─── 検索 ───
+"Search apps..." = "アプリを検索...";
+
+// ─── 証明書ステータス ───
+"Checking…" = "確認中…";
+"Valid" = "有効";
+"Revoked" = "失効";
+"Error" = "エラー";
+
+// ─── 動的文字列 ───
+"Certificate imported: %@" = "証明書をインポートしました: %@";
+"Profile imported: %@" = "プロファイルをインポートしました: %@";
+"Import failed: %@" = "インポート失敗: %@";
+"Replace Certificate" = "証明書を置換";
+"Import Certificate (.p12)" = "証明書をインポート (.p12)";
+"Replace Profile" = "プロファイルを置換";
+"Import Profile (.mobileprovision)" = "プロファイルをインポート (.mobileprovision)";
+
+// ─── 圧縮 ───
+"Fastest" = "最速";
+"Fast" = "高速";
+"Normal" = "標準";
+"Smallest" = "最小";
+"Store" = "無圧縮";
+
+// ─── 情報 ───
+"Engine" = "エンジン";
+"OpenSSL" = "OpenSSL";
+"Bundled" = "内蔵";
+
+// ─── スプラッシュ ───
+"Initializing..." = "初期化中...";
+"Checking device..." = "デバイスを確認中...";
+"Ready" = "準備完了";
+"by DebianArch64" = "by DebianArch64";
+
+// ─── その他 ───
+"•" = "•";
+"·" = "·";
+"Choose Language" = "言語を選択";
+"English" = "English";
+"Русский" = "Русский";
+"apps" = "アプリ";
+"Bundle" = "バンドル";
+"Level" = "レベル";
+"Profile" = "プロファイル";
+"Not found" = "見つかりません";
+"None" = "なし";
+"this certificate" = "この証明書";
+"Are you sure you want to delete" = "本当に削除しますか";
+"Signed Successfully!" = "署名成功！";
+"No apps found" = "アプリが見つかりません";
+" · Local" = " · ローカル";
+"App Name" = "アプリ名";
+"App Documents" = "アプリドキュメント";
+"Location" = "場所";
+"Signing..." = "署名中...";
+"Unknown" = "不明";
+"Unknown error" = "不明なエラー";
+"Wrong password. Please try again." = "パスワードが間違っています。もう一度お試しください。";
+
+// ─── ライブラリタブ ───
+"Unsigned" = "未署名";
+"Signed" = "署名済み";
+"No Signed Apps" = "署名済みアプリなし";
+"Signed apps will appear here" = "署名済みアプリがここに表示されます";
+
+// ─── 設定 ───
+"Preferences" = "環境設定";
+"Notifications" = "通知";
+"Cache" = "キャッシュ";
+"Clear Cache" = "キャッシュをクリア";
+
+// ─── 通知 ───
+"Signing Complete" = "署名完了";
+"%@ has been signed successfully" = "%@ の署名が完了しました";
+"Download Complete" = "ダウンロード完了";
+"%@ has been downloaded" = "%@ がダウンロードされました";
+
+// ─── インストール ───
+"Installing..." = "インストール中...";
+"File" = "ファイル";
+"Size" = "サイズ";
+
+// ─── エラー ───
+"No certificate available" = "利用可能な証明書がありません";
+"Could not determine device UDID" = "デバイスUDIDを特定できませんでした";
+
+// ─── クレジット ───
+"Made with" = "作成者:";
+"for the community" = "コミュニティのために";
+"Developer" = "開発者";
+"Website" = "ウェブサイト";
+
+// ─── ラベル ───
+"Share" = "共有";
+"DEFAULT" = "デフォルト";
+"LOCAL" = "ローカル";
+"No Certificates" = "証明書なし";
+"Hold to open" = "長押しで開く";
+"Loading sources... %@/%@" = "ソースを読み込み中... %@/%@";
+"Paste a direct link to an IPA file" = "IPAファイルへの直接リンクを貼り付け";
+
+// ─── 署名の進行状況 ───
+"Extracting IPA..." = "IPAを抽出中...";
+"Signing binaries..." = "バイナリを署名中...";
+"Re-packaging..." = "再パッケージ中...";
+"Finishing up..." = "完了処理中...";
+
+// ─── 証明書エラー ───
+"Enter the password for %@" = "%@ のパスワードを入力";
+"Could not read P12 file" = "P12ファイルを読み取れませんでした";
+"Can't read file" = "ファイルを読み取れません";
+"Can't parse P12" = "P12を解析できません";
+"No P12 data" = "P12データがありません";
+
+// ─── WiFi ───
+"WiFi Upload" = "WiFiアップロード";
+"Start Server" = "サーバーを開始";
+"Stop Server" = "サーバーを停止";
+"Server is running" = "サーバー稼働中";
+"Share files over WiFi" = "WiFi経由でファイルを共有";
+
+// ─── 追加キー ───
+"Update Channel" = "更新チャンネル";
+"Download" = "ダウンロード";
+"Download from URL" = "URLからダウンロード";
+"Import from Files" = "ファイルからインポート";
+"Fetch from Server" = "サーバーから取得";
+"Remove Repo" = "リポジトリを削除";
+"Total" = "合計";

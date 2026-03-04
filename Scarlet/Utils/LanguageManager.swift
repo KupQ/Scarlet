@@ -19,7 +19,15 @@ class LanguageManager: ObservableObject {
 
     static let supportedLanguages: [AppLanguage] = [
         AppLanguage(id: "en", name: "English", flag: "🇺🇸"),
+        AppLanguage(id: "ar", name: "العربية", flag: "🇸🇦"),
+        AppLanguage(id: "es", name: "Español", flag: "🇪🇸"),
+        AppLanguage(id: "fa", name: "فارسی", flag: "🇮🇷"),
+        AppLanguage(id: "id", name: "Indonesia", flag: "🇮🇩"),
+        AppLanguage(id: "ja", name: "日本語", flag: "🇯🇵"),
+        AppLanguage(id: "ko", name: "한국어", flag: "🇰🇷"),
         AppLanguage(id: "ru", name: "Русский", flag: "🇷🇺"),
+        AppLanguage(id: "tr", name: "Türkçe", flag: "🇹🇷"),
+        AppLanguage(id: "zh-Hans", name: "中文", flag: "🇨🇳"),
     ]
 
     @Published var currentLanguage: String {
@@ -37,10 +45,18 @@ class LanguageManager: ObservableObject {
             self.currentLanguage = saved
         } else {
             // First launch — detect device language, fall back to English
-            let supportedCodes = Self.supportedLanguages.map { $0.id }
+            let supportedCodes = Set(Self.supportedLanguages.map { $0.id })
             let deviceLang = Locale.preferredLanguages.first ?? "en"
             let langCode = String(deviceLang.prefix(2)) // e.g. "ru-US" → "ru"
-            self.currentLanguage = supportedCodes.contains(langCode) ? langCode : "en"
+
+            if langCode == "zh" {
+                // Chinese — map to simplified
+                self.currentLanguage = "zh-Hans"
+            } else if supportedCodes.contains(langCode) {
+                self.currentLanguage = langCode
+            } else {
+                self.currentLanguage = "en"
+            }
             UserDefaults.standard.set(self.currentLanguage, forKey: "app_language")
         }
         loadBundle()

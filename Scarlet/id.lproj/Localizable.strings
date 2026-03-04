@@ -1,0 +1,243 @@
+/* ============================================
+   Scarlet — Bahasa Indonesia (Indonesian)
+   ============================================ */
+
+// ─── Umum / Tombol ───
+"OK" = "OK";
+"Cancel" = "Batal";
+"Delete" = "Hapus";
+"Add" = "Tambah";
+"Done" = "Selesai";
+"Open" = "Buka";
+"Sign" = "Tanda Tangan";
+"Import" = "Impor";
+
+// ─── Beranda ───
+"Scarlet" = "Scarlet";
+"iOS App Signing" = "Penandatanganan Aplikasi iOS";
+"Sign & Install" = "Tanda Tangan & Pasang";
+"Powered by zsign" = "Didukung oleh zsign";
+"Start Signing" = "Mulai Menandatangani";
+"Import IPA & sign with certificate" = "Impor IPA & tanda tangan dengan sertifikat";
+"REPOSITORIES" = "REPOSITORI";
+
+// ─── Menu ───
+"Add Repo" = "Tambah Repo";
+"Add Multiple" = "Tambah Banyak";
+"Add from Clipboard" = "Tambah dari Clipboard";
+
+// ─── Peringatan ───
+"Add Repository" = "Tambah Repositori";
+"Enter the repo JSON URL" = "Masukkan URL JSON repositori";
+"Add Multiple Repos" = "Tambah Banyak Repositori";
+"One URL per line" = "Satu URL per baris";
+"Enter repo URLs, one per line" = "Masukkan URL repo, satu per baris";
+"Add All" = "Tambah Semua";
+"Repo Error" = "Kesalahan Repo";
+
+// ─── Perpustakaan ───
+"Library" = "Perpustakaan";
+"Imported Apps" = "Aplikasi yang Diimpor";
+"Importing..." = "Mengimpor...";
+"Extracting metadata and icon" = "Mengekstrak metadata dan ikon";
+"No Apps Imported" = "Belum Ada Aplikasi";
+"Tap + to import an IPA file" = "Ketuk + untuk mengimpor file IPA";
+"Import IPA" = "Impor IPA";
+"Downloading" = "Mengunduh";
+"All Apps" = "Semua Aplikasi";
+
+// ─── Detail Repo ───
+"GET" = "UNDUH";
+
+// ─── Sertifikat ───
+"Certificates" = "Sertifikat";
+"Loading certificates..." = "Memuat sertifikat...";
+"No Certificates Yet" = "Belum Ada Sertifikat";
+"Import a P12 certificate to get started" = "Impor sertifikat P12 untuk memulai";
+"Import Certificate" = "Impor Sertifikat";
+"ACTIVE" = "AKTIF";
+"Local Certificate" = "Sertifikat Lokal";
+"Delete Certificate" = "Hapus Sertifikat";
+"Certificate Password" = "Kata Sandi Sertifikat";
+"Password" = "Kata Sandi";
+
+// ─── Chip Sertifikat ───
+"Development" = "Pengembangan";
+"Distribution" = "Distribusi";
+"PPQ" = "PPQ";
+"PPQless" = "Tanpa PPQ";
+"Expired" = "Kedaluwarsa";
+
+// ─── Pengaturan ───
+"Settings" = "Pengaturan";
+"Imported · P12" = "Diimpor · P12";
+"Enter password" = "Masukkan kata sandi";
+"Imported · mobileprovision" = "Diimpor · mobileprovision";
+"Signing Options" = "Opsi Penandatanganan";
+"Bundle ID" = "Bundle ID";
+"Display Name" = "Nama Tampilan";
+"Version" = "Versi";
+"Keep original" = "Pertahankan asli";
+"Zip Compression" = "Kompresi ZIP";
+"0 (Store)" = "0 (Simpan)";
+"1 (Fast)" = "1 (Cepat)";
+"3 (Normal)" = "3 (Normal)";
+"6 (Good)" = "6 (Bagus)";
+"9 (Best)" = "9 (Terbaik)";
+"Remove Plugins" = "Hapus Plugin";
+"Strip app extensions" = "Hapus ekstensi aplikasi";
+"About" = "Tentang";
+"Language" = "Bahasa";
+"About Scarlet" = "Tentang Scarlet";
+
+// ─── Lembar Penandatanganan ───
+"Compression" = "Kompresi";
+"Certificate" = "Sertifikat";
+"Tap to select" = "Ketuk untuk memilih";
+"Local" = "Lokal";
+"No certificates available" = "Tidak ada sertifikat tersedia";
+"Signing Failed" = "Penandatanganan Gagal";
+
+// ─── Hasil ───
+"Signed Successfully" = "Berhasil Ditandatangani";
+"Your IPA has been re-signed" = "IPA Anda telah ditandatangani ulang";
+"Share Signed IPA" = "Bagikan IPA Tertandatangan";
+
+// ─── Pemasangan ───
+"Install" = "Pasang";
+"Installing" = "Memasang";
+"Sending Manifest..." = "Mengirim Manifes...";
+"Sending Payload..." = "Mengirim Data...";
+"Installed ✓" = "Terpasang ✓";
+
+// ─── Pencarian ───
+"Search apps..." = "Cari aplikasi...";
+
+// ─── Status Sertifikat ───
+"Checking…" = "Memeriksa…";
+"Valid" = "Valid";
+"Revoked" = "Dicabut";
+"Error" = "Kesalahan";
+
+// ─── String Dinamis ───
+"Certificate imported: %@" = "Sertifikat diimpor: %@";
+"Profile imported: %@" = "Profil diimpor: %@";
+"Import failed: %@" = "Impor gagal: %@";
+"Replace Certificate" = "Ganti Sertifikat";
+"Import Certificate (.p12)" = "Impor Sertifikat (.p12)";
+"Replace Profile" = "Ganti Profil";
+"Import Profile (.mobileprovision)" = "Impor Profil (.mobileprovision)";
+
+// ─── Kompresi ───
+"Fastest" = "Tercepat";
+"Fast" = "Cepat";
+"Normal" = "Normal";
+"Smallest" = "Terkecil";
+"Store" = "Simpan";
+
+// ─── Tentang ───
+"Engine" = "Mesin";
+"OpenSSL" = "OpenSSL";
+"Bundled" = "Terpasang";
+
+// ─── Splash ───
+"Initializing..." = "Menginisialisasi...";
+"Checking device..." = "Memeriksa perangkat...";
+"Ready" = "Siap";
+"by DebianArch64" = "by DebianArch64";
+
+// ─── Lain-lain ───
+"•" = "•";
+"·" = "·";
+"Choose Language" = "Pilih Bahasa";
+"English" = "English";
+"Русский" = "Русский";
+"apps" = "aplikasi";
+"Bundle" = "Paket";
+"Level" = "Level";
+"Profile" = "Profil";
+"Not found" = "Tidak ditemukan";
+"None" = "Tidak ada";
+"this certificate" = "sertifikat ini";
+"Are you sure you want to delete" = "Apakah Anda yakin ingin menghapus";
+"Signed Successfully!" = "Berhasil Ditandatangani!";
+"No apps found" = "Aplikasi tidak ditemukan";
+" · Local" = " · Lokal";
+"App Name" = "Nama Aplikasi";
+"App Documents" = "Dokumen Aplikasi";
+"Location" = "Lokasi";
+"Signing..." = "Menandatangani...";
+"Unknown" = "Tidak diketahui";
+"Unknown error" = "Kesalahan tidak diketahui";
+"Wrong password. Please try again." = "Kata sandi salah. Silakan coba lagi.";
+
+// ─── Tab Perpustakaan ───
+"Unsigned" = "Belum Ditandatangani";
+"Signed" = "Tertandatangan";
+"No Signed Apps" = "Belum Ada Aplikasi Tertandatangan";
+"Signed apps will appear here" = "Aplikasi tertandatangan akan muncul di sini";
+
+// ─── Preferensi ───
+"Preferences" = "Preferensi";
+"Notifications" = "Notifikasi";
+"Cache" = "Cache";
+"Clear Cache" = "Bersihkan Cache";
+
+// ─── Notifikasi ───
+"Signing Complete" = "Penandatanganan Selesai";
+"%@ has been signed successfully" = "%@ berhasil ditandatangani";
+"Download Complete" = "Unduhan Selesai";
+"%@ has been downloaded" = "%@ telah diunduh";
+
+// ─── Pemasangan ───
+"Installing..." = "Memasang...";
+"File" = "File";
+"Size" = "Ukuran";
+
+// ─── Kesalahan ───
+"No certificate available" = "Tidak ada sertifikat tersedia";
+"Could not determine device UDID" = "Tidak dapat menentukan UDID perangkat";
+
+// ─── Kredit ───
+"Made with" = "Dibuat dengan";
+"for the community" = "untuk komunitas";
+"Developer" = "Pengembang";
+"Website" = "Situs Web";
+
+// ─── Label ───
+"Share" = "Bagikan";
+"DEFAULT" = "DEFAULT";
+"LOCAL" = "LOKAL";
+"No Certificates" = "Tidak Ada Sertifikat";
+"Hold to open" = "Tahan untuk membuka";
+"Loading sources... %@/%@" = "Memuat sumber... %@/%@";
+"Paste a direct link to an IPA file" = "Tempel tautan langsung ke file IPA";
+
+// ─── Progres ───
+"Extracting IPA..." = "Mengekstrak IPA...";
+"Signing binaries..." = "Menandatangani binari...";
+"Re-packaging..." = "Mengemas ulang...";
+"Finishing up..." = "Menyelesaikan...";
+
+// ─── Kesalahan Sertifikat ───
+"Enter the password for %@" = "Masukkan kata sandi untuk %@";
+"Could not read P12 file" = "Tidak dapat membaca file P12";
+"Can't read file" = "Tidak dapat membaca file";
+"Can't parse P12" = "Tidak dapat mengurai P12";
+"No P12 data" = "Tidak ada data P12";
+
+// ─── WiFi ───
+"WiFi Upload" = "Unggah WiFi";
+"Start Server" = "Mulai Server";
+"Stop Server" = "Hentikan Server";
+"Server is running" = "Server berjalan";
+"Share files over WiFi" = "Bagikan file melalui WiFi";
+
+// ─── Tambahan ───
+"Update Channel" = "Saluran Pembaruan";
+"Download" = "Unduh";
+"Download from URL" = "Unduh dari URL";
+"Import from Files" = "Impor dari File";
+"Fetch from Server" = "Ambil dari Server";
+"Remove Repo" = "Hapus Repo";
+"Total" = "Total";
