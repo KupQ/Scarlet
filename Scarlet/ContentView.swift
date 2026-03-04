@@ -1682,13 +1682,7 @@ struct ContentView: View {
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.white)
 
-                        if uploadServer.isRunning {
-                            Circle()
-                                .fill(Color.green)
-                                .frame(width: 6, height: 6)
-                                .shadow(color: .green.opacity(0.6), radius: 4)
-                                .transition(.opacity)
-                        }
+
 
                         Spacer()
 
