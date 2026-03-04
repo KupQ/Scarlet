@@ -47,6 +47,10 @@
              'A10049' = {isa = PBXBuildFile; fileRef = B10049; };
              'A10057' = {isa = PBXBuildFile; fileRef = B10057; };
              'A10058' = {isa = PBXBuildFile; fileRef = B10058; };
+             'A10059' = {isa = PBXBuildFile; fileRef = B10059; };
+             'A10060F' = {isa = PBXBuildFile; fileRef = B10060F; };
+             'A10061' = {isa = PBXBuildFile; fileRef = B10061; };
+             'A10062' = {isa = PBXBuildFile; fileRef = B10062; };
              'A10050' = {isa = PBXBuildFile; fileRef = B10050; };
              'A10051' = {isa = PBXBuildFile; fileRef = B10051; };
              'A10052' = {isa = PBXBuildFile; fileRef = B10052; };
@@ -134,6 +138,10 @@
              B10049 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
              B10057 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = zh-Hans.lproj/Localizable.strings; sourceTree = "<group>"; };
              B10058 = {isa = PBXFileReference; lastKnownFileType = image.png; path = scarlet_extension.png; sourceTree = "<group>"; };
+             B10059 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
+             B10060F = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
+             B10061 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+             B10062 = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = vi.lproj/Localizable.strings; sourceTree = "<group>"; };
              B10050 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignedAppsManager.swift; sourceTree = "<group>"; };
              B10051 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationHelper.swift; sourceTree = "<group>"; };
              B10052 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertFetcher.swift; sourceTree = "<group>"; };
@@ -180,6 +188,10 @@
                             B10049,
                             B10057,
                             B10058,
+                            B10059,
+                            B10060F,
+                            B10061,
+                            B10062,
 				B10001,
 				B10002,
 				B10003,
@@ -364,6 +376,10 @@
                             'A10049',
                             'A10057',
                             'A10058',
+                            'A10059',
+                            'A10060F',
+                            'A10061',
+                            'A10062',
                             'A10060',
                             'A10088',
 			);

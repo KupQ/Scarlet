@@ -20,13 +20,17 @@ class LanguageManager: ObservableObject {
     static let supportedLanguages: [AppLanguage] = [
         AppLanguage(id: "en", name: "English", flag: "🇺🇸"),
         AppLanguage(id: "ar", name: "العربية", flag: "🇸🇦"),
+        AppLanguage(id: "de", name: "Deutsch", flag: "🇩🇪"),
         AppLanguage(id: "es", name: "Español", flag: "🇪🇸"),
         AppLanguage(id: "fa", name: "فارسی", flag: "🇮🇷"),
+        AppLanguage(id: "fr", name: "Français", flag: "🇫🇷"),
         AppLanguage(id: "id", name: "Indonesia", flag: "🇮🇩"),
         AppLanguage(id: "ja", name: "日本語", flag: "🇯🇵"),
         AppLanguage(id: "ko", name: "한국어", flag: "🇰🇷"),
+        AppLanguage(id: "pt", name: "Português", flag: "🇧🇷"),
         AppLanguage(id: "ru", name: "Русский", flag: "🇷🇺"),
         AppLanguage(id: "tr", name: "Türkçe", flag: "🇹🇷"),
+        AppLanguage(id: "vi", name: "Tiếng Việt", flag: "🇻🇳"),
         AppLanguage(id: "zh-Hans", name: "中文", flag: "🇨🇳"),
     ]
 

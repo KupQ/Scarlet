@@ -1,0 +1,243 @@
+/* ============================================
+   Scarlet — Deutsch (German)
+   ============================================ */
+
+// ─── Allgemein / Buttons ───
+"OK" = "OK";
+"Cancel" = "Abbrechen";
+"Delete" = "Löschen";
+"Add" = "Hinzufügen";
+"Done" = "Fertig";
+"Open" = "Öffnen";
+"Sign" = "Signieren";
+"Import" = "Importieren";
+
+// ─── Startseite ───
+"Scarlet" = "Scarlet";
+"iOS App Signing" = "iOS App-Signierung";
+"Sign & Install" = "Signieren & Installieren";
+"Powered by zsign" = "Unterstützt durch zsign";
+"Start Signing" = "Signierung starten";
+"Import IPA & sign with certificate" = "IPA importieren & mit Zertifikat signieren";
+"REPOSITORIES" = "REPOSITORYS";
+
+// ─── Menü ───
+"Add Repo" = "Repo hinzufügen";
+"Add Multiple" = "Mehrere hinzufügen";
+"Add from Clipboard" = "Aus Zwischenablage hinzufügen";
+
+// ─── Warnungen ───
+"Add Repository" = "Repository hinzufügen";
+"Enter the repo JSON URL" = "Repository-JSON-URL eingeben";
+"Add Multiple Repos" = "Mehrere Repositorys hinzufügen";
+"One URL per line" = "Eine URL pro Zeile";
+"Enter repo URLs, one per line" = "Repo-URLs eingeben, eine pro Zeile";
+"Add All" = "Alle hinzufügen";
+"Repo Error" = "Repo-Fehler";
+
+// ─── Bibliothek ───
+"Library" = "Bibliothek";
+"Imported Apps" = "Importierte Apps";
+"Importing..." = "Importieren...";
+"Extracting metadata and icon" = "Metadaten und Symbol werden extrahiert";
+"No Apps Imported" = "Keine importierten Apps";
+"Tap + to import an IPA file" = "Tippen Sie +, um eine IPA-Datei zu importieren";
+"Import IPA" = "IPA importieren";
+"Downloading" = "Herunterladen";
+"All Apps" = "Alle Apps";
+
+// ─── Repo-Detail ───
+"GET" = "LADEN";
+
+// ─── Zertifikate ───
+"Certificates" = "Zertifikate";
+"Loading certificates..." = "Zertifikate werden geladen...";
+"No Certificates Yet" = "Noch keine Zertifikate";
+"Import a P12 certificate to get started" = "P12-Zertifikat importieren, um zu starten";
+"Import Certificate" = "Zertifikat importieren";
+"ACTIVE" = "AKTIV";
+"Local Certificate" = "Lokales Zertifikat";
+"Delete Certificate" = "Zertifikat löschen";
+"Certificate Password" = "Zertifikatspasswort";
+"Password" = "Passwort";
+
+// ─── Zertifikat-Chips ───
+"Development" = "Entwicklung";
+"Distribution" = "Verteilung";
+"PPQ" = "PPQ";
+"PPQless" = "Ohne PPQ";
+"Expired" = "Abgelaufen";
+
+// ─── Einstellungen ───
+"Settings" = "Einstellungen";
+"Imported · P12" = "Importiert · P12";
+"Enter password" = "Passwort eingeben";
+"Imported · mobileprovision" = "Importiert · mobileprovision";
+"Signing Options" = "Signieroptionen";
+"Bundle ID" = "Bundle-ID";
+"Display Name" = "Anzeigename";
+"Version" = "Version";
+"Keep original" = "Original beibehalten";
+"Zip Compression" = "ZIP-Komprimierung";
+"0 (Store)" = "0 (Unkomprimiert)";
+"1 (Fast)" = "1 (Schnell)";
+"3 (Normal)" = "3 (Normal)";
+"6 (Good)" = "6 (Gut)";
+"9 (Best)" = "9 (Beste)";
+"Remove Plugins" = "Plugins entfernen";
+"Strip app extensions" = "App-Erweiterungen entfernen";
+"About" = "Über";
+"Language" = "Sprache";
+"About Scarlet" = "Über Scarlet";
+
+// ─── Signierblatt ───
+"Compression" = "Komprimierung";
+"Certificate" = "Zertifikat";
+"Tap to select" = "Tippen zum Auswählen";
+"Local" = "Lokal";
+"No certificates available" = "Keine Zertifikate verfügbar";
+"Signing Failed" = "Signierung fehlgeschlagen";
+
+// ─── Ergebnis ───
+"Signed Successfully" = "Erfolgreich signiert";
+"Your IPA has been re-signed" = "Ihre IPA wurde neu signiert";
+"Share Signed IPA" = "Signierte IPA teilen";
+
+// ─── Installation ───
+"Install" = "Installieren";
+"Installing" = "Installieren";
+"Sending Manifest..." = "Manifest wird gesendet...";
+"Sending Payload..." = "Daten werden gesendet...";
+"Installed ✓" = "Installiert ✓";
+
+// ─── Suche ───
+"Search apps..." = "Apps suchen...";
+
+// ─── Zertifikatstatus ───
+"Checking…" = "Prüfen…";
+"Valid" = "Gültig";
+"Revoked" = "Widerrufen";
+"Error" = "Fehler";
+
+// ─── Dynamische Strings ───
+"Certificate imported: %@" = "Zertifikat importiert: %@";
+"Profile imported: %@" = "Profil importiert: %@";
+"Import failed: %@" = "Import fehlgeschlagen: %@";
+"Replace Certificate" = "Zertifikat ersetzen";
+"Import Certificate (.p12)" = "Zertifikat importieren (.p12)";
+"Replace Profile" = "Profil ersetzen";
+"Import Profile (.mobileprovision)" = "Profil importieren (.mobileprovision)";
+
+// ─── Komprimierung ───
+"Fastest" = "Schnellste";
+"Fast" = "Schnell";
+"Normal" = "Normal";
+"Smallest" = "Kleinste";
+"Store" = "Unkomprimiert";
+
+// ─── Über ───
+"Engine" = "Engine";
+"OpenSSL" = "OpenSSL";
+"Bundled" = "Integriert";
+
+// ─── Splash ───
+"Initializing..." = "Initialisierung...";
+"Checking device..." = "Gerät wird geprüft...";
+"Ready" = "Bereit";
+"by DebianArch64" = "by DebianArch64";
+
+// ─── Sonstiges ───
+"•" = "•";
+"·" = "·";
+"Choose Language" = "Sprache wählen";
+"English" = "English";
+"Русский" = "Русский";
+"apps" = "Apps";
+"Bundle" = "Paket";
+"Level" = "Stufe";
+"Profile" = "Profil";
+"Not found" = "Nicht gefunden";
+"None" = "Keine";
+"this certificate" = "dieses Zertifikat";
+"Are you sure you want to delete" = "Sind Sie sicher, dass Sie löschen möchten";
+"Signed Successfully!" = "Erfolgreich signiert!";
+"No apps found" = "Keine Apps gefunden";
+" · Local" = " · Lokal";
+"App Name" = "App-Name";
+"App Documents" = "App-Dokumente";
+"Location" = "Standort";
+"Signing..." = "Signierung...";
+"Unknown" = "Unbekannt";
+"Unknown error" = "Unbekannter Fehler";
+"Wrong password. Please try again." = "Falsches Passwort. Bitte versuchen Sie es erneut.";
+
+// ─── Bibliothek-Tabs ───
+"Unsigned" = "Unsigniert";
+"Signed" = "Signiert";
+"No Signed Apps" = "Keine signierten Apps";
+"Signed apps will appear here" = "Signierte Apps werden hier angezeigt";
+
+// ─── Einstellungen ───
+"Preferences" = "Einstellungen";
+"Notifications" = "Benachrichtigungen";
+"Cache" = "Cache";
+"Clear Cache" = "Cache leeren";
+
+// ─── Benachrichtigungen ───
+"Signing Complete" = "Signierung abgeschlossen";
+"%@ has been signed successfully" = "%@ wurde erfolgreich signiert";
+"Download Complete" = "Download abgeschlossen";
+"%@ has been downloaded" = "%@ wurde heruntergeladen";
+
+// ─── Installation ───
+"Installing..." = "Installieren...";
+"File" = "Datei";
+"Size" = "Größe";
+
+// ─── Fehler ───
+"No certificate available" = "Kein Zertifikat verfügbar";
+"Could not determine device UDID" = "Geräte-UDID konnte nicht bestimmt werden";
+
+// ─── Credits ───
+"Made with" = "Erstellt mit";
+"for the community" = "für die Community";
+"Developer" = "Entwickler";
+"Website" = "Webseite";
+
+// ─── Labels ───
+"Share" = "Teilen";
+"DEFAULT" = "STANDARD";
+"LOCAL" = "LOKAL";
+"No Certificates" = "Keine Zertifikate";
+"Hold to open" = "Halten zum Öffnen";
+"Loading sources... %@/%@" = "Quellen laden... %@/%@";
+"Paste a direct link to an IPA file" = "Direktlink zu einer IPA-Datei einfügen";
+
+// ─── Signierfortschritt ───
+"Extracting IPA..." = "IPA wird extrahiert...";
+"Signing binaries..." = "Binärdateien werden signiert...";
+"Re-packaging..." = "Neu verpacken...";
+"Finishing up..." = "Abschließen...";
+
+// ─── Zertifikatfehler ───
+"Enter the password for %@" = "Passwort für %@ eingeben";
+"Could not read P12 file" = "P12-Datei konnte nicht gelesen werden";
+"Can't read file" = "Datei kann nicht gelesen werden";
+"Can't parse P12" = "P12 kann nicht analysiert werden";
+"No P12 data" = "Keine P12-Daten";
+
+// ─── WiFi ───
+"WiFi Upload" = "WLAN-Upload";
+"Start Server" = "Server starten";
+"Stop Server" = "Server stoppen";
+"Server is running" = "Server läuft";
+"Share files over WiFi" = "Dateien über WLAN teilen";
+
+// ─── Zusätzliche Schlüssel ───
+"Update Channel" = "Update-Kanal";
+"Download" = "Herunterladen";
+"Download from URL" = "Von URL herunterladen";
+"Import from Files" = "Aus Dateien importieren";
+"Fetch from Server" = "Vom Server abrufen";
+"Remove Repo" = "Repo entfernen";
+"Total" = "Gesamt";

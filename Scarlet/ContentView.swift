@@ -1566,6 +1566,7 @@ struct ContentView: View {
                             .frame(height: 0.5)
                             .padding(.horizontal, 12)
 
+                        ScrollView {
                         VStack(spacing: 2) {
                             ForEach(LanguageManager.supportedLanguages) { lang in
                                 let isSelected = langManager.currentLanguage == lang.id
@@ -1576,6 +1577,8 @@ struct ContentView: View {
                                     }
                                 } label: {
                                     HStack {
+                                        Text(lang.flag)
+                                            .font(.system(size: 18))
                                         Text(lang.name)
                                             .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
                                             .foregroundColor(isSelected ? .white : .white.opacity(0.5))
@@ -1598,6 +1601,8 @@ struct ContentView: View {
                         }
                         .padding(.horizontal, 4)
                         .padding(.vertical, 6)
+                        }
+                        .frame(maxHeight: 300)
                             .transition(.opacity)
                     }
                 }

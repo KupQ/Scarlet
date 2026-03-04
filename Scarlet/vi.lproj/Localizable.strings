@@ -1,0 +1,243 @@
+/* ============================================
+   Scarlet — Tiếng Việt (Vietnamese)
+   ============================================ */
+
+// ─── Chung / Nút ───
+"OK" = "OK";
+"Cancel" = "Hủy";
+"Delete" = "Xóa";
+"Add" = "Thêm";
+"Done" = "Xong";
+"Open" = "Mở";
+"Sign" = "Ký";
+"Import" = "Nhập";
+
+// ─── Trang chủ ───
+"Scarlet" = "Scarlet";
+"iOS App Signing" = "Ký ứng dụng iOS";
+"Sign & Install" = "Ký và cài đặt";
+"Powered by zsign" = "Được phát triển bởi zsign";
+"Start Signing" = "Bắt đầu ký";
+"Import IPA & sign with certificate" = "Nhập IPA và ký bằng chứng chỉ";
+"REPOSITORIES" = "KHO PHẦN MỀM";
+
+// ─── Menu ───
+"Add Repo" = "Thêm kho";
+"Add Multiple" = "Thêm nhiều";
+"Add from Clipboard" = "Thêm từ bộ nhớ tạm";
+
+// ─── Cảnh báo ───
+"Add Repository" = "Thêm kho phần mềm";
+"Enter the repo JSON URL" = "Nhập URL JSON của kho";
+"Add Multiple Repos" = "Thêm nhiều kho";
+"One URL per line" = "Mỗi dòng một URL";
+"Enter repo URLs, one per line" = "Nhập URL kho, mỗi dòng một URL";
+"Add All" = "Thêm tất cả";
+"Repo Error" = "Lỗi kho";
+
+// ─── Thư viện ───
+"Library" = "Thư viện";
+"Imported Apps" = "Ứng dụng đã nhập";
+"Importing..." = "Đang nhập...";
+"Extracting metadata and icon" = "Đang trích xuất dữ liệu và biểu tượng";
+"No Apps Imported" = "Chưa có ứng dụng nào";
+"Tap + to import an IPA file" = "Nhấn + để nhập tệp IPA";
+"Import IPA" = "Nhập IPA";
+"Downloading" = "Đang tải xuống";
+"All Apps" = "Tất cả ứng dụng";
+
+// ─── Chi tiết kho ───
+"GET" = "TẢI";
+
+// ─── Chứng chỉ ───
+"Certificates" = "Chứng chỉ";
+"Loading certificates..." = "Đang tải chứng chỉ...";
+"No Certificates Yet" = "Chưa có chứng chỉ";
+"Import a P12 certificate to get started" = "Nhập chứng chỉ P12 để bắt đầu";
+"Import Certificate" = "Nhập chứng chỉ";
+"ACTIVE" = "HOẠT ĐỘNG";
+"Local Certificate" = "Chứng chỉ cục bộ";
+"Delete Certificate" = "Xóa chứng chỉ";
+"Certificate Password" = "Mật khẩu chứng chỉ";
+"Password" = "Mật khẩu";
+
+// ─── Nhãn chứng chỉ ───
+"Development" = "Phát triển";
+"Distribution" = "Phân phối";
+"PPQ" = "PPQ";
+"PPQless" = "Không PPQ";
+"Expired" = "Hết hạn";
+
+// ─── Cài đặt ───
+"Settings" = "Cài đặt";
+"Imported · P12" = "Đã nhập · P12";
+"Enter password" = "Nhập mật khẩu";
+"Imported · mobileprovision" = "Đã nhập · mobileprovision";
+"Signing Options" = "Tùy chọn ký";
+"Bundle ID" = "Bundle ID";
+"Display Name" = "Tên hiển thị";
+"Version" = "Phiên bản";
+"Keep original" = "Giữ nguyên bản";
+"Zip Compression" = "Nén ZIP";
+"0 (Store)" = "0 (Không nén)";
+"1 (Fast)" = "1 (Nhanh)";
+"3 (Normal)" = "3 (Bình thường)";
+"6 (Good)" = "6 (Tốt)";
+"9 (Best)" = "9 (Tốt nhất)";
+"Remove Plugins" = "Xóa plugin";
+"Strip app extensions" = "Xóa tiện ích mở rộng";
+"About" = "Giới thiệu";
+"Language" = "Ngôn ngữ";
+"About Scarlet" = "Về Scarlet";
+
+// ─── Trang ký ───
+"Compression" = "Nén";
+"Certificate" = "Chứng chỉ";
+"Tap to select" = "Nhấn để chọn";
+"Local" = "Cục bộ";
+"No certificates available" = "Không có chứng chỉ";
+"Signing Failed" = "Ký thất bại";
+
+// ─── Kết quả ───
+"Signed Successfully" = "Ký thành công";
+"Your IPA has been re-signed" = "IPA của bạn đã được ký lại";
+"Share Signed IPA" = "Chia sẻ IPA đã ký";
+
+// ─── Cài đặt ───
+"Install" = "Cài đặt";
+"Installing" = "Đang cài đặt";
+"Sending Manifest..." = "Đang gửi manifest...";
+"Sending Payload..." = "Đang gửi dữ liệu...";
+"Installed ✓" = "Đã cài đặt ✓";
+
+// ─── Tìm kiếm ───
+"Search apps..." = "Tìm ứng dụng...";
+
+// ─── Trạng thái chứng chỉ ───
+"Checking…" = "Đang kiểm tra…";
+"Valid" = "Hợp lệ";
+"Revoked" = "Đã thu hồi";
+"Error" = "Lỗi";
+
+// ─── Chuỗi động ───
+"Certificate imported: %@" = "Đã nhập chứng chỉ: %@";
+"Profile imported: %@" = "Đã nhập hồ sơ: %@";
+"Import failed: %@" = "Nhập thất bại: %@";
+"Replace Certificate" = "Thay thế chứng chỉ";
+"Import Certificate (.p12)" = "Nhập chứng chỉ (.p12)";
+"Replace Profile" = "Thay thế hồ sơ";
+"Import Profile (.mobileprovision)" = "Nhập hồ sơ (.mobileprovision)";
+
+// ─── Nén ───
+"Fastest" = "Nhanh nhất";
+"Fast" = "Nhanh";
+"Normal" = "Bình thường";
+"Smallest" = "Nhỏ nhất";
+"Store" = "Không nén";
+
+// ─── Giới thiệu ───
+"Engine" = "Engine";
+"OpenSSL" = "OpenSSL";
+"Bundled" = "Tích hợp";
+
+// ─── Splash ───
+"Initializing..." = "Đang khởi tạo...";
+"Checking device..." = "Đang kiểm tra thiết bị...";
+"Ready" = "Sẵn sàng";
+"by DebianArch64" = "by DebianArch64";
+
+// ─── Khác ───
+"•" = "•";
+"·" = "·";
+"Choose Language" = "Chọn ngôn ngữ";
+"English" = "English";
+"Русский" = "Русский";
+"apps" = "ứng dụng";
+"Bundle" = "Gói";
+"Level" = "Mức";
+"Profile" = "Hồ sơ";
+"Not found" = "Không tìm thấy";
+"None" = "Không có";
+"this certificate" = "chứng chỉ này";
+"Are you sure you want to delete" = "Bạn có chắc muốn xóa";
+"Signed Successfully!" = "Ký thành công!";
+"No apps found" = "Không tìm thấy ứng dụng";
+" · Local" = " · Cục bộ";
+"App Name" = "Tên ứng dụng";
+"App Documents" = "Tài liệu ứng dụng";
+"Location" = "Vị trí";
+"Signing..." = "Đang ký...";
+"Unknown" = "Không xác định";
+"Unknown error" = "Lỗi không xác định";
+"Wrong password. Please try again." = "Sai mật khẩu. Vui lòng thử lại.";
+
+// ─── Tab thư viện ───
+"Unsigned" = "Chưa ký";
+"Signed" = "Đã ký";
+"No Signed Apps" = "Không có ứng dụng đã ký";
+"Signed apps will appear here" = "Ứng dụng đã ký sẽ hiện ở đây";
+
+// ─── Tùy chọn ───
+"Preferences" = "Tùy chọn";
+"Notifications" = "Thông báo";
+"Cache" = "Bộ nhớ đệm";
+"Clear Cache" = "Xóa bộ nhớ đệm";
+
+// ─── Thông báo ───
+"Signing Complete" = "Ký hoàn tất";
+"%@ has been signed successfully" = "%@ đã được ký thành công";
+"Download Complete" = "Tải xong";
+"%@ has been downloaded" = "%@ đã được tải xuống";
+
+// ─── Cài đặt ───
+"Installing..." = "Đang cài đặt...";
+"File" = "Tệp";
+"Size" = "Kích thước";
+
+// ─── Lỗi ───
+"No certificate available" = "Không có chứng chỉ";
+"Could not determine device UDID" = "Không thể xác định UDID thiết bị";
+
+// ─── Ghi nhận ───
+"Made with" = "Được tạo với";
+"for the community" = "cho cộng đồng";
+"Developer" = "Nhà phát triển";
+"Website" = "Trang web";
+
+// ─── Nhãn ───
+"Share" = "Chia sẻ";
+"DEFAULT" = "MẶC ĐỊNH";
+"LOCAL" = "CỤC BỘ";
+"No Certificates" = "Không có chứng chỉ";
+"Hold to open" = "Giữ để mở";
+"Loading sources... %@/%@" = "Đang tải nguồn... %@/%@";
+"Paste a direct link to an IPA file" = "Dán liên kết trực tiếp tới tệp IPA";
+
+// ─── Tiến trình ký ───
+"Extracting IPA..." = "Đang giải nén IPA...";
+"Signing binaries..." = "Đang ký tệp nhị phân...";
+"Re-packaging..." = "Đang đóng gói lại...";
+"Finishing up..." = "Đang hoàn tất...";
+
+// ─── Lỗi chứng chỉ ───
+"Enter the password for %@" = "Nhập mật khẩu cho %@";
+"Could not read P12 file" = "Không thể đọc tệp P12";
+"Can't read file" = "Không thể đọc tệp";
+"Can't parse P12" = "Không thể phân tích P12";
+"No P12 data" = "Không có dữ liệu P12";
+
+// ─── WiFi ───
+"WiFi Upload" = "Tải lên WiFi";
+"Start Server" = "Khởi động máy chủ";
+"Stop Server" = "Dừng máy chủ";
+"Server is running" = "Máy chủ đang chạy";
+"Share files over WiFi" = "Chia sẻ tệp qua WiFi";
+
+// ─── Khóa bổ sung ───
+"Update Channel" = "Kênh cập nhật";
+"Download" = "Tải xuống";
+"Download from URL" = "Tải từ URL";
+"Import from Files" = "Nhập từ tệp";
+"Fetch from Server" = "Lấy từ máy chủ";
+"Remove Repo" = "Xóa kho";
+"Total" = "Tổng";
