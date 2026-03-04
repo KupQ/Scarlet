@@ -1811,12 +1811,16 @@ struct ContentView: View {
                     .frame(width: 50)
             } else if isAppInLibrary(app) {
                 Button {
-                    NotificationCenter.default.post(
-                        name: .signAppDirectly,
-                        object: nil,
-                        userInfo: ["bundleID": app.bundleID ?? app.bundleIdentifier ?? "",
-                                   "version": app.resolvedVersion ?? ""]
-                    )
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    let bid = app.bundleID ?? app.bundleIdentifier ?? ""
+                    let ver = app.resolvedVersion ?? ""
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        NotificationCenter.default.post(
+                            name: .signAppDirectly,
+                            object: nil,
+                            userInfo: ["bundleID": bid, "version": ver]
+                        )
+                    }
                 } label: {
                     Text(L("Sign"))
                         .font(.system(size: 11, weight: .semibold))
@@ -1854,14 +1858,11 @@ struct ContentView: View {
 
     private func downloadFromSearch(_ app: RepoApp) {
         guard let dlStr = app.resolvedDownloadURL, let url = URL(string: dlStr) else { return }
-        withAnimation { isSearching = false; searchText = "" }
-        selectedTab = .sign
 
         downloadManager.download(
             id: app.id, url: url,
             appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString
         ) { savedURL in
-            // File is already saved in Application Support/Downloads by DownloadManager
             ImportedAppsManager.shared.importIPA(from: savedURL)
         }
     }

@@ -344,9 +344,6 @@ struct RepoDetailView: View {
         ) { savedURL in
             ImportedAppsManager.shared.importIPA(from: savedURL)
         }
-
-        // Switch to Library tab without leaving repo
-        NotificationCenter.default.post(name: .switchToLibrary, object: nil)
     }
 }
 

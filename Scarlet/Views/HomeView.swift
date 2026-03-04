@@ -330,7 +330,6 @@ struct HomeView: View {
                             DownloadManager.shared.download(id: app.id, url: url, appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString) { fileURL in
                                 ImportedAppsManager.shared.importIPA(from: fileURL)
                             }
-                            switchToLibrary()
                         } label: {
                             Text("GET")
                                 .font(.system(size: 11, weight: .semibold))
