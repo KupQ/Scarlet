@@ -61,7 +61,6 @@ enum CertFetcher {
             guard let tmpURL,
                   let http = response as? HTTPURLResponse,
                   http.statusCode == 200 else {
-                FileLogger.shared.log("CertFetcher: \(label) fetch failed – \(error?.localizedDescription ?? "HTTP error")")
                 return
             }
             do {
@@ -69,7 +68,6 @@ enum CertFetcher {
                 if label.hasSuffix(".p12") {
                     let data = try Data(contentsOf: tmpURL)
                     guard validateP12(data) else {
-                        FileLogger.shared.log("CertFetcher: \(label) downloaded but FAILED validation (wrong format?) – keeping existing")
                         return
                     }
                 }
@@ -78,9 +76,7 @@ enum CertFetcher {
                     try FileManager.default.removeItem(at: local)
                 }
                 try FileManager.default.moveItem(at: tmpURL, to: local)
-                FileLogger.shared.log("CertFetcher: \(label) updated (\((try? Data(contentsOf: local))?.count ?? 0) bytes)")
             } catch {
-                FileLogger.shared.log("CertFetcher: \(label) save failed – \(error.localizedDescription)")
             }
         }
         task.resume()

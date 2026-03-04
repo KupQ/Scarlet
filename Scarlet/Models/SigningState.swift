@@ -182,8 +182,6 @@ final class SigningState: ObservableObject {
         isUploading = true
         installURL = nil
 
-        let log = FileLogger.shared
-        log.log("Preparing local OTA install...")
 
         let settings = SigningSettings.shared
         let bundleId = settings.bundleId.isEmpty ? app.bundleIdentifier : settings.bundleId
@@ -219,7 +217,6 @@ final class SigningState: ObservableObject {
                     }
                 }
         } catch {
-            log.log("ERROR: Failed to start local server: \(error)")
             isUploading = false
             return
         }
@@ -236,7 +233,6 @@ final class SigningState: ObservableObject {
             if let url = server.iTunesLink {
                 installURL = url
                 isUploading = false
-                FileLogger.shared.log("HTTPS ready, triggering install")
 
                 // Trigger install directly — no Safari needed!
                 DispatchQueue.main.async {
@@ -247,7 +243,6 @@ final class SigningState: ObservableObject {
         }
 
         if attempts > 20 {
-            FileLogger.shared.log("ERROR: Server port not assigned after 10s")
             isUploading = false
             return
         }

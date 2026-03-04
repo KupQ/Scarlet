@@ -43,35 +43,6 @@ struct SettingsView: View {
 
                     // About Section
                     aboutSection
-
-                    // Debug Log
-                    Button {
-                        let docs = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
-                        let logURL = docs.appendingPathComponent("scarlet_debug.log")
-                        if let content = try? String(contentsOf: logURL, encoding: .utf8) {
-                            let lines = content.components(separatedBy: "\n")
-                            debugLogText = lines.suffix(100).joined(separator: "\n")
-                        } else {
-                            debugLogText = "No log file found"
-                        }
-                        showDebugLog = true
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "doc.text.magnifyingglass")
-                                .font(.system(size: 20))
-                                .foregroundColor(.orange)
-                            Text("Debug Log")
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundColor(.white)
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 13))
-                                .foregroundColor(.gray)
-                        }
-                        .padding(14)
-                        .glassCard(cornerRadius: 18)
-                    }
-                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 40)

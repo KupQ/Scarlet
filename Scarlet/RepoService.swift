@@ -263,7 +263,6 @@ class RepoService: ObservableObject {
         // Load from disk cache instantly (no network)
         if let cached = loadCache() {
             repos = cached
-            print("[RepoService] Loaded \(cached.count) repos from cache")
         }
 
         // Background refresh if cache is stale or empty
@@ -327,7 +326,6 @@ class RepoService: ObservableObject {
                         let manifest = try JSONDecoder().decode(RepoManifest.self, from: data)
                         return LoadedRepo(url: entry.url, manifest: manifest, isDefault: entry.isDefault)
                     } catch {
-                        print("[RepoService] Error loading \(entry.url): \(error)")
                         return nil
                     }
                 }

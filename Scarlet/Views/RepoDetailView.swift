@@ -39,14 +39,11 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDataDelegate {
     func download(id: String, url: URL, appName: String = "", iconURL: String? = nil, sizeString: String = "", completion: @escaping (URL) -> Void) {
         guard activeDownloads[id] == nil else { return }
 
-        let log = FileLogger.shared
         let dest = downloadsDir.appendingPathComponent(UUID().uuidString + ".ipa")
-        log.log("[DL] Starting download '\(appName)' -> \(dest.lastPathComponent)")
 
         // Create the destination file immediately
         FileManager.default.createFile(atPath: dest.path, contents: nil)
         guard let handle = try? FileHandle(forWritingTo: dest) else {
-            log.log("[DL] ERROR: cannot create file handle at \(dest.path)")
             return
         }
 
@@ -91,7 +88,6 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDataDelegate {
             return
         }
         expectedBytes[id] = response.expectedContentLength
-        FileLogger.shared.log("[DL] Response received, expected bytes: \(response.expectedContentLength)")
         completionHandler(.allow)
     }
 
@@ -113,14 +109,12 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDataDelegate {
     // Called when download completes or errors
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard let dataTask = task as? URLSessionDataTask, let id = tasks[dataTask] else { return }
-        let log = FileLogger.shared
 
         // Close file handle
         fileHandles[id]?.closeFile()
         fileHandles.removeValue(forKey: id)
 
         if let error = error {
-            log.log("[DL] ERROR: \(error.localizedDescription)")
             // Delete partial file
             if let dest = destURLs[id] {
                 try? FileManager.default.removeItem(at: dest)
@@ -131,13 +125,11 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDataDelegate {
         }
 
         guard let dest = destURLs[id] else {
-            log.log("[DL] ERROR: no dest URL for id \(id)")
             cleanupDownload(id: id)
             return
         }
 
         let size = (try? FileManager.default.attributesOfItem(atPath: dest.path)[.size] as? Int64) ?? 0
-        log.log("[DL] Download complete: \(dest.lastPathComponent) (\(size) bytes)")
 
         let appName = pendingDownloads.first(where: { $0.id == id })?.appName ?? "App"
         let completion = completions[id]

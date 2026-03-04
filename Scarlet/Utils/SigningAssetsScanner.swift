@@ -38,7 +38,6 @@ enum SigningAssetsScanner {
     /// Copies bundled signing-assets — NO-OP, assets are read directly from bundle
     static func seedBundledAssets() {
         // Assets are read directly from the bundle, no copy needed
-        FileLogger.shared.log("SigningAssets: using bundled assets directly from app bundle")
     }
 
     // MARK: - Scan
@@ -79,7 +78,6 @@ enum SigningAssetsScanner {
                 password: password
             )
             assets.append(asset)
-            FileLogger.shared.log("SigningAssets: found '\(asset.id)' — p12: \(p12URL.lastPathComponent), profile: \(profile?.lastPathComponent ?? "none"), pass: \(password.isEmpty ? "(empty)" : "***")")
         }
 
         return assets
@@ -92,22 +90,17 @@ enum SigningAssetsScanner {
     @MainActor
     static func autoImportIfNeeded() {
         let settings = SigningSettings.shared
-        let log = FileLogger.shared
 
-        log.log("SigningAssets: autoImport check — hasCertificate: \(settings.hasCertificate)")
 
         // Don't overwrite existing cert
         if settings.hasCertificate { return }
 
         let assets = scan()
-        log.log("SigningAssets: scan found \(assets.count) asset(s)")
 
         guard let first = assets.first else {
-            log.log("SigningAssets: no assets to import")
             return
         }
 
-        log.log("SigningAssets: importing '\(first.id)' with password: \(first.password.isEmpty ? "(empty)" : "***")")
         importAsset(first)
     }
 
@@ -115,18 +108,13 @@ enum SigningAssetsScanner {
     @MainActor
     static func importAsset(_ asset: SigningAsset) {
         let settings = SigningSettings.shared
-        let log = FileLogger.shared
 
         do {
-            log.log("SigningAssets: importing p12 from \(asset.p12URL.path)")
             try settings.importCertificate(from: asset.p12URL)
             settings.savedCertPassword = asset.password
-            log.log("SigningAssets: cert imported, savedCertName: \(settings.savedCertName ?? "nil")")
 
             if let profileURL = asset.profileURL {
-                log.log("SigningAssets: importing profile from \(profileURL.path)")
                 try settings.importProfile(from: profileURL)
-                log.log("SigningAssets: profile imported, savedProfileName: \(settings.savedProfileName ?? "nil")")
             }
 
             // Register in local_imported_certs_json so it shows in cert picker UI
@@ -144,14 +132,11 @@ enum SigningAssetsScanner {
                     if let encoded = try? JSONEncoder().encode(existing),
                        let jsonStr = String(data: encoded, encoding: .utf8) {
                         UserDefaults.standard.set(jsonStr, forKey: key)
-                        log.log("SigningAssets: registered '\(certFilename)' in local certs list")
                     }
                 }
             }
 
-            log.log("SigningAssets: import complete for '\(asset.id)' — hasCert: \(settings.hasCertificate), hasProfile: \(settings.hasProfile)")
         } catch {
-            log.log("SigningAssets: import FAILED for '\(asset.id)' — \(error)")
         }
     }
 
@@ -166,7 +151,6 @@ enum SigningAssetsScanner {
                 var items: CFArray?
                 let status = SecPKCS12Import(p12Data as CFData, options as CFDictionary, &items)
                 if status == errSecSuccess {
-                    FileLogger.shared.log("SigningAssets: password matched from known list")
                     return password
                 }
             }
@@ -183,17 +167,14 @@ enum SigningAssetsScanner {
                     var items: CFArray?
                     let status = SecPKCS12Import(p12Data as CFData, options as CFDictionary, &items)
                     if status == errSecSuccess {
-                        FileLogger.shared.log("SigningAssets: password matched from pass.txt")
                         return password
                     }
                 }
                 // Return it anyway — user might know better
-                FileLogger.shared.log("SigningAssets: using password from pass.txt (unverified)")
                 return password
             }
         }
 
-        FileLogger.shared.log("SigningAssets: no matching password found, defaulting to empty")
         return ""
     }
 
@@ -216,15 +197,12 @@ enum SigningAssetsScanner {
         let newURLs = lines.filter { !existing.contains($0) }
 
         guard !newURLs.isEmpty else {
-            FileLogger.shared.log("SigningAssets: repo.txt — all \(lines.count) repo(s) already added")
             return
         }
 
-        FileLogger.shared.log("SigningAssets: repo.txt — adding \(newURLs.count) new repo(s)")
         Task {
             for url in newURLs {
                 await RepoService.shared.addRepo(url: url)
-                FileLogger.shared.log("SigningAssets: added repo \(url)")
             }
         }
     }

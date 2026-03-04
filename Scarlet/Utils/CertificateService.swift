@@ -109,11 +109,9 @@ final class CertificateService: ObservableObject {
     /// Gets the actual device UDID using MobileGestalt private API.
     /// Falls back to embedded.mobileprovision if unavailable.
     static func getDeviceUDID() -> String? {
-        let log = FileLogger.shared
 
         // Try MobileGestalt private API first (real device UDID)
         if let udid = mgCopyAnswer("UniqueDeviceID") {
-            log.log("Device UDID (MobileGestalt): \(udid)")
             return udid
         }
 
@@ -122,7 +120,6 @@ final class CertificateService: ObservableObject {
             return udid
         }
 
-        log.log("Could not determine device UDID")
         return nil
     }
 
@@ -140,36 +137,29 @@ final class CertificateService: ObservableObject {
 
     /// Fallback: extracts UDID from embedded.mobileprovision.
     static func extractUDIDFromProvision() -> String? {
-        let log = FileLogger.shared
 
         // Direct path — Bundle.main.url(forResource:) doesn't find root-level files reliably
         let provisionPath = Bundle.main.bundlePath + "/embedded.mobileprovision"
         let fm = FileManager.default
 
         guard fm.fileExists(atPath: provisionPath) else {
-            log.log("No embedded.mobileprovision at: \(provisionPath)")
             // List bundle root to debug
             let contents = (try? fm.contentsOfDirectory(atPath: Bundle.main.bundlePath)) ?? []
-            log.log("Bundle contents: \(contents.joined(separator: ", "))")
             return nil
         }
 
         guard let data = fm.contents(atPath: provisionPath) else {
-            log.log("Could not read embedded.mobileprovision")
             return nil
         }
 
-        log.log("Read embedded.mobileprovision (\(data.count) bytes)")
 
         // mobileprovision is CMS/PKCS7 binary; use isoLatin1 to handle all byte values
         guard let text = String(data: data, encoding: .isoLatin1) else {
-            log.log("Could not decode mobileprovision")
             return nil
         }
 
         guard let xmlStart = text.range(of: "<?xml"),
               let xmlEnd = text.range(of: "</plist>") else {
-            log.log("No XML plist found in mobileprovision")
             return nil
         }
 
@@ -180,20 +170,16 @@ final class CertificateService: ObservableObject {
                 options: [],
                 format: nil
               ) as? [String: Any] else {
-            log.log("Could not parse plist from mobileprovision")
             return nil
         }
 
         // ProvisionedDevices contains the UDIDs registered on this profile
         if let devices = plist["ProvisionedDevices"] as? [String] {
-            log.log("Found \(devices.count) provisioned devices")
             if let first = devices.first {
-                log.log("Extracted UDID: \(first)")
                 return first
             }
         }
 
-        log.log("No ProvisionedDevices in mobileprovision")
         return nil
     }
 
@@ -209,8 +195,6 @@ final class CertificateService: ObservableObject {
         isLoading = true
         errorMessage = nil
 
-        let log = FileLogger.shared
-        log.log("Fetching certificates for UDID: \(udid)")
 
         do {
             var request = URLRequest(
@@ -234,7 +218,6 @@ final class CertificateService: ObservableObject {
                 throw CertError.invalidResponse
             }
 
-            log.log("API returned \(jsonArray.count) entries")
             var debugLines: [String] = ["API: \(jsonArray.count) entries"]
 
             var all: [RemoteCertificate] = []
@@ -244,7 +227,6 @@ final class CertificateService: ObservableObject {
                     let itemData = try JSONSerialization.data(withJSONObject: jsonArray[index])
                     let cert = try JSONDecoder().decode(RemoteCertificate.self, from: itemData)
                     all.append(cert)
-                    log.log("  [\(index)] \(cert.name) (\(cert.id)) ✓")
                     debugLines.append("[\(index)] \(cert.name) ✓")
 
                     // Split dev variant if devp12 exists
@@ -255,13 +237,11 @@ final class CertificateService: ObservableObject {
                 } catch {
                     failCount += 1
                     let errMsg = "\(error)"
-                    log.log("  [\(index)] decode failed: \(errMsg)")
                     debugLines.append("[\(index)] FAIL: \(errMsg.prefix(80))")
                 }
             }
 
             certificates = all
-            log.log("Total certificates: \(all.count)")
 
             if failCount > 0 {
                 errorMessage = "\(failCount) entry(ies) failed to decode. Got \(all.count)/\(jsonArray.count + all.count - jsonArray.count)"
@@ -269,7 +249,6 @@ final class CertificateService: ObservableObject {
             debugInfo = debugLines.joined(separator: "\n")
 
         } catch {
-            log.log("ERROR: \(error.localizedDescription)")
             errorMessage = error.localizedDescription
         }
 
@@ -279,12 +258,10 @@ final class CertificateService: ObservableObject {
     /// Saves a remote certificate's P12 and mobileprovision to disk
     /// and configures SigningSettings to use them.
     func useCertificate(_ cert: RemoteCertificate) {
-        let log = FileLogger.shared
         let settings = SigningSettings.shared
 
         // Save P12
         guard let p12Data = cert.p12Data else {
-            log.log("ERROR: Could not decode P12 data")
             return
         }
         let p12Name = "\(cert.id).p12"
@@ -293,7 +270,6 @@ final class CertificateService: ObservableObject {
 
         // Save mobileprovision
         guard let provData = cert.provisionData else {
-            log.log("ERROR: Could not decode mobileprovision data")
             return
         }
         let provName = "\(cert.id).mobileprovision"
@@ -305,7 +281,6 @@ final class CertificateService: ObservableObject {
         settings.savedCertPassword = cert.p12_password
         settings.savedProfileName = provName
 
-        log.log("Loaded certificate: \(cert.name) (\(cert.id))")
     }
 
     private enum CertError: LocalizedError {

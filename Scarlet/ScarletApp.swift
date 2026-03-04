@@ -69,7 +69,6 @@ struct ScarletApp: App {
         do {
             try FileManager.default.copyItem(at: url, to: tmp)
         } catch {
-            FileLogger.shared.log("Failed to copy shared IPA: \(error.localizedDescription)")
             return
         }
 

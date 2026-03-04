@@ -30,8 +30,6 @@ enum IPAParser {
 
     /// Parses an IPA file and extracts its metadata and icon.
     static func parse(ipaURL: URL) -> IPAMetadata? {
-        let log = FileLogger.shared
-        log.log("Parsing IPA: \(ipaURL.lastPathComponent)")
 
         let accessing = ipaURL.startAccessingSecurityScopedResource()
         defer { if accessing { ipaURL.stopAccessingSecurityScopedResource() } }
@@ -40,13 +38,11 @@ enum IPAParser {
         let fileSize = (try? fm.attributesOfItem(atPath: ipaURL.path)[.size] as? Int64) ?? 0
 
         guard fm.fileExists(atPath: ipaURL.path) else {
-            log.log("ERROR: IPA file no longer exists at \(ipaURL.path)")
             return nil
         }
 
         // Read specific entries from the ZIP without full extraction
         guard let entries = readZIPEntries(from: ipaURL) else {
-            log.log("ERROR: Cannot read ZIP entries")
             return nil
         }
 
@@ -55,7 +51,6 @@ enum IPAParser {
             $0.name.hasSuffix("/Info.plist") && $0.name.hasPrefix("Payload/") &&
             $0.name.components(separatedBy: "/").count == 3 // Payload/App.app/Info.plist
         }) else {
-            log.log("ERROR: No Info.plist found in ZIP")
             return nil
         }
 
@@ -68,7 +63,6 @@ enum IPAParser {
               let plist = try? PropertyListSerialization.propertyList(
                 from: plistData, format: nil
               ) as? [String: Any] else {
-            log.log("ERROR: Cannot parse Info.plist from ZIP")
             return nil
         }
 
@@ -83,11 +77,9 @@ enum IPAParser {
 
         let bundleId = (plist["CFBundleIdentifier"] as? String) ?? "unknown"
 
-        log.log("Parsed: \(appName) v\(version) [\(bundleId)]")
 
         // Extract icon
         let iconNames = extractIconNames(from: plist)
-        log.log("Icon names: \(iconNames)")
         let iconData = extractLargestIconFromZIP(
             entries: entries, ipaURL: ipaURL,
             appPrefix: "Payload/\(appDirName)/", iconNames: iconNames

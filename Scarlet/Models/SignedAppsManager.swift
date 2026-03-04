@@ -70,7 +70,6 @@ class SignedAppsManager: ObservableObject {
         do {
             try FileManager.default.copyItem(at: sourceURL, to: destIPA)
         } catch {
-            print("[SignedAppsManager] Failed to save IPA: \(error)")
             return nil
         }
 

@@ -86,7 +86,6 @@ final class LocalIPAServer: ObservableObject {
         if let identity = loadIdentity() {
             sec_protocol_options_set_local_identity(secOptions, identity)
         } else {
-            FileLogger.shared.log("WARNING: Could not load TLS identity, falling back to plain HTTP")
         }
 
         let params = NWParameters(tls: tlsOptions)
@@ -98,13 +97,11 @@ final class LocalIPAServer: ObservableObject {
             case .ready:
                 if let assignedPort = listener.port?.rawValue {
                     self.port = assignedPort
-                    FileLogger.shared.log("HTTPS server ready on port \(assignedPort)")
                     DispatchQueue.main.async {
                         self.status = .serverReady
                     }
                 }
             case .failed(let error):
-                FileLogger.shared.log("Server failed: \(error)")
                 DispatchQueue.main.async {
                     self.status = .failed(error.localizedDescription)
                 }
@@ -133,7 +130,6 @@ final class LocalIPAServer: ObservableObject {
         manifestData = nil
         port = 0
         status = .idle
-        FileLogger.shared.log("Server stopped")
     }
 
     // MARK: - TLS Identity
@@ -142,12 +138,9 @@ final class LocalIPAServer: ObservableObject {
     private func loadIdentity() -> sec_identity_t? {
         guard let p12URL = CertFetcher.p12URL,
               let p12Data = try? Data(contentsOf: p12URL) else {
-            FileLogger.shared.log("ERROR: server.p12 not found (remote or bundle)")
             return nil
         }
 
-        let log = FileLogger.shared
-        log.log("P12 file size: \(p12Data.count) bytes")
 
         // Method 1: Standard SecPKCS12Import
         let options: [String: Any] = [kSecImportExportPassphrase as String: "backloop"]
@@ -158,12 +151,10 @@ final class LocalIPAServer: ObservableObject {
            let array = items as? [[String: Any]],
            let first = array.first,
            let identity = first[kSecImportItemIdentity as String] {
-            log.log("P12 imported via SecPKCS12Import")
             let secIdentity = identity as! SecIdentity
             return sec_identity_create(secIdentity)
         }
 
-        log.log("SecPKCS12Import failed (OSStatus: \(status)), trying keychain import...")
 
         // Method 2: Keychain-based import (better compat with iOS 15)
         let importQuery: [String: Any] = [
@@ -173,7 +164,6 @@ final class LocalIPAServer: ObservableObject {
         let importStatus = SecPKCS12Import(p12Data as CFData, importQuery as CFDictionary, &importItems)
 
         if importStatus != errSecSuccess {
-            log.log("ERROR: All P12 import methods failed (OSStatus: \(importStatus))")
 
             // Method 3: Try adding to keychain directly
             let addQuery: [String: Any] = [
@@ -182,18 +172,15 @@ final class LocalIPAServer: ObservableObject {
                 kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
             ]
             let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
-            log.log("Keychain add attempt: \(addStatus)")
             return nil
         }
 
         guard let resultArray = importItems as? [[String: Any]],
               let firstResult = resultArray.first,
               let secIdentity = firstResult[kSecImportItemIdentity as String] else {
-            log.log("ERROR: P12 imported but no identity found")
             return nil
         }
 
-        log.log("P12 imported via keychain fallback")
         return sec_identity_create(secIdentity as! SecIdentity)
     }
 
@@ -275,22 +262,18 @@ final class LocalIPAServer: ObservableObject {
             }
 
             let request = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
-            let log = FileLogger.shared
 
             if request.contains("GET /\(self.uuid).ipa") {
-                log.log("iOS requesting IPA — streaming payload")
                 DispatchQueue.main.async { self.status = .sendingPayload }
                 self.streamIPA(connection: connection)
                 return
             } else if request.contains("GET /\(self.uuid).plist") {
-                log.log("iOS requesting manifest plist")
                 DispatchQueue.main.async { self.status = .sendingManifest }
                 let response = self.buildManifestResponse()
                 connection.send(content: response, completion: .contentProcessed { _ in
                     connection.cancel()
                 })
             } else if request.contains("GET /icon.png") {
-                log.log("iOS requesting app icon")
                 let response = self.buildIconResponse()
                 connection.send(content: response, completion: .contentProcessed { _ in
                     connection.cancel()
@@ -341,7 +324,6 @@ final class LocalIPAServer: ObservableObject {
         handle.closeFile()
 
         guard !data.isEmpty else {
-            FileLogger.shared.log("IPA streaming complete (\(totalSize) bytes)")
             DispatchQueue.main.async { self.status = .installing(progress: 0) }
             connection.send(content: nil, contentContext: .finalMessage, completion: .contentProcessed { _ in
                 connection.cancel()

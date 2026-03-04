@@ -97,7 +97,6 @@ class RepoService: ObservableObject {
                 let manifest = try JSONDecoder().decode(RepoManifest.self, from: data)
                 loaded.append(LoadedRepo(url: urlString, manifest: manifest))
             } catch {
-                print("Failed to load repo \(urlString): \(error)")
             }
         }
 

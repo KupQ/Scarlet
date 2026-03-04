@@ -173,12 +173,10 @@ final class LocalCertChecker: ObservableObject {
     private func checkOCSPStatus(p12Data: Data, password: String) async -> LocalCertInfo.CertStatus {
         do {
             guard let issuerDER = cachedIssuerDER else {
-                FileLogger.shared.log("OCSP: Bundled issuer cert not found")
                 return .error("Missing issuer cert")
             }
 
             guard let ocspReqData = buildOCSPRequest(p12Data: p12Data, password: password, issuerDER: issuerDER) else {
-                FileLogger.shared.log("OCSP: build failed")
                 return .error("OCSP build failed")
             }
 
@@ -190,7 +188,6 @@ final class LocalCertChecker: ObservableObject {
             let (respData, response) = try await ocspSession.data(for: request)
 
             guard let httpResp = response as? HTTPURLResponse, httpResp.statusCode == 200 else {
-                FileLogger.shared.log("OCSP: HTTP error")
                 return .error("OCSP HTTP error")
             }
 
@@ -199,7 +196,6 @@ final class LocalCertChecker: ObservableObject {
             return status
 
         } catch {
-            FileLogger.shared.log("OCSP: \(error.localizedDescription)")
             return .error("OCSP: \(error.localizedDescription)")
         }
     }

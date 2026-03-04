@@ -507,16 +507,13 @@ struct SigningView: View {
         installServer = server
 
         let ipaURL = signedManager.ipaURL(for: app)
-        let log = FileLogger.shared
 
         // Verify the IPA file actually exists
         guard FileManager.default.fileExists(atPath: ipaURL.path) else {
-            log.log("[INSTALL] ERROR: IPA not found at \(ipaURL.path)")
             installingAppId = nil
             return
         }
         let size = (try? FileManager.default.attributesOfItem(atPath: ipaURL.path)[.size] as? Int64) ?? 0
-        log.log("[INSTALL] Starting install for '\(app.appName)' (\(size) bytes) at \(ipaURL.path)")
 
         var iconData: Data? = nil
         if let iconURL = signedManager.iconURL(for: app) {
@@ -535,24 +532,19 @@ struct SigningView: View {
             // Poll until port is ready, then rebuild manifest and trigger install
             pollAndInstall(server: server, app: app, attempts: 0)
         } catch {
-            log.log("[INSTALL] Server error: \(error)")
             installingAppId = nil
         }
     }
 
     private func pollAndInstall(server: LocalIPAServer, app: SignedApp, attempts: Int) {
-        let log = FileLogger.shared
 
         if server.port > 0 {
             // Rebuild manifest with the actual port
             server.rebuildManifest(bundleId: app.bundleId, version: app.version, appName: app.appName)
-            log.log("[INSTALL] Server ready on port \(server.port)")
 
             if let link = server.iTunesLink {
-                log.log("[INSTALL] Opening itms-services URL")
                 UIApplication.shared.open(link)
             } else {
-                log.log("[INSTALL] ERROR: no iTunes link")
             }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
@@ -564,7 +556,6 @@ struct SigningView: View {
         }
 
         if attempts > 20 {
-            log.log("[INSTALL] ERROR: Server port not assigned after 10s")
             installingAppId = nil
             return
         }

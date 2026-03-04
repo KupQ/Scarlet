@@ -1,5 +1,5 @@
 /* ============================================
-   1Sign — English (Base Localization)
+   Scarlet — English (Base Localization)
    
    SwiftUI Text("key") automatically looks up
    strings here. Keys match the exact string
@@ -17,7 +17,7 @@
 "Import" = "Import";
 
 // ─── Home View ───
-"Scarlet" = "Alpha";
+"Scarlet" = "Scarlet";
 "iOS App Signing" = "iOS App Signing";
 "Sign & Install" = "Sign & Install";
 "Powered by zsign" = "Powered by zsign";
@@ -93,7 +93,7 @@
 "Strip app extensions" = "Strip app extensions";
 "About" = "About";
 "Language" = "Language";
-"About Scarlet" = "About Alpha";
+"About Scarlet" = "About Scarlet";
 
 // ─── Signing Sheet ───
 "Compression" = "Compression";
@@ -146,7 +146,7 @@
 "Bundled" = "Bundled";
 
 // ─── Splash ───
-"Scarlet" = "Alpha";
+"Scarlet" = "Scarlet";
 
 // ─── Misc ───
 "•" = "•";
@@ -194,3 +194,6 @@
 "%@ has been signed successfully" = "%@ has been signed successfully";
 "Download Complete" = "Download Complete";
 "%@ has been downloaded" = "%@ has been downloaded";
+
+// ─── Signed App Install ───
+"Installing..." = "Installing...";

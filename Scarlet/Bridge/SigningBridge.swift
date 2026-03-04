@@ -63,19 +63,12 @@ struct SigningBridge {
         compressionLevel: Int = 0
     ) -> Result<URL, SigningError> {
 
-        let log = FileLogger.shared
-        log.log("=== Starting signing (3-step) ===")
-        log.log("IPA: \(ipaURL.lastPathComponent)")
-        log.log("Cert: \(certURL.lastPathComponent)")
-        log.log("Compression: \(compressionLevel)")
 
         // Validate inputs
         guard FileManager.default.fileExists(atPath: ipaURL.path) else {
-            log.log("ERROR: IPA file not found")
             return .failure(.noIPA)
         }
         guard FileManager.default.fileExists(atPath: certURL.path) else {
-            log.log("ERROR: Certificate not found")
             return .failure(.noCertificate)
         }
 
@@ -87,9 +80,7 @@ struct SigningBridge {
         let extractDir = tempDir.appendingPathComponent("extracted").path
 
         // Step 1: Extract IPA
-        log.log("Step 1: Extracting IPA...")
         let extractResult = ipa_extract(ipaURL.path, extractDir)
-        log.log("Extract result: \(extractResult)")
 
         if extractResult != 0 {
             return .failure(.extractionFailed("ipa_extract returned \(extractResult)"))
@@ -99,15 +90,12 @@ struct SigningBridge {
         let payloadDir = "\(extractDir)/Payload"
         guard let contents = try? FileManager.default.contentsOfDirectory(atPath: payloadDir),
               let appFolder = contents.first(where: { $0.hasSuffix(".app") }) else {
-            log.log("ERROR: No .app found in Payload")
             return .failure(.signingFailed("No .app found in Payload"))
         }
 
         let appPath = "\(payloadDir)/\(appFolder)"
-        log.log("App folder: \(appFolder)")
 
         // Step 2: Sign the .app folder with zsign
-        log.log("Step 2: Signing...")
         let signResult = zsign(
             appPath,
             certURL.path,
@@ -117,7 +105,6 @@ struct SigningBridge {
             bundleId,
             displayName
         )
-        log.log("zsign returned: \(signResult)")
 
         if signResult != 0 {
             return .failure(.signingFailed("zsign returned error code \(signResult)"))
@@ -125,10 +112,8 @@ struct SigningBridge {
 
         // Step 3: Re-archive with user's compression level
         let outputPath = tempDir.appendingPathComponent("signed.ipa").path
-        log.log("Step 3: Archiving (compression: \(compressionLevel))...")
         let archiveResult = ipa_archive(extractDir, outputPath,
                                         Int32(compressionLevel))
-        log.log("Archive result: \(archiveResult)")
 
         if archiveResult != 0 {
             return .failure(.archiveFailed("ipa_archive returned \(archiveResult)"))
@@ -139,7 +124,6 @@ struct SigningBridge {
         }
 
         let outputURL = URL(fileURLWithPath: outputPath)
-        log.log("=== Signing complete: \(outputURL.lastPathComponent) ===")
         return .success(outputURL)
     }
 }
