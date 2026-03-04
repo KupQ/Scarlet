@@ -103,9 +103,9 @@ struct ResultView: View {
 
                 // File info card
                 VStack(spacing: 0) {
-                    infoRow(icon: "doc.fill", label: "File", value: outputURL.url.lastPathComponent)
+                    infoRow(icon: "doc.fill", label: L("File"), value: outputURL.url.lastPathComponent)
                     Divider().background(Color.glassBorder).padding(.horizontal, 16)
-                    infoRow(icon: "internaldrive", label: "Size", value: fileSize)
+                    infoRow(icon: "internaldrive", label: L("Size"), value: fileSize)
                     Divider().background(Color.glassBorder).padding(.horizontal, 16)
                     infoRow(icon: "folder.fill", label: L("Location"), value: L("App Documents"))
                 }

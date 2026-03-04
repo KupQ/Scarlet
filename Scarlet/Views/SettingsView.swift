@@ -77,25 +77,6 @@ struct SettingsView: View {
         } message: {
             Text(importMessage)
         }
-        .sheet(isPresented: $showDebugLog) {
-            NavigationView {
-                ScrollView {
-                    Text(debugLogText)
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundColor(.white)
-                        .padding(12)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .background(Color.black)
-                .navigationTitle("Debug Log")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Done") { showDebugLog = false }
-                    }
-                }
-            }
-        }
     }
 
     // MARK: - Certificate Section

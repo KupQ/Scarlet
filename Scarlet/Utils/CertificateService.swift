@@ -188,7 +188,7 @@ final class CertificateService: ObservableObject {
     /// Fetches certificates from the API for the device UDID.
     func fetchCertificates() async {
         guard let udid = deviceUDID else {
-            errorMessage = "Could not determine device UDID"
+            errorMessage = L("Could not determine device UDID")
             return
         }
 

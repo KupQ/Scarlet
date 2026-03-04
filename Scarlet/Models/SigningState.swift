@@ -110,7 +110,7 @@ final class SigningState: ObservableObject {
         // Resolve certificate URL (picker takes priority over saved)
         let certURL = certFile?.url ?? settings.savedCertURL
         guard let certURL else {
-            phase = .failure(message: "No certificate available")
+            phase = .failure(message: L("No certificate available"))
             return
         }
 

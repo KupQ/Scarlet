@@ -197,3 +197,23 @@
 
 // ─── Signed App Install ───
 "Installing..." = "Installing...";
+
+// ─── Result View ───
+"File" = "File";
+"Size" = "Size";
+
+// ─── Errors ───
+"No certificate available" = "No certificate available";
+"Could not determine device UDID" = "Could not determine device UDID";
+
+// ─── Credits ───
+"Built with ❤️ for the community" = "Built with ❤️ for the community";
+
+// ─── Misc Labels ───
+"Share" = "Share";
+"DEFAULT" = "DEFAULT";
+"LOCAL" = "LOCAL";
+"No Certificates" = "No Certificates";
+"Hold to open" = "Hold to open";
+"Loading sources... %@/%@" = "Loading sources... %@/%@";
+"Paste a direct link to an IPA file" = "Paste a direct link to an IPA file";
