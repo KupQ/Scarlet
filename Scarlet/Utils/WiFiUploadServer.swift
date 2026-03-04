@@ -22,7 +22,8 @@ final class WiFiUploadServer: ObservableObject {
 
     private var listener: NWListener?
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
-    private let serverQueue = DispatchQueue(label: "com.scarlet.wifiserver", qos: .userInitiated)
+    private let listenerQueue = DispatchQueue(label: "com.scarlet.wifilistener", qos: .userInitiated)
+    private var connectionCount = 0
 
     // MARK: - Start / Stop
 
@@ -39,7 +40,6 @@ final class WiFiUploadServer: ObservableObject {
                         self?.port = l.port?.rawValue ?? 0
                         self?.localIP = Self.getWiFiAddress() ?? "127.0.0.1"
                         self?.isRunning = true
-                        // Keep app alive in background
                         self?.beginBackgroundTask()
                     case .failed, .cancelled:
                         self?.isRunning = false
@@ -53,7 +53,7 @@ final class WiFiUploadServer: ObservableObject {
                 self?.handleConnection(conn)
             }
 
-            l.start(queue: serverQueue)
+            l.start(queue: listenerQueue)
             listener = l
         } catch {
             isRunning = false
@@ -91,7 +91,13 @@ final class WiFiUploadServer: ObservableObject {
     // MARK: - Connection Handler
 
     private func handleConnection(_ conn: NWConnection) {
-        conn.start(queue: serverQueue)
+        // Each connection gets its own queue — prevents blocking the listener
+        connectionCount += 1
+        let connQueue = DispatchQueue(label: "com.scarlet.conn.\(connectionCount)", qos: .userInitiated)
+        conn.start(queue: connQueue)
+
+        // Renew background task for each connection
+        beginBackgroundTask()
 
         conn.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, _, error in
             guard let self, error == nil, let data else {
