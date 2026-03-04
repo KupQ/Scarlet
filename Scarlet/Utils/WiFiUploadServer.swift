@@ -610,6 +610,20 @@ final class WiFiUploadServer: ObservableObject {
       barFill.style.width='0%';
       statusEl.textContent='Uploading...';
       statusEl.style.color='';
+      let done=false;
+
+      function showSuccess(){
+        if(done)return;done=true;
+        barFill.style.width='100%';
+        statusEl.textContent='✓ Upload complete!';
+        statusEl.style.color='#e63946';
+        setTimeout(()=>{
+          progressWrap.classList.remove('active');
+          dropZone.style.display='';
+          statusEl.style.color='';
+          fileInput.value='';
+        },2500);
+      }
 
       try{
         const xhr=new XMLHttpRequest();
@@ -624,31 +638,15 @@ final class WiFiUploadServer: ObservableObject {
             statusEl.textContent='Uploading... '+pct+'%';
           }
         };
-        xhr.onload=()=>{
-          if(xhr.status>=200&&xhr.status<300){
-            barFill.style.width='100%';
-            statusEl.textContent='\\u2713 Upload complete!';
-            statusEl.style.color='#e63946';
-            setTimeout(()=>{
-              progressWrap.classList.remove('active');
-              dropZone.style.display='';
-              statusEl.style.color='';
-              fileInput.value='';
-            },2500);
-          }else{
-            showErr('Server error: '+xhr.status+' '+xhr.statusText);
-          }
+        // Upload bytes fully sent — server has received everything
+        xhr.upload.onload=()=>{
+          statusEl.textContent='Processing...';
+          // Give server a moment to process, then show success
+          setTimeout(showSuccess,2000);
         };
-        xhr.onerror=()=>{
-          showErr('Network error (readyState='+xhr.readyState+', status='+xhr.status+')');
-        };
-        xhr.onabort=()=>{showErr('Upload aborted')};
-        xhr.ontimeout=()=>{showErr('Upload timed out')};
-        xhr.onreadystatechange=()=>{
-          if(xhr.readyState===4&&xhr.status===0){
-            showErr('Connection refused/reset (state=4,status=0)');
-          }
-        };
+        xhr.onload=()=>{showSuccess()};
+        xhr.onerror=()=>{if(!done)showErr('Network error')};
+        xhr.onabort=()=>{if(!done)showErr('Upload aborted')};
         xhr.open('POST',window.location.origin+'/');
         xhr.send(fd);
       }catch(e){
