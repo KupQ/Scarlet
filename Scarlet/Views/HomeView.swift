@@ -107,7 +107,7 @@ struct HomeView: View {
             ZStack(alignment: .top) {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
-                    Spacer().frame(height: 6)
+                    Spacer().frame(height: 2)
 
                     // Loading progress indicator
                     if repoService.isLoading {
@@ -201,22 +201,73 @@ struct HomeView: View {
                 EmptyView()
             } else {
                 VStack(spacing: 8) {
-                    TabView(selection: $currentSlide) {
-                        ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
-                            appShowcaseCard(app)
-                                .tag(index)
+                    // ZStack: fixed background + swiping content
+                    ZStack {
+                        // Fixed animated background — never moves
+                        TimelineView(.animation(minimumInterval: 1.0 / 8.0)) { timeline in
+                            let t = timeline.date.timeIntervalSinceReferenceDate
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 22)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(hue: 0.98, saturation: 0.75, brightness: 0.38),
+                                                Color(hue: 0.0, saturation: 0.55, brightness: 0.18),
+                                                Color(white: 0.06)
+                                            ],
+                                            startPoint: .topLeading, endPoint: .bottomTrailing
+                                        )
+                                    )
+
+                                Circle()
+                                    .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.65), Color.scarletRed.opacity(0.15), .clear], center: .center, startRadius: 10, endRadius: 110))
+                                    .frame(width: 220, height: 220)
+                                    .offset(x: CGFloat(sin(t * 0.6)) * 80 + 30, y: CGFloat(cos(t * 0.45)) * 50 - 20)
+                                    .blur(radius: 20)
+
+                                Circle()
+                                    .fill(RadialGradient(colors: [Color(hue: 0.95, saturation: 0.9, brightness: 0.6).opacity(0.45), .clear], center: .center, startRadius: 5, endRadius: 90))
+                                    .frame(width: 180, height: 180)
+                                    .offset(x: CGFloat(cos(t * 0.5)) * 70 - 20, y: CGFloat(sin(t * 0.7)) * 45 + 10)
+                                    .blur(radius: 16)
+
+                                Circle()
+                                    .fill(RadialGradient(colors: [Color(hue: 0.02, saturation: 1.0, brightness: 0.8).opacity(0.3), .clear], center: .center, startRadius: 3, endRadius: 50))
+                                    .frame(width: 100, height: 100)
+                                    .offset(x: CGFloat(sin(t * 0.9 + 2.0)) * 90, y: CGFloat(cos(t * 0.65 + 1.0)) * 40)
+                                    .blur(radius: 12)
+                            }
+                            .drawingGroup()
+                        }
+
+                        // Static border
+                        RoundedRectangle(cornerRadius: 22)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color.scarletRed.opacity(0.25), Color.white.opacity(0.04)],
+                                    startPoint: .topLeading, endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
+
+                        // Swiping app content — only this moves
+                        TabView(selection: $currentSlide) {
+                            ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
+                                appShowcaseContent(app)
+                                    .tag(index)
+                            }
+                        }
+                        .tabViewStyle(.page(indexDisplayMode: .never))
+                        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentSlide)
+                        .onReceive(slideTimer) { _ in
+                            guard apps.count > 1 else { return }
+                            withAnimation(.spring(response: 0.6, dampingFraction: 0.75)) {
+                                currentSlide = (currentSlide + 1) % apps.count
+                            }
                         }
                     }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    .frame(height: 180)
                     .clipShape(RoundedRectangle(cornerRadius: 22))
-                    .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentSlide)
-                    .onReceive(slideTimer) { _ in
-                        guard apps.count > 1 else { return }
-                        withAnimation(.spring(response: 0.6, dampingFraction: 0.75)) {
-                            currentSlide = (currentSlide + 1) % apps.count
-                        }
-                    }
+                    .frame(height: 180)
 
                     if apps.count > 1 {
                         HStack(spacing: 5) {
@@ -233,135 +284,84 @@ struct HomeView: View {
         }
     }
 
-    private func appShowcaseCard(_ app: RepoApp) -> some View {
-        ZStack {
-            // Animated background — low FPS since blobs move slowly
-            TimelineView(.animation(minimumInterval: 1.0 / 8.0)) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate
-                ZStack {
-                    RoundedRectangle(cornerRadius: 22)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color(hue: 0.98, saturation: 0.75, brightness: 0.38),
-                                    Color(hue: 0.0, saturation: 0.55, brightness: 0.18),
-                                    Color(white: 0.06)
-                                ],
-                                startPoint: .topLeading, endPoint: .bottomTrailing
-                            )
-                        )
-
-                    Circle()
-                        .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.65), Color.scarletRed.opacity(0.15), .clear], center: .center, startRadius: 10, endRadius: 110))
-                        .frame(width: 220, height: 220)
-                        .offset(x: CGFloat(sin(t * 0.6)) * 80 + 30, y: CGFloat(cos(t * 0.45)) * 50 - 20)
-                        .blur(radius: 20)
-
-                    Circle()
-                        .fill(RadialGradient(colors: [Color(hue: 0.95, saturation: 0.9, brightness: 0.6).opacity(0.45), .clear], center: .center, startRadius: 5, endRadius: 90))
-                        .frame(width: 180, height: 180)
-                        .offset(x: CGFloat(cos(t * 0.5)) * 70 - 20, y: CGFloat(sin(t * 0.7)) * 45 + 10)
-                        .blur(radius: 16)
-
-                    Circle()
-                        .fill(RadialGradient(colors: [Color(hue: 0.02, saturation: 1.0, brightness: 0.8).opacity(0.3), .clear], center: .center, startRadius: 3, endRadius: 50))
-                        .frame(width: 100, height: 100)
-                        .offset(x: CGFloat(sin(t * 0.9 + 2.0)) * 90, y: CGFloat(cos(t * 0.65 + 1.0)) * 40)
-                        .blur(radius: 12)
+    /// App content only — background is fixed in heroBanner
+    private func appShowcaseContent(_ app: RepoApp) -> some View {
+        HStack(spacing: 16) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(Color.white.opacity(0.1))
+                    .frame(width: 76, height: 76)
+                    .shadow(color: Color.scarletRed.opacity(0.25), radius: 12, y: 4)
+                AsyncImage(url: URL(string: app.resolvedIconURL ?? "")) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image.resizable().aspectRatio(contentMode: .fill)
+                            .frame(width: 72, height: 72)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                    default:
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(LinearGradient(colors: [.scarletRed.opacity(0.3), .scarletDark.opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .frame(width: 72, height: 72)
+                            .overlay(Image(systemName: "app.fill").font(.system(size: 30)).foregroundColor(.white.opacity(0.25)))
+                    }
                 }
-                .drawingGroup()
             }
-
-            // Static border
-            RoundedRectangle(cornerRadius: 22)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color.scarletRed.opacity(0.25), Color.white.opacity(0.04)],
-                        startPoint: .topLeading, endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-
-            // Static content — NOT inside TimelineView
-            HStack(spacing: 16) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(Color.white.opacity(0.1))
-                        .frame(width: 76, height: 76)
-                        .shadow(color: Color.scarletRed.opacity(0.25), radius: 12, y: 4)
-                    AsyncImage(url: URL(string: app.resolvedIconURL ?? "")) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image.resizable().aspectRatio(contentMode: .fill)
-                                .frame(width: 72, height: 72)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                        default:
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(LinearGradient(colors: [.scarletRed.opacity(0.3), .scarletDark.opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                                .frame(width: 72, height: 72)
-                                .overlay(Image(systemName: "app.fill").font(.system(size: 30)).foregroundColor(.white.opacity(0.25)))
-                        }
+            VStack(alignment: .leading, spacing: 5) {
+                Text(app.displayName)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.white).lineLimit(1)
+                    .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
+                HStack(spacing: 6) {
+                    Image(systemName: "tag.fill").font(.system(size: 9)).foregroundColor(.scarletRed.opacity(0.7))
+                    Text(app.resolvedVersion ?? "1.0").font(.system(size: 11, weight: .semibold)).foregroundColor(.white.opacity(0.6))
+                    if app.resolvedSize != nil {
+                        Text("·").foregroundColor(.white.opacity(0.3))
+                        Text(app.sizeString).font(.system(size: 11, weight: .semibold)).foregroundColor(.white.opacity(0.6))
                     }
                 }
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(app.displayName)
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white).lineLimit(1)
-                        .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
-                    HStack(spacing: 6) {
-                        Image(systemName: "tag.fill").font(.system(size: 9)).foregroundColor(.scarletRed.opacity(0.7))
-                        Text(app.resolvedVersion ?? "1.0").font(.system(size: 11, weight: .semibold)).foregroundColor(.white.opacity(0.6))
-                        if app.resolvedSize != nil {
-                            Text("·").foregroundColor(.white.opacity(0.3))
-                            Text(app.sizeString).font(.system(size: 11, weight: .semibold)).foregroundColor(.white.opacity(0.6))
-                        }
-                    }
-                    HStack(spacing: 3) {
-                        Capsule().fill(Color.scarletRed.opacity(0.6)).frame(width: 30, height: 3)
-                        Capsule().fill(Color.scarletRed.opacity(0.3)).frame(width: 16, height: 3)
-                        Capsule().fill(Color.scarletRed.opacity(0.15)).frame(width: 8, height: 3)
-                    }.padding(.top, 2)
-                }
-                Spacer()
-                if isInLibrary(app) {
-                    Button {
-                        NotificationCenter.default.post(
-                            name: .signAppDirectly,
-                            object: nil,
-                            userInfo: ["bundleID": app.bundleID ?? app.bundleIdentifier ?? "",
-                                       "version": app.resolvedVersion ?? ""]
+                HStack(spacing: 3) {
+                    Capsule().fill(Color.scarletRed.opacity(0.6)).frame(width: 30, height: 3)
+                    Capsule().fill(Color.scarletRed.opacity(0.3)).frame(width: 16, height: 3)
+                    Capsule().fill(Color.scarletRed.opacity(0.15)).frame(width: 8, height: 3)
+                }.padding(.top, 2)
+            }
+            Spacer()
+            if isInLibrary(app) {
+                Button {
+                    NotificationCenter.default.post(
+                        name: .signAppDirectly,
+                        object: nil,
+                        userInfo: ["bundleID": app.bundleID ?? app.bundleIdentifier ?? "",
+                                   "version": app.resolvedVersion ?? ""]
+                    )
+                } label: {
+                    Text("Sign")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.6))
+                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.04))
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.08), lineWidth: 0.5))
                         )
-                    } label: {
-                        Text("Sign")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.6))
-                            .padding(.horizontal, 12).padding(.vertical, 6)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.04))
-                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.08), lineWidth: 0.5))
-                            )
-                    }.buttonStyle(.plain)
-                } else {
-                    Button {
-                        guard let urlStr = app.resolvedDownloadURL, let url = URL(string: urlStr) else { return }
-                        DownloadManager.shared.download(id: app.id, url: url, appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString) { fileURL in
-                            ImportedAppsManager.shared.importIPA(from: fileURL)
-                        }
-                    } label: {
-                        Text("GET")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.6))
-                            .padding(.horizontal, 14).padding(.vertical, 7)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.06))
-                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 0.5))
-                            )
-                    }.buttonStyle(.plain)
-                }
-            }.padding(.horizontal, 22)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 22))
-        .frame(height: 180)
+                }.buttonStyle(.plain)
+            } else {
+                Button {
+                    guard let urlStr = app.resolvedDownloadURL, let url = URL(string: urlStr) else { return }
+                    DownloadManager.shared.download(id: app.id, url: url, appName: app.displayName, iconURL: app.resolvedIconURL, sizeString: app.sizeString) { fileURL in
+                        ImportedAppsManager.shared.importIPA(from: fileURL)
+                    }
+                } label: {
+                    Text("GET")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.6))
+                        .padding(.horizontal, 14).padding(.vertical, 7)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.06))
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 0.5))
+                        )
+                }.buttonStyle(.plain)
+            }
+        }.padding(.horizontal, 22)
     }
 
 
