@@ -124,7 +124,7 @@ struct HomeView: View {
                     // Repos
                     repoAppsSection
 
-                    Spacer().frame(height: 120)
+                    Spacer().frame(height: 60)
                 }
                 .padding(.top, 14)            }
 
