@@ -1633,26 +1633,33 @@ struct ContentView: View {
                                 .fill(Color.green)
                                 .frame(width: 6, height: 6)
                                 .shadow(color: .green.opacity(0.6), radius: 4)
+                                .transition(.opacity)
                         }
 
                         Spacer()
 
-                        // Power toggle button
+                        // Toggle button — rounded rectangle matching app style
                         Button {
-                            if uploadServer.isRunning {
-                                uploadServer.stop()
-                            } else {
-                                uploadServer.start()
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                if uploadServer.isRunning {
+                                    uploadServer.stop()
+                                } else {
+                                    uploadServer.start()
+                                }
                             }
                         } label: {
-                            Image(systemName: uploadServer.isRunning ? "stop.circle.fill" : "play.circle.fill")
-                                .font(.system(size: 26, weight: .light))
-                                .foregroundStyle(
-                                    uploadServer.isRunning
-                                        ? LinearGradient(colors: [.scarletRed, .scarletRed.opacity(0.7)], startPoint: .top, endPoint: .bottom)
-                                        : LinearGradient(colors: [.white.opacity(0.35), .white.opacity(0.2)], startPoint: .top, endPoint: .bottom)
+                            Image(systemName: uploadServer.isRunning ? "stop.fill" : "play.fill")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(uploadServer.isRunning ? .scarletRed : .white.opacity(0.4))
+                                .frame(width: 32, height: 28)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(uploadServer.isRunning ? Color.scarletRed.opacity(0.12) : Color.white.opacity(0.04))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(uploadServer.isRunning ? Color.scarletRed.opacity(0.2) : Color.white.opacity(0.08), lineWidth: 0.5)
+                                        )
                                 )
-                                .shadow(color: uploadServer.isRunning ? .scarletRed.opacity(0.3) : .clear, radius: 8)
                         }
                         .buttonStyle(.plain)
                     }
@@ -1664,6 +1671,7 @@ struct ContentView: View {
                             .fill(Color.white.opacity(0.04))
                             .frame(height: 0.5)
                             .padding(.horizontal, 12)
+                            .transition(.opacity)
 
                         Button {
                             UIPasteboard.general.string = uploadServer.serverURL
@@ -1685,8 +1693,10 @@ struct ContentView: View {
                             .padding(.vertical, 10)
                         }
                         .buttonStyle(.plain)
+                        .transition(.move(edge: .top).combined(with: .opacity))
                     }
                 }
+                .animation(.spring(response: 0.35, dampingFraction: 0.8), value: uploadServer.isRunning)
                 .glassCard(cornerRadius: 14)
             }
             .padding(.horizontal, 16)

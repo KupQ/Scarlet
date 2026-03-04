@@ -95,6 +95,16 @@ class SignedAppsManager: ObservableObject {
             fileSize: size
         )
 
+        // Remove any previous signed version of the same bundleId to avoid duplicates
+        for existing in signedApps.filter({ $0.bundleId == bundleId }) {
+            let oldIPA = signedDir.appendingPathComponent(existing.ipaFileName)
+            try? FileManager.default.removeItem(at: oldIPA)
+            if let oldIcon = existing.iconFileName {
+                try? FileManager.default.removeItem(at: iconsDir.appendingPathComponent(oldIcon))
+            }
+        }
+        signedApps.removeAll { $0.bundleId == bundleId }
+
         signedApps.insert(app, at: 0)
         saveApps()
         return app
