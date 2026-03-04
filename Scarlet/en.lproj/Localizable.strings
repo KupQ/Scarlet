@@ -248,3 +248,12 @@
 "Stop Server" = "Stop Server";
 "Server is running" = "Server is running";
 "Share files over WiFi" = "Share files over WiFi";
+
+// ─── Missing Keys ───
+"Update Channel" = "Update Channel";
+"Download" = "Download";
+"Download from URL" = "Download from URL";
+"Import from Files" = "Import from Files";
+"Fetch from Server" = "Fetch from Server";
+"Remove Repo" = "Remove Repo";
+"Total" = "Total";
