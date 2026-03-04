@@ -102,6 +102,17 @@ struct HomeView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
                     .padding(.bottom, 8)
+                    .background(Color.bgPrimary)
+
+                // Soft fade edge — repos scroll under this
+                LinearGradient(
+                    colors: [Color.bgPrimary, Color.bgPrimary.opacity(0)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 20)
+                .allowsHitTesting(false)
+                .zIndex(1)
 
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
