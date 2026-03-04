@@ -71,18 +71,25 @@ final class WiFiUploadServer: ObservableObject {
     private func handleConnection(_ conn: NWConnection) {
         conn.start(queue: .global(qos: .userInitiated))
 
-        // First read: get headers (up to 16KB is plenty for HTTP headers)
-        conn.receive(minimumIncompleteLength: 1, maximumLength: 16384) { [weak self] data, _, _, error in
+        // First read: get headers + initial body
+        conn.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, _, error in
             guard let self, error == nil, let data else {
                 conn.cancel()
                 return
             }
 
-            let headerPeek = String(data: data.prefix(8), encoding: .utf8) ?? ""
+            let headerPeek = String(data: data.prefix(16), encoding: .utf8) ?? ""
+
+            // Handle CORS preflight
+            if headerPeek.hasPrefix("OPTIONS") {
+                let resp = self.corsPreflightResponse()
+                conn.send(content: resp, completion: .contentProcessed { _ in conn.cancel() })
+                return
+            }
 
             if headerPeek.hasPrefix("POST") {
                 // Parse Content-Length from headers
-                let headerStr = String(data: data.prefix(min(data.count, 4096)), encoding: .utf8) ?? ""
+                let headerStr = String(data: data.prefix(min(data.count, 8192)), encoding: .utf8) ?? ""
                 var contentLength = 0
                 for line in headerStr.components(separatedBy: "\r\n") {
                     if line.lowercased().hasPrefix("content-length:") {
@@ -99,15 +106,12 @@ final class WiFiUploadServer: ObservableObject {
 
                 let bodyStart = headerEnd.upperBound
                 let initialBody = Data(data[bodyStart...])
-                let totalBodyNeeded = contentLength
-                let remaining = totalBodyNeeded - initialBody.count
+                let remaining = contentLength - initialBody.count
 
                 if remaining <= 0 {
-                    // Small upload — everything in first chunk
                     self.processUpload(headerData: Data(data[data.startIndex..<bodyStart]),
                                        bodyData: initialBody, connection: conn)
                 } else {
-                    // Large upload — need to read more chunks
                     self.readRemainingBody(connection: conn,
                                           headerData: Data(data[data.startIndex..<bodyStart]),
                                           accumulated: initialBody,
@@ -127,7 +131,7 @@ final class WiFiUploadServer: ObservableObject {
                                     headerData: Data,
                                     accumulated: Data,
                                     remaining: Int) {
-        let chunkSize = min(remaining, 1024 * 1024) // 1 MB chunks
+        let chunkSize = min(remaining, 1024 * 1024)
         connection.receive(minimumIncompleteLength: 1, maximumLength: chunkSize) { [weak self] data, _, _, error in
             guard let self, error == nil, let data else {
                 connection.cancel()
@@ -152,7 +156,6 @@ final class WiFiUploadServer: ObservableObject {
     // MARK: - Upload Processing
 
     private func processUpload(headerData: Data, bodyData: Data, connection: NWConnection) {
-        // Parse boundary from headers
         guard let headerStr = String(data: headerData, encoding: .utf8),
               let boundaryLine = headerStr.components(separatedBy: "\r\n").first(where: { $0.lowercased().contains("boundary=") }),
               let boundary = boundaryLine.components(separatedBy: "boundary=").last?.trimmingCharacters(in: .whitespaces) else {
@@ -162,7 +165,6 @@ final class WiFiUploadServer: ObservableObject {
             return
         }
 
-        // Find Content-Disposition
         guard let dispositionRange = bodyData.range(of: Data("Content-Disposition:".utf8)),
               let dispLineEnd = bodyData[dispositionRange.lowerBound...].range(of: Data("\r\n".utf8)),
               let dispLine = String(data: bodyData[dispositionRange.lowerBound..<dispLineEnd.lowerBound], encoding: .utf8) else {
@@ -172,14 +174,12 @@ final class WiFiUploadServer: ObservableObject {
             return
         }
 
-        // Extract filename
         var fileName = "upload.ipa"
         if let fnRange = dispLine.range(of: "filename=\""),
            let fnEnd = dispLine[fnRange.upperBound...].range(of: "\"") {
             fileName = String(dispLine[fnRange.upperBound..<fnEnd.lowerBound])
         }
 
-        // Find file data (after double CRLF following part headers)
         guard let fileStart = bodyData[dispositionRange.lowerBound...].range(of: Data("\r\n\r\n".utf8)) else {
             let errHTML = Self.responseHTML(success: false, message: "No file data found")
             let resp = httpResponse(status: "400 Bad Request", contentType: "text/html; charset=utf-8", body: Data(errHTML.utf8))
@@ -189,15 +189,12 @@ final class WiFiUploadServer: ObservableObject {
 
         var fileData = bodyData[fileStart.upperBound...]
 
-        // Remove trailing boundary
         let closingBoundary = Data("\r\n--\(boundary)".utf8)
         if let endRange = fileData.range(of: closingBoundary) {
             fileData = fileData[fileData.startIndex..<endRange.lowerBound]
         }
 
-        // Save to temp and import
-        let tempDir = FileManager.default.temporaryDirectory
-        let tempFile = tempDir.appendingPathComponent(fileName)
+        let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
         do {
             try Data(fileData).write(to: tempFile)
 
@@ -211,24 +208,42 @@ final class WiFiUploadServer: ObservableObject {
             let resp = httpResponse(status: "200 OK", contentType: "text/html; charset=utf-8", body: Data(okHTML.utf8))
             connection.send(content: resp, completion: .contentProcessed { _ in connection.cancel() })
         } catch {
-            let errHTML = Self.responseHTML(success: false, message: "Failed to save file: \(error.localizedDescription)")
+            let errHTML = Self.responseHTML(success: false, message: "Failed to save: \(error.localizedDescription)")
             let resp = httpResponse(status: "500 Internal Server Error", contentType: "text/html; charset=utf-8", body: Data(errHTML.utf8))
             connection.send(content: resp, completion: .contentProcessed { _ in connection.cancel() })
         }
     }
 
-    // MARK: - HTTP Response Builder
+    // MARK: - HTTP Response Builders
 
     private func httpResponse(status: String, contentType: String, body: Data) -> Data {
         let header = [
             "HTTP/1.1 \(status)",
             "Content-Type: \(contentType)",
             "Content-Length: \(body.count)",
+            "Access-Control-Allow-Origin: *",
+            "Access-Control-Allow-Methods: GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers: Content-Type",
             "Connection: close",
             "",
             ""
         ].joined(separator: "\r\n")
         return Data(header.utf8) + body
+    }
+
+    private func corsPreflightResponse() -> Data {
+        let header = [
+            "HTTP/1.1 204 No Content",
+            "Access-Control-Allow-Origin: *",
+            "Access-Control-Allow-Methods: GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers: Content-Type, Content-Length",
+            "Access-Control-Max-Age: 86400",
+            "Content-Length: 0",
+            "Connection: close",
+            "",
+            ""
+        ].joined(separator: "\r\n")
+        return Data(header.utf8)
     }
 
     // MARK: - WiFi IP
