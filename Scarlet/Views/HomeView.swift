@@ -200,64 +200,16 @@ struct HomeView: View {
             if apps.isEmpty {
                 EmptyView()
             } else {
-                ZStack {
-                    // Fixed animated background — stays in place while apps swipe
-                    TimelineView(.animation(minimumInterval: 1.0 / 8.0)) { timeline in
-                        let t = timeline.date.timeIntervalSinceReferenceDate
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 22)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [
-                                            Color(hue: 0.98, saturation: 0.75, brightness: 0.38),
-                                            Color(hue: 0.0, saturation: 0.55, brightness: 0.18),
-                                            Color(white: 0.06)
-                                        ],
-                                        startPoint: .topLeading, endPoint: .bottomTrailing
-                                    )
-                                )
-
-                            Circle()
-                                .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.65), Color.scarletRed.opacity(0.15), .clear], center: .center, startRadius: 10, endRadius: 110))
-                                .frame(width: 220, height: 220)
-                                .offset(x: CGFloat(sin(t * 0.6)) * 80 + 30, y: CGFloat(cos(t * 0.45)) * 50 - 20)
-                                .blur(radius: 20)
-
-                            Circle()
-                                .fill(RadialGradient(colors: [Color(hue: 0.95, saturation: 0.9, brightness: 0.6).opacity(0.45), .clear], center: .center, startRadius: 5, endRadius: 90))
-                                .frame(width: 180, height: 180)
-                                .offset(x: CGFloat(cos(t * 0.5)) * 70 - 20, y: CGFloat(sin(t * 0.7)) * 45 + 10)
-                                .blur(radius: 16)
-
-                            Circle()
-                                .fill(RadialGradient(colors: [Color(hue: 0.02, saturation: 1.0, brightness: 0.8).opacity(0.3), .clear], center: .center, startRadius: 3, endRadius: 50))
-                                .frame(width: 100, height: 100)
-                                .offset(x: CGFloat(sin(t * 0.9 + 2.0)) * 90, y: CGFloat(cos(t * 0.65 + 1.0)) * 40)
-                                .blur(radius: 12)
-                        }
-                        .drawingGroup()
-                    }
-
-                    // Static border
-                    RoundedRectangle(cornerRadius: 22)
-                        .stroke(
-                            LinearGradient(
-                                colors: [Color.scarletRed.opacity(0.3), Color.white.opacity(0.04)],
-                                startPoint: .topLeading, endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
-                        )
-
-                    // Swiping app content on top of fixed background
-                    VStack(spacing: 8) {
+                VStack(spacing: 8) {
                     TabView(selection: $currentSlide) {
                         ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
-                            appShowcaseContent(app)
+                            appShowcaseCard(app)
                                 .tag(index)
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
                     .frame(height: 180)
+                    .clipShape(RoundedRectangle(cornerRadius: 22))
                     .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentSlide)
                     .onReceive(slideTimer) { _ in
                         guard apps.count > 1 else { return }
@@ -265,10 +217,6 @@ struct HomeView: View {
                             currentSlide = (currentSlide + 1) % apps.count
                         }
                     }
-                    }
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 22))
-                .frame(height: 180)
 
                     if apps.count > 1 {
                         HStack(spacing: 5) {
@@ -279,13 +227,62 @@ struct HomeView: View {
                                     .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentSlide)
                             }
                         }
+                    }
                 }
             }
         }
     }
 
-    private func appShowcaseContent(_ app: RepoApp) -> some View {
-            // App content only — no background (background is fixed in heroBanner)
+    private func appShowcaseCard(_ app: RepoApp) -> some View {
+        ZStack {
+            // Animated background — low FPS since blobs move slowly
+            TimelineView(.animation(minimumInterval: 1.0 / 8.0)) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate
+                ZStack {
+                    RoundedRectangle(cornerRadius: 22)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color(hue: 0.98, saturation: 0.75, brightness: 0.38),
+                                    Color(hue: 0.0, saturation: 0.55, brightness: 0.18),
+                                    Color(white: 0.06)
+                                ],
+                                startPoint: .topLeading, endPoint: .bottomTrailing
+                            )
+                        )
+
+                    Circle()
+                        .fill(RadialGradient(colors: [Color.scarletRed.opacity(0.65), Color.scarletRed.opacity(0.15), .clear], center: .center, startRadius: 10, endRadius: 110))
+                        .frame(width: 220, height: 220)
+                        .offset(x: CGFloat(sin(t * 0.6)) * 80 + 30, y: CGFloat(cos(t * 0.45)) * 50 - 20)
+                        .blur(radius: 20)
+
+                    Circle()
+                        .fill(RadialGradient(colors: [Color(hue: 0.95, saturation: 0.9, brightness: 0.6).opacity(0.45), .clear], center: .center, startRadius: 5, endRadius: 90))
+                        .frame(width: 180, height: 180)
+                        .offset(x: CGFloat(cos(t * 0.5)) * 70 - 20, y: CGFloat(sin(t * 0.7)) * 45 + 10)
+                        .blur(radius: 16)
+
+                    Circle()
+                        .fill(RadialGradient(colors: [Color(hue: 0.02, saturation: 1.0, brightness: 0.8).opacity(0.3), .clear], center: .center, startRadius: 3, endRadius: 50))
+                        .frame(width: 100, height: 100)
+                        .offset(x: CGFloat(sin(t * 0.9 + 2.0)) * 90, y: CGFloat(cos(t * 0.65 + 1.0)) * 40)
+                        .blur(radius: 12)
+                }
+                .drawingGroup()
+            }
+
+            // Static border
+            RoundedRectangle(cornerRadius: 22)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.scarletRed.opacity(0.25), Color.white.opacity(0.04)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+
+            // Static content — NOT inside TimelineView
             HStack(spacing: 16) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 18)
@@ -362,6 +359,9 @@ struct HomeView: View {
                     }.buttonStyle(.plain)
                 }
             }.padding(.horizontal, 22)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 22))
+        .frame(height: 180)
     }
 
 
