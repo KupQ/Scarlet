@@ -101,22 +101,10 @@ struct HomeView: View {
                 heroBanner
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
-                    .padding(.bottom, 0)
+                    .padding(.bottom, 4)
 
-                // Frosted glass edge — repos scroll under this blur
-                Rectangle()
-                    .fill(.ultraThinMaterial)
-                    .environment(\.colorScheme, .dark)
-                    .frame(height: 16)
-                    .mask(
-                        LinearGradient(
-                            colors: [.white, .white.opacity(0)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .allowsHitTesting(false)
-
+            // ZStack so blur overlays the top of scroll content
+            ZStack(alignment: .top) {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
 
@@ -139,6 +127,16 @@ struct HomeView: View {
 
                     Spacer().frame(height: 80)
                 }
+            }
+
+            // Blur overlay on top of scroll — fades out downward
+            LinearGradient(
+                colors: [Color.bgPrimary, Color.bgPrimary.opacity(0)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 12)
+            .allowsHitTesting(false)
             }
             }
         }
