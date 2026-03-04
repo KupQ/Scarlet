@@ -73,9 +73,10 @@ struct ScarletApp: App {
             return
         }
 
-        // Import into library
+        // Import into library and switch to Library tab
         Task { @MainActor in
             ImportedAppsManager.shared.importIPA(from: tmp)
+            NotificationCenter.default.post(name: .switchToLibrary, object: nil)
         }
     }
 }

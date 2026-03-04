@@ -443,6 +443,11 @@ struct ContentView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .switchToLibrary)) { _ in
+            withAnimation(.easeInOut(duration: 0.3)) {
+                selectedTab = .sign
+            }
+        }
         .onChange(of: signingState.phase) { newPhase in
             switch newPhase {
             case .success(let url):
