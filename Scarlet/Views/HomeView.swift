@@ -270,32 +270,15 @@ struct HomeView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 22))
                     .overlay(alignment: .bottom) {
                         if apps.count > 1 {
-                            ZStack(alignment: .bottom) {
-                                // Dark gradient backing so dots area isn't transparent on iOS 16
-                                LinearGradient(
-                                    colors: [.clear, Color.black.opacity(0.45)],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                                .frame(height: 36)
-                                .mask(
-                                    VStack(spacing: 0) {
-                                        Rectangle()
-                                        RoundedRectangle(cornerRadius: 22)
-                                    }
-                                    .frame(height: 44)
-                                )
-
-                                HStack(spacing: 5) {
-                                    ForEach(0..<apps.count, id: \.self) { i in
-                                        Capsule()
-                                            .fill(i == currentSlide ? Color.scarletRed : Color.white.opacity(0.15))
-                                            .frame(width: i == currentSlide ? 18 : 5, height: 5)
-                                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentSlide)
-                                    }
+                            HStack(spacing: 5) {
+                                ForEach(0..<apps.count, id: \.self) { i in
+                                    Capsule()
+                                        .fill(i == currentSlide ? Color.scarletRed : Color.white.opacity(0.15))
+                                        .frame(width: i == currentSlide ? 18 : 5, height: 5)
+                                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentSlide)
                                 }
-                                .padding(.bottom, 10)
                             }
+                            .padding(.bottom, 10)
                         }
                     }
                     .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentSlide)
