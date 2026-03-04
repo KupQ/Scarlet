@@ -131,6 +131,30 @@ class DownloadManager: NSObject, ObservableObject, URLSessionDataDelegate {
 
         let size = (try? FileManager.default.attributesOfItem(atPath: dest.path)[.size] as? Int64) ?? 0
 
+        // — Validate: reject tiny files (< 50 KB) or non-zip (IPA is a zip archive)
+        var isValid = size >= 50_000  // IPAs are never < 50 KB
+        if isValid, let handle = try? FileHandle(forReadingFrom: dest) {
+            let header = handle.readData(ofLength: 4)
+            handle.closeFile()
+            // ZIP magic bytes: PK\x03\x04
+            isValid = header.count >= 4
+                && header[0] == 0x50 && header[1] == 0x4B
+                && header[2] == 0x03 && header[3] == 0x04
+        }
+
+        if !isValid {
+            // Dead link / error page — clean up and notify
+            try? FileManager.default.removeItem(at: dest)
+            let appName = pendingDownloads.first(where: { $0.id == id })?.appName ?? "App"
+            cleanupDownload(id: id)
+            destURLs.removeValue(forKey: id)
+            NotificationHelper.send(
+                title: L("Download Failed"),
+                body: String(format: L("%@ is not a valid IPA file"), appName)
+            )
+            return
+        }
+
         let appName = pendingDownloads.first(where: { $0.id == id })?.appName ?? "App"
         let completion = completions[id]
         cleanupDownload(id: id)
