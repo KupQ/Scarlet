@@ -685,8 +685,22 @@ struct ContentView: View {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                         showCertPicker.toggle()
                     }
-                    if showCertPicker && certService.certificates.isEmpty {
-                        Task { await certService.fetchCertificates() }
+                    if showCertPicker {
+                        Task {
+                            // Fetch API certs if needed
+                            if certService.certificates.isEmpty {
+                                await certService.fetchCertificates()
+                            }
+                            // Trigger OCSP status checks for API certs
+                            await LocalCertChecker.shared.checkAPICertsIfNeeded(certService.certificates)
+                            // Also check local certs
+                            let localJSON = UserDefaults.standard.string(forKey: "local_imported_certs_json") ?? "[]"
+                            if let data = localJSON.data(using: .utf8),
+                               let localCerts = try? JSONDecoder().decode([LocalImportedCert].self, from: data) {
+                                let pairs = localCerts.map { (name: $0.filename, password: $0.password) }
+                                await LocalCertChecker.shared.checkAllLocalCerts(certs: pairs)
+                            }
+                        }
                     }
                 } label: {
                     HStack(spacing: 12) {
