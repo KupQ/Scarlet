@@ -97,13 +97,14 @@ struct HomeView: View {
                 .padding(.bottom, 16)
                 .background(Color.bgPrimary)
 
+                // Pinned hero slideshow (does not scroll)
+                heroBanner
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                    .padding(.bottom, 8)
+
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
-
-                    // API-driven hero slideshow
-                    heroBanner
-                        .padding(.horizontal, 20)
-                        .padding(.top, 20)
 
                     // Loading progress indicator
                     if repoService.isLoading {
@@ -175,8 +176,8 @@ struct HomeView: View {
     private var showcaseApps: [RepoApp] {
         let apps = repoService.allApps
         guard !apps.isEmpty else { return [] }
-        let seed = Calendar.current.component(.hour, from: Date())
-        var rng = SeededRNG(seed: UInt64(seed))
+        let seed = UInt64(arc4random())
+        var rng = SeededRNG(seed: seed)
         return Array(apps.shuffled(using: &rng).prefix(8))
     }
 
