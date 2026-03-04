@@ -20,6 +20,7 @@ struct ContentView: View {
     @ObservedObject private var uploadServer = WiFiUploadServer.shared
     @State private var selectedTab: Tab = .home
     @State private var isSearching = false
+    @FocusState private var isSearchFocused: Bool
     @State private var searchText = ""
     @State private var showSettingsCard = false
     @State private var showCertsCard = false
@@ -1342,8 +1343,10 @@ struct ContentView: View {
                         .tint(.scarletRed)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
+                        .focused($isSearchFocused)
 
                     Button {
+                        isSearchFocused = false
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                             searchText = ""
                             isSearching = false
@@ -1371,6 +1374,9 @@ struct ContentView: View {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         isSearching = true
                         showSettingsCard = false
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        isSearchFocused = true
                     }
                 } label: {
                     VStack(spacing: 6) {
