@@ -101,7 +101,21 @@ struct HomeView: View {
                 heroBanner
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
-                    .padding(.bottom, 4)
+                    .padding(.bottom, 0)
+
+                // Frosted glass edge — repos scroll under this blur
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+                    .environment(\.colorScheme, .dark)
+                    .frame(height: 16)
+                    .mask(
+                        LinearGradient(
+                            colors: [.white, .white.opacity(0)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .allowsHitTesting(false)
 
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
