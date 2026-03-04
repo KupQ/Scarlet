@@ -241,3 +241,10 @@
 
 // ─── Splash ───
 "by DebianArch64" = "by DebianArch64";
+
+// ─── WiFi Upload ───
+"WiFi Upload" = "WiFi Upload";
+"Start Server" = "Start Server";
+"Stop Server" = "Stop Server";
+"Server is running" = "Server is running";
+"Share files over WiFi" = "Share files over WiFi";

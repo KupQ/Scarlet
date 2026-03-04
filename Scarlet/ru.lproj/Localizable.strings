@@ -235,3 +235,10 @@
 
 // ─── Заставка ───
 "by DebianArch64" = "by DebianArch64";
+
+// ─── WiFi Загрузка ───
+"WiFi Upload" = "WiFi Загрузка";
+"Start Server" = "Запустить сервер";
+"Stop Server" = "Остановить сервер";
+"Server is running" = "Сервер работает";
+"Share files over WiFi" = "Передача файлов по WiFi";

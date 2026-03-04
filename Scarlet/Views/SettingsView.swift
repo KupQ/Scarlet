@@ -12,6 +12,7 @@ import UniformTypeIdentifiers
 /// Settings view with certificate management and zsign configuration.
 struct SettingsView: View {
     @ObservedObject var settings = SigningSettings.shared
+    @StateObject private var uploadServer = WiFiUploadServer.shared
 
     @State private var showCertPicker = false
     @State private var showProfilePicker = false
@@ -40,6 +41,9 @@ struct SettingsView: View {
 
                     // zsign Options Section
                     zsignOptionsSection
+
+                    // WiFi Upload Section
+                    wifiUploadSection
 
                     // About Section
                     aboutSection
@@ -319,6 +323,84 @@ struct SettingsView: View {
                     .tint(.scarletRed)
             }
             .padding(14)
+            .glassCard(cornerRadius: 18)
+        }
+    }
+
+    // MARK: - WiFi Upload
+
+    private var wifiUploadSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            sectionHeader(icon: "wifi", title: L("WiFi Upload"), color: .blue)
+
+            VStack(spacing: 0) {
+                // Start / Stop button
+                Button {
+                    if uploadServer.isRunning {
+                        uploadServer.stop()
+                    } else {
+                        uploadServer.start()
+                    }
+                } label: {
+                    HStack(spacing: 14) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(uploadServer.isRunning ? Color.scarletRed.opacity(0.15) : Color.glassFill)
+                                .frame(width: 50, height: 50)
+                            Image(systemName: uploadServer.isRunning ? "stop.circle.fill" : "play.circle.fill")
+                                .font(.system(size: 22))
+                                .foregroundColor(uploadServer.isRunning ? .scarletRed : .gray)
+                        }
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(uploadServer.isRunning ? L("Stop Server") : L("Start Server"))
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.white)
+                            Text(uploadServer.isRunning ? L("Server is running") : L("Share files over WiFi"))
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.35))
+                        }
+
+                        Spacer()
+
+                        if uploadServer.isRunning {
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 8, height: 8)
+                                .shadow(color: .green.opacity(0.6), radius: 4)
+                        }
+                    }
+                    .padding(14)
+                }
+                .buttonStyle(.plain)
+
+                // Server URL (when running)
+                if uploadServer.isRunning {
+                    Divider().background(Color.glassBorder).padding(.horizontal, 16)
+
+                    Button {
+                        UIPasteboard.general.string = uploadServer.serverURL
+                        UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "link")
+                                .font(.system(size: 14))
+                                .foregroundColor(.scarletRed)
+                                .frame(width: 20)
+                            Text(uploadServer.serverURL)
+                                .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                                .foregroundColor(.scarletRed)
+                            Spacer()
+                            Image(systemName: "doc.on.doc")
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.3))
+                        }
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 14)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
             .glassCard(cornerRadius: 18)
         }
     }

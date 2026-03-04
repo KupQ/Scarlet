@@ -54,6 +54,7 @@
              'A10085' = {isa = PBXBuildFile; fileRef = 'B10085'; };
              'A10086' = {isa = PBXBuildFile; fileRef = 'B10086'; };
              'A10087' = {isa = PBXBuildFile; fileRef = 'B10087'; };
+		'W10002' = {isa = PBXBuildFile; fileRef = 'W10001'; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -119,6 +120,7 @@
              B10053 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningAssetsScanner.swift; sourceTree = "<group>"; };
              B10055 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeableSignedCard.swift; sourceTree = "<group>"; };
              B10056 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractivePopGestureEnabler.swift; sourceTree = "<group>"; };
+		'W10001' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiFiUploadServer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -222,6 +224,7 @@
 				B10052,
 				B10053,
 				B10056,
+				'W10001',
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -377,6 +380,7 @@
 				'A10053',
 				'A10055',
 				'A10056',
+				'W10002',
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
