@@ -167,7 +167,7 @@ final class WiFiUploadServer: ObservableObject {
 
             if headerPeek.hasPrefix("POST") {
                 let headerStr = String(data: data.prefix(min(data.count, 8192)), encoding: .utf8) ?? ""
-                var contentLength = 0
+                var contentLength = -1  // -1 = not found
                 for line in headerStr.components(separatedBy: "\r\n") {
                     if line.lowercased().hasPrefix("content-length:") {
                         contentLength = Int(line.components(separatedBy: ":").last?.trimmingCharacters(in: .whitespaces) ?? "0") ?? 0
@@ -185,9 +185,6 @@ final class WiFiUploadServer: ObservableObject {
 
                 let headerData = Data(data[data.startIndex..<headerEnd.upperBound])
                 let initialBody = Data(data[headerEnd.upperBound...])
-                let remaining = contentLength - initialBody.count
-
-                self.log("#\(connId) headers=\(headerData.count)B, initialBody=\(initialBody.count)B, remaining=\(remaining)B")
 
                 let tmpRaw = FileManager.default.temporaryDirectory.appendingPathComponent("upload_\(UUID().uuidString).raw")
                 FileManager.default.createFile(atPath: tmpRaw.path, contents: nil)
@@ -200,16 +197,35 @@ final class WiFiUploadServer: ObservableObject {
 
                 fh.write(initialBody)
 
-                if remaining <= 0 {
-                    fh.closeFile()
-                    self.log("#\(connId) small upload, processing immediately")
-                    self.processUploadFile(headerData: headerData, rawFile: tmpRaw, connection: conn, connId: connId)
+                if contentLength > 0 {
+                    // Known size — stream exact number of bytes
+                    let remaining = contentLength - initialBody.count
+                    self.log("#\(connId) known-length mode: headers=\(headerData.count)B, initial=\(initialBody.count)B, remaining=\(remaining)B")
+
+                    if remaining <= 0 {
+                        fh.closeFile()
+                        self.processUploadFile(headerData: headerData, rawFile: tmpRaw, connection: conn, connId: connId)
+                    } else {
+                        self.streamToFile(connection: conn, connId: connId,
+                                         headerData: headerData,
+                                         fileHandle: fh,
+                                         rawFile: tmpRaw,
+                                         remaining: remaining)
+                    }
                 } else {
-                    self.streamToFile(connection: conn, connId: connId,
-                                     headerData: headerData,
-                                     fileHandle: fh,
-                                     rawFile: tmpRaw,
-                                     remaining: remaining)
+                    // No Content-Length (chunked transfer) — read until connection completes
+                    self.log("#\(connId) chunked mode: initial=\(initialBody.count)B, reading until complete...")
+                    if isComplete {
+                        fh.closeFile()
+                        self.log("#\(connId) chunked: already complete in first read")
+                        self.processUploadFile(headerData: headerData, rawFile: tmpRaw, connection: conn, connId: connId)
+                    } else {
+                        self.streamUntilComplete(connection: conn, connId: connId,
+                                                 headerData: headerData,
+                                                 fileHandle: fh,
+                                                 rawFile: tmpRaw,
+                                                 totalWritten: initialBody.count)
+                    }
                 }
             } else {
                 self.log("#\(connId) -> serving upload page")
@@ -269,6 +285,51 @@ final class WiFiUploadServer: ObservableObject {
                                   fileHandle: fileHandle,
                                   rawFile: rawFile,
                                   remaining: newRemaining)
+            }
+        }
+    }
+
+    /// For chunked transfer (no Content-Length): read until connection signals isComplete.
+    private func streamUntilComplete(connection: NWConnection, connId: Int,
+                                      headerData: Data,
+                                      fileHandle: FileHandle,
+                                      rawFile: URL,
+                                      totalWritten: Int) {
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 512 * 1024) { [weak self] data, _, isComplete, error in
+            guard let self else {
+                fileHandle.closeFile()
+                try? FileManager.default.removeItem(at: rawFile)
+                connection.cancel()
+                return
+            }
+
+            if let error {
+                self.log("#\(connId) chunked ERROR: \(error) (written=\(totalWritten))")
+                fileHandle.closeFile()
+                try? FileManager.default.removeItem(at: rawFile)
+                connection.cancel()
+                return
+            }
+
+            var newTotal = totalWritten
+            if let data, data.count > 0 {
+                fileHandle.write(data)
+                newTotal += data.count
+            }
+
+            if isComplete {
+                fileHandle.closeFile()
+                self.log("#\(connId) chunked complete, total=\(newTotal)B")
+                self.processUploadFile(headerData: headerData, rawFile: rawFile, connection: connection, connId: connId)
+            } else {
+                if newTotal % (5 * 1024 * 1024) < (data?.count ?? 0) {
+                    self.log("#\(connId) chunked streaming... \(newTotal)B so far")
+                }
+                self.streamUntilComplete(connection: connection, connId: connId,
+                                          headerData: headerData,
+                                          fileHandle: fileHandle,
+                                          rawFile: rawFile,
+                                          totalWritten: newTotal)
             }
         }
     }
